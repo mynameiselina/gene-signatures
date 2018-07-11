@@ -72,10 +72,11 @@ def set_up_oncoscan(**set_up_kwargs):
     output_directory = set_directory(
         os.path.join(MainDataDir, set_up_kwargs.get('input_directory'))
         )
-    oncoscan_directories = plot_kwargs.get('oncoscan_directories', '')
-    oncoscan_directories_list = oncoscan_directories.rsplit(',')
-    fpaths = [os.path.join(input_directory, aDir)
-              for aDir in oncoscan_directories_list]
+    oncoscan_directory = set_up_kwargs.get('oncoscan_directory', '')
+    oncoscan_files = set_up_kwargs.get('oncoscan_files', '')
+    oncoscan_files_list = oncoscan_files.rsplit(',')
+    fpaths = [os.path.join(input_directory, oncoscan_directory, aFile)
+              for aFile in oncoscan_files_list]
 
     # load info table of samples
     if toPrint:
@@ -103,8 +104,6 @@ def set_up_oncoscan(**set_up_kwargs):
     pat_data_list, pat_data_or_dict, dropped_rows_filt, \
         dropped_rows_map, info_table = \
         load_and_process_summary_file(fpaths, info_table,
-                                      editWith=editWith,
-                                      toPrint=toPrint,
                                       **set_up_kwargs)
 
     if (dropped_rows_filt.shape[0] > 0) and (saveReport):

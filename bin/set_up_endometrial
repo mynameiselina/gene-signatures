@@ -48,12 +48,13 @@ from omics_processing.io import (
     )
 import os
 import sys
-# import logging
+import logging
 import matplotlib
 import matplotlib.pyplot as plt
 
 script_path = os.path.dirname(__file__)
 script_fname = os.path.basename(__file__).rsplit('.')[0]
+DEBUG = True
 
 filt_kwargs = {
     'col_pValue': 'Call PValue',
@@ -114,37 +115,38 @@ set_up_kwargs = {
 
     # set directories
     'input_directory': 'input',
-    'oncoscan_directories': 'DS-097_OSCHP-Files,18044_OSCHP-Files',
+    'oncoscan_directory': 'fromNexusExpress',
+    'oncoscan_files': 'DS_097_all_samples.txt,18044_all_samples.txt',
     'output_directory': 'output',
 }
 
 
 def main(**set_up_kwargs):
-    # if DEBUG:
-    #     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    if DEBUG:
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     #########################################
-    saveReport = set_up_kwargs.get('saveReport', False)
-    if saveReport:
-        # Turn interactive plotting off and save all stdout in a text file
-        plt.ioff()
-        orig_stdout = sys.stdout
-        MainDataDir = os.path.join(script_path, '..', 'data')
-        output_directory = set_directory(
-            os.path.join(MainDataDir, set_up_kwargs.get('input_directory'))
-        )
-        reportName = set_up_kwargs.get('reportName', 'test_report_name')
-        fpath = os.path.join(output_directory, reportName+'.txt')
-        log_f = open(fpath, 'w', encoding='UTF-8')
-        sys.stdout = log_f
+    # saveReport = set_up_kwargs.get('saveReport', False)
+    # if saveReport:
+    #     # Turn interactive plotting off and save all stdout in a text file
+    #     plt.ioff()
+    #     orig_stdout = sys.stdout
+    #     MainDataDir = os.path.join(script_path, '..', 'data')
+    #     output_directory = set_directory(
+    #         os.path.join(MainDataDir, set_up_kwargs.get('input_directory'))
+    #     )
+    #     reportName = set_up_kwargs.get('reportName', 'test_report_name')
+    #     fpath = os.path.join(output_directory, reportName+'.txt')
+    #     log_f = open(fpath, 'w', encoding='UTF-8')
+    #     sys.stdout = log_f
     #########################################
 
     set_up_oncoscan(**set_up_kwargs)
 
     #########################################
-    if saveReport:
-        sys.stdout = orig_stdout
-        log_f.close()
+    # if saveReport:
+    #     sys.stdout = orig_stdout
+    #     log_f.close()
     #########################################
 
 
