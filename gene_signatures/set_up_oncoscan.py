@@ -72,6 +72,7 @@ def set_up_oncoscan(**set_up_kwargs):
     output_directory = set_directory(
         os.path.join(MainDataDir, set_up_kwargs.get('input_directory'))
         )
+    oncoscan_directories = plot_kwargs.get('oncoscan_directories', '')
     oncoscan_directories_list = oncoscan_directories.rsplit(',')
     fpaths = [os.path.join(input_directory, aDir)
               for aDir in oncoscan_directories_list]

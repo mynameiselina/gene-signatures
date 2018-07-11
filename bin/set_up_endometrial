@@ -40,13 +40,20 @@ SAVE ordered table and gene pos info table:
 from gene_signatures.set_up_oncoscan import (
     set_up_oncoscan
 )
+from gene_signatures.core import (
+    custom_div_cmap
+)
+from omics_processing.io import (
+    set_directory
+    )
 import os
 import sys
-import logging
+# import logging
 import matplotlib
 import matplotlib.pyplot as plt
 
 script_path = os.path.dirname(__file__)
+script_fname = os.path.basename(__file__).rsplit('.')[0]
 
 filt_kwargs = {
     'col_pValue': 'Call PValue',
@@ -74,9 +81,9 @@ function_dict = {
 }
 
 plot_kwargs = {
-    'cmap_custom' = custom_div_cmap(9)
-    'vmin' = -4
-    'vmax' = 4
+    'cmap_custom': custom_div_cmap(9),
+    'vmin': -4,
+    'vmax': 4
 }
 
 set_up_kwargs = {
@@ -113,8 +120,8 @@ set_up_kwargs = {
 
 
 def main(**set_up_kwargs):
-    if DEBUG:
-        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    # if DEBUG:
+    #     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     #########################################
     saveReport = set_up_kwargs.get('saveReport', False)
@@ -122,9 +129,11 @@ def main(**set_up_kwargs):
         # Turn interactive plotting off and save all stdout in a text file
         plt.ioff()
         orig_stdout = sys.stdout
+        MainDataDir = os.path.join(script_path, '..', 'data')
         output_directory = set_directory(
             os.path.join(MainDataDir, set_up_kwargs.get('input_directory'))
         )
+        reportName = set_up_kwargs.get('reportName', 'test_report_name')
         fpath = os.path.join(output_directory, reportName+'.txt')
         log_f = open(fpath, 'w', encoding='UTF-8')
         sys.stdout = log_f
