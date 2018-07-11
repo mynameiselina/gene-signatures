@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 from natsort import natsorted, index_natsorted
+import logging
 
 # plotting imports
 import matplotlib
@@ -27,6 +28,7 @@ default_backend = plt.get_backend()
 
 script_path = os.path.dirname(__file__)
 script_fname = os.path.basename(__file__).rsplit('.')[0]
+logger = logging.getLogger(__name__)
 
 
 def _uniq_chr_per_gene(x, n):
@@ -80,14 +82,14 @@ def set_up_oncoscan(**set_up_kwargs):
 
     # load info table of samples
     if toPrint:
-        print('\nLoad info table of samples')
+        logger.info('\nLoad info table of samples')
     fpath = os.path.join(input_directory, sample_info_fname)
     info_table = load_clinical(fpath,
                                col_as_index=sample_info_table_index_colname,
                                **{'na_values': ' '})
 
     if toPrint:
-        print("Missing values for each column:\n", info_table.isna().sum())
+        logger.info("Missing values for each column:\n", info_table.isna().sum())
 
     # [optional] load_gene_order_dict(fpath)
     if gene_order_dict_fname is not None:
@@ -99,7 +101,7 @@ def set_up_oncoscan(**set_up_kwargs):
     #########################################
     # load files from each patient
     if toPrint:
-        print("\n", txt_label, ": load files from all patients\n")
+        logger.info("\n", txt_label, ": load files from all patients\n")
 
     pat_data_list, pat_data_or_dict, dropped_rows_filt, \
         dropped_rows_map, info_table = \
@@ -109,14 +111,14 @@ def set_up_oncoscan(**set_up_kwargs):
     if (dropped_rows_filt.shape[0] > 0) and (saveReport):
         f_new = 'allsamples__dropped_rows_filt.txt'
         if toPrint:
-            print("-save dropped rows from filtering in: ", f_new)
+            logger.info("-save dropped rows from filtering in: ", f_new)
         dropped_rows_filt.to_csv(outDir+f_new, sep='\t',
                                  header=True, index=True)
 
     if (dropped_rows_map.shape[0] > 0) and (saveReport):
         f_new = 'allsamples__dropped_rows_map.txt'
         if toPrint:
-            print("-save dropped rows from mapping oncoscan to genes in: ",
+            logger.info("-save dropped rows from mapping oncoscan to genes in: ",
                   f_new)
         dropped_rows_map.to_csv(outDir+f_new, sep='\t',
                                 header=True, index=True)
@@ -135,14 +137,14 @@ def set_up_oncoscan(**set_up_kwargs):
     # concat all samples in one table and keep union of all genes,
     # then fill NaNs with zero
     if toPrint:
-        print("\nConcantanate all", editWith,
+        logger.info("\nConcantanate all", editWith,
               "samples in 2 tables (with position, only values)\n")
     # samples in rows, genes in columns
     table_withPos = pd.concat(pat_data_list, join='outer',
                               axis=1, sort=False).T
     if len(remove_patients) > 0:
         if toPrint:
-            print("Removing", len(remove_patients),
+            logger.info("Removing", len(remove_patients),
                   "patients from the analysis, according to user preferances:",
                   remove_patients)
         for patient in remove_patients:
@@ -162,7 +164,7 @@ def set_up_oncoscan(**set_up_kwargs):
                                                chr_table.index],
                                               axis=0), axis=0)
     if toPrint:
-        print("Dimensions of table (samples,genes):", table.shape)
+        logger.info("Dimensions of table (samples,genes):", table.shape)
     table.index = [index_name.rsplit(':')[0]
                    for index_name in table.index]
     start_table.index = [index_name.rsplit(':')[0]
@@ -181,7 +183,7 @@ def set_up_oncoscan(**set_up_kwargs):
     genes2drop = uniq_chr_per_gene.columns[(~uniq_chr_per_gene.isnull()
                                             ).sum() > 1].values
     if toPrint:
-        print("Remove", genes2drop.shape[0],
+        logger.info("Remove", genes2drop.shape[0],
               "genes that exist in multiple chromosomes across samples:\n",
               genes2drop)
 
@@ -190,19 +192,19 @@ def set_up_oncoscan(**set_up_kwargs):
             fname = 'chr_table.csv'
             f = outDir+fname
             if toPrint:
-                print("-save chromosomes in: ", f)
+                logger.info("-save chromosomes in: ", f)
             chr_table.to_csv(f, sep='\t', header=True, index=True)
 
             fname = 'chr_table_uniq.csv'
             f = outDir+fname
             if toPrint:
-                print("-save unique chromosomes in: ", f)
+                logger.info("-save unique chromosomes in: ", f)
             uniq_chr_per_gene.to_csv(f, sep='\t', header=True, index=True)
 
             fname = 'chr_table_uniq_genes2drop.csv'
             f = outDir+fname
             if toPrint:
-                print("-save unique chromosomes from genes to drop in: ", f)
+                logger.info("-save unique chromosomes from genes to drop in: ", f)
             uniq_chr_per_gene.loc[:, genes2drop].to_csv(f, sep='\t',
                                                         header=True,
                                                         index=True)
@@ -214,13 +216,13 @@ def set_up_oncoscan(**set_up_kwargs):
         uniq_chr_per_gene.drop(genes2drop, axis=1, inplace=True)
         uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :]
         if toPrint:
-            print("Dimensions of table (samples,genes):", table.shape)
+            logger.info("Dimensions of table (samples,genes):", table.shape)
     else:
         uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :]
 
     # ORDER THE GENES FROM ALL SAMPLES
     if toPrint:
-        print("\nCreate a Dataframe with the genes " +
+        logger.info("\nCreate a Dataframe with the genes " +
               "and their genomic positions")
     gene_pos = pd.concat([
         start_table.apply(
@@ -241,21 +243,21 @@ def set_up_oncoscan(**set_up_kwargs):
                                        str(gene_pos['end'][row])])
                              for row in range(gene_pos.shape[0])]
     if toPrint:
-        print('Dataframes agree (?): ' +
+        logger.info('Dataframes agree (?): ' +
               str(gene_pos.shape[0] == table.shape[1]))
 
     # are the genes duplicated ?
     dupl_genes = gene_pos[gene_id_col].duplicated()
     if dupl_genes.any():
-        print("ERROR: genes are duplicated, check your data first!")
-        print("duplicated genes:", gene_pos[gene_id_col][dupl_genes].values)
+        logger.info("ERROR: genes are duplicated, check your data first!")
+        logger.info("duplicated genes:", gene_pos[gene_id_col][dupl_genes].values)
         raise()
     else:
         if toPrint:
-            print("genes are unique, continue..")
+            logger.info("genes are unique, continue..")
 
     if toPrint:
-        print("\nOrder genes according to genomic position")
+        logger.info("\nOrder genes according to genomic position")
     gene_order = index_natsorted(gene_pos['toNatSort'])
     gene_pos = gene_pos.iloc[gene_order, :]
     gene_pos.reset_index(drop=True, inplace=True)
@@ -270,7 +272,7 @@ def set_up_oncoscan(**set_up_kwargs):
     #########################################
     # ORDER the  table
     if toPrint:
-        print("\nOrder  table according to genomic position")
+        logger.info("\nOrder  table according to genomic position")
     data = pd.DataFrame(table, columns=sorted(gene_order_dict,
                                               key=gene_order_dict.get))
 
@@ -282,7 +284,7 @@ def set_up_oncoscan(**set_up_kwargs):
         if label in info_table.columns:
             # PLOT Abundance of gene data per sample
             if toPrint:
-                print("\nPlot "+label+" for each sample\n")
+                logger.info("\nPlot "+label+" for each sample\n")
             mutCount = info_table[[label]].copy()
             patient_new_order = info_table.loc[mutCount.index].sort_values(
                 by=sample_info_table_sortLabels_list)
@@ -308,7 +310,7 @@ def set_up_oncoscan(**set_up_kwargs):
                 else:
                     plt.ylim([-1, gene_count_max])
                 if saveReport:
-                    print('Save figure')
+                    logger.info('Save figure')
                     plt.savefig(outDir+'Fig_samples_'+label+'.png',
                                 transparent=True, bbox_inches='tight',
                                 pad_inches=0.1, frameon=False)
@@ -324,7 +326,7 @@ def set_up_oncoscan(**set_up_kwargs):
         fname = 'table_withPos.csv'
         f = outDir+fname
         if toPrint:
-            print("-save table in: ", f)
+            logger.info("-save table in: ", f)
         table_withPos.to_csv(f, sep='\t', header=True, index=True)
 
     if saveReport:
@@ -332,16 +334,16 @@ def set_up_oncoscan(**set_up_kwargs):
         fname = 'table.csv'
         f = outDir+fname
         if toPrint:
-            print("-save table in: ", f)
+            logger.info("-save table in: ", f)
         table.to_csv(f, sep='\t', header=True, index=True)
 
     if toPrint:
-        print("Dimensions of table (samples,genes):", table.shape)
+        logger.info("Dimensions of table (samples,genes):", table.shape)
 
     #########################################
     # PLOT heatmap before gene ordering
     if toPrint:
-        print("\nPlot heatmap before gene ordering")
+        logger.info("\nPlot heatmap before gene ordering")
     if True:
         plt.figure(figsize=(20, 8))
         patient_new_order = info_table.loc[table.index].sort_values(
@@ -359,7 +361,7 @@ def set_up_oncoscan(**set_up_kwargs):
             cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
         if saveReport:
             if toPrint:
-                print('Save heatmap')
+                logger.info('Save heatmap')
             plt.savefig(outDir+'Fig_heatmap.png',
                         transparent=True, bbox_inches='tight',
                         pad_inches=0.1, frameon=False)
@@ -375,14 +377,14 @@ def set_up_oncoscan(**set_up_kwargs):
         genes2remove = data.columns[is_empty]
         data.drop(genes2remove, axis=1, inplace=True)
         if toPrint:
-            print("remove the following genes because " +
+            logger.info("remove the following genes because " +
                   "they have no values in the table: ",
                   genes2remove)
 
     #########################################
     # PLOT  heatmap after gene ordering and cleaning
     if toPrint:
-        print("\nPlot heatmap after gene ordering")
+        logger.info("\nPlot heatmap after gene ordering")
     xlabels, xpos = get_chr_ticks(gene_pos, data, id_col=gene_id_col,
                                   chr_col=chr_col)
     if True:
@@ -404,7 +406,7 @@ def set_up_oncoscan(**set_up_kwargs):
             cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
         if saveReport:
             if toPrint:
-                print('Save heatmap')
+                logger.info('Save heatmap')
             plt.savefig(outDir+'Fig_heatmap_ordered.png',
                         transparent=True, bbox_inches='tight',
                         pad_inches=0.1, frameon=False)
@@ -420,11 +422,11 @@ def set_up_oncoscan(**set_up_kwargs):
         fname = 'table_ordered.csv'
         f = outDir+fname
         if toPrint:
-            print("-save ordered table: ", f)
+            logger.info("-save ordered table: ", f)
         data.to_csv(f, sep='\t', header=True, index=True)
 
         fname = 'genes_info.csv'
         f = outDir+fname
         if toPrint:
-            print("-save genes info: ", f)
+            logger.info("-save genes info: ", f)
         gene_pos.to_csv(f, sep='\t', header=True, index=True)
