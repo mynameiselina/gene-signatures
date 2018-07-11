@@ -3,4 +3,4 @@ docs
 **/.ipynb_checkpoints
 **/__pycache__
 **/.pyc
-omics_processing.egg-info
+gene_signatures.egg-info

@@ -121,6 +121,7 @@ class develop(_develop):
 
 
 scripts = [
+    'bin/set_up_endometrial'
 ]
 
 setup(

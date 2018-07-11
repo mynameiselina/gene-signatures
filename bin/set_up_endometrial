@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+"""
+load info table of samples
+load files from each patient: samples in rows, genes in columns
+get size of each sample and plot it
+(i.e. abundance of genes with in each sample)
+
+concat all samples in one table and keep union of all genes,
+then fill NaNs with zero
+
+CLEAN THE data FROM ALL SAMPLES
+extract the start, end and chrom info from the table
+and keep only the functions values
+remove genes that exist in multiple chromosomes across samples
+
+ORDER THE GENES FROM ALL SAMPLES
+if the gene names are duplicated, through an exception
+
+CREATE dictionary of gene names and their order
+ORDER the table by gene position
+
+PLOT Abundance of gene data per sample:
+'oncoscan_events', 'oncoscan_events_filt',
+'genes_with_CNV', 'genes_with_CNV_merged'
+
+SAVE table w/ and w/o positions:
+'table_withPos.csv'
+'table.csv'
+
+PLOT heatmap before gene ordering
+
+CHECK if there are empty genes and remove them
+PLOT  heatmap after gene ordering and cleaning
+
+SAVE ordered table and gene pos info table:
+'table_ordered.csv'
+'genes_info.csv'
+"""
+
+from gene_signatures.set_up_oncoscan import (
+    set_up_oncoscan
+)
+import os
+import sys
+import logging
+import matplotlib
+import matplotlib.pyplot as plt
+
+script_path = os.path.dirname(__file__)
+
+filt_kwargs = {
+    'col_pValue': 'Call PValue',
+    'col_probeMedian': 'Probe Median',
+    'col_probeCount': 'Probes',
+    'pValue_thres': 0.01,
+    'probeMedian_thres': 0.3,
+    'probeCount_thres': 20,
+    'remove_missing_pValues': False
+}
+
+preproc_kwargs = {
+    # columns with info about:
+    # Chromosome Region, Event, Gene Symbols
+    # (in this order!!!)
+    'keep_columns': ['Chromosome Region', 'Event', 'Gene Symbols'],
+}
+
+function_dict = {
+    'Homozygous Copy Loss': -4,
+    'CN Loss': -2,
+    'CN Gain': 2,
+    'High Copy Gain': 4,
+    'LOH': -1
+}
+
+plot_kwargs = {
+    'cmap_custom' = custom_div_cmap(9)
+    'vmin' = -4
+    'vmax' = 4
+}
+
+set_up_kwargs = {
+    # script set up params
+    'saveReport': True,
+    'txt_label': 'set up Oncoscan data',
+    'toPrint': True,
+    'reportName': script_fname,
+    'editWith': 'Oncoscan',
+    'withFilter': False,
+    'withPreprocess': True,
+    'filt_kwargs': filt_kwargs,
+    'chr_col': 'chr_int',
+    'gene_id_col': 'gene',
+    'gene_order_dict_fname': None,
+    'sample_info_fname': '20180704_emca.csv',
+    'sample_info_table_index_colname': 'Oncoscan_ID',
+    'sample_info_table_sortLabels': 'TP53_mut5,FOXA1_mut5',
+    'plot_kwargs': plot_kwargs,
+
+    # params only for internal usage in functions
+    'samples_colname': 'Sample',
+    'preproc_kwargs': preproc_kwargs,
+    'comment': "#",
+    'removeLOH': True,
+    'function_dict': function_dict,
+    'mergeHow': 'maxAll',
+
+    # set directories
+    'input_directory': 'input',
+    'oncoscan_directories': 'DS-097_OSCHP-Files,18044_OSCHP-Files',
+    'output_directory': 'output',
+}
+
+
+def main(**set_up_kwargs):
+    if DEBUG:
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+    #########################################
+    saveReport = set_up_kwargs.get('saveReport', False)
+    if saveReport:
+        # Turn interactive plotting off and save all stdout in a text file
+        plt.ioff()
+        orig_stdout = sys.stdout
+        output_directory = set_directory(
+            os.path.join(MainDataDir, set_up_kwargs.get('input_directory'))
+        )
+        fpath = os.path.join(output_directory, reportName+'.txt')
+        log_f = open(fpath, 'w', encoding='UTF-8')
+        sys.stdout = log_f
+    #########################################
+
+    set_up_oncoscan(**set_up_kwargs)
+
+    #########################################
+    if saveReport:
+        sys.stdout = orig_stdout
+        log_f.close()
+    #########################################
+
+
+if __name__ == '__main__':
+    main(**set_up_kwargs)
