@@ -89,7 +89,8 @@ def set_up_oncoscan(**set_up_kwargs):
                                **{'na_values': ' '})
 
     if toPrint:
-        logger.info("Missing values for each column:\n", info_table.isna().sum())
+        logger.info("Missing values for each column:\n",
+                    info_table.isna().sum())
 
     # [optional] load_gene_order_dict(fpath)
     if gene_order_dict_fname is not None:
@@ -118,8 +119,9 @@ def set_up_oncoscan(**set_up_kwargs):
     if (dropped_rows_map.shape[0] > 0) and (saveReport):
         f_new = 'allsamples__dropped_rows_map.txt'
         if toPrint:
-            logger.info("-save dropped rows from mapping oncoscan to genes in: ",
-                  f_new)
+            logger.info("-save dropped rows from mapping " +
+                        "oncoscan to genes in: ",
+                        f_new)
         dropped_rows_map.to_csv(outDir+f_new, sep='\t',
                                 header=True, index=True)
 
@@ -138,15 +140,16 @@ def set_up_oncoscan(**set_up_kwargs):
     # then fill NaNs with zero
     if toPrint:
         logger.info("\nConcantanate all", editWith,
-              "samples in 2 tables (with position, only values)\n")
+                    "samples in 2 tables (with position, only values)\n")
     # samples in rows, genes in columns
     table_withPos = pd.concat(pat_data_list, join='outer',
                               axis=1, sort=False).T
     if len(remove_patients) > 0:
         if toPrint:
             logger.info("Removing", len(remove_patients),
-                  "patients from the analysis, according to user preferances:",
-                  remove_patients)
+                        "patients from the analysis, " +
+                        "according to user preferances:",
+                        remove_patients)
         for patient in remove_patients:
             rows2remove = table_withPos.index.values[
                 table_withPos.index.str.contains(remove_patients[0])]
@@ -184,8 +187,9 @@ def set_up_oncoscan(**set_up_kwargs):
                                             ).sum() > 1].values
     if toPrint:
         logger.info("Remove", genes2drop.shape[0],
-              "genes that exist in multiple chromosomes across samples:\n",
-              genes2drop)
+                    "genes that exist in multiple chromosomes " +
+                    "across samples:\n",
+                    genes2drop)
 
     if (genes2drop.shape[0] > 0):
         if saveReport:
@@ -204,7 +208,8 @@ def set_up_oncoscan(**set_up_kwargs):
             fname = 'chr_table_uniq_genes2drop.csv'
             f = outDir+fname
             if toPrint:
-                logger.info("-save unique chromosomes from genes to drop in: ", f)
+                logger.info("-save unique chromosomes from genes to drop in: ",
+                            f)
             uniq_chr_per_gene.loc[:, genes2drop].to_csv(f, sep='\t',
                                                         header=True,
                                                         index=True)
@@ -223,7 +228,7 @@ def set_up_oncoscan(**set_up_kwargs):
     # ORDER THE GENES FROM ALL SAMPLES
     if toPrint:
         logger.info("\nCreate a Dataframe with the genes " +
-              "and their genomic positions")
+                    "and their genomic positions")
     gene_pos = pd.concat([
         start_table.apply(
             lambda x: pd.to_numeric(x, errors='ignore', downcast='integer')
@@ -244,13 +249,14 @@ def set_up_oncoscan(**set_up_kwargs):
                              for row in range(gene_pos.shape[0])]
     if toPrint:
         logger.info('Dataframes agree (?): ' +
-              str(gene_pos.shape[0] == table.shape[1]))
+                    str(gene_pos.shape[0] == table.shape[1]))
 
     # are the genes duplicated ?
     dupl_genes = gene_pos[gene_id_col].duplicated()
     if dupl_genes.any():
         logger.info("ERROR: genes are duplicated, check your data first!")
-        logger.info("duplicated genes:", gene_pos[gene_id_col][dupl_genes].values)
+        logger.info("duplicated genes:",
+                    gene_pos[gene_id_col][dupl_genes].values)
         raise()
     else:
         if toPrint:
@@ -378,8 +384,8 @@ def set_up_oncoscan(**set_up_kwargs):
         data.drop(genes2remove, axis=1, inplace=True)
         if toPrint:
             logger.info("remove the following genes because " +
-                  "they have no values in the table: ",
-                  genes2remove)
+                        "they have no values in the table: ",
+                        genes2remove)
 
     #########################################
     # PLOT  heatmap after gene ordering and cleaning
