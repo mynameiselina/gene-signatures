@@ -668,8 +668,8 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     # remove duplicates and drop column 'all'
     if toPrint:
         logger.info('remove duplicates with the same value in all columns: ' +
-                    str(new_columns)+'\n - ' +
-                    str(onesample_map2genes.shape[0]) +
+                    str(new_columns))
+        logger.info('- '+str(onesample_map2genes.shape[0]) +
                     ' rows before')
     onesample_map2genes = onesample_map2genes.drop_duplicates()
     if toPrint:
@@ -781,7 +781,7 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     return onesample, dropped_rows
 
 
-def load_and_process_summary_file(fpaths, info_table, editWith="choose_editor",
+def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                                   toPrint=False, **kwargs):
 
     if 'comment' in kwargs.keys():
@@ -865,14 +865,14 @@ def load_and_process_summary_file(fpaths, info_table, editWith="choose_editor",
                                     ' after after pre-processing')
 
             np.append(onesample.columns, 'reason2drop')
-            if editWith == "Oncoscan":
+            if editWith == 'Oncoscan':
                 # - edit sample - #
                 onesample, dropped_rows_map_pat = \
                     map_oncoscan_to_genes(onesample, patient_id,
                                           toPrint=toPrint,
-                                          mergeHow=kwargs["mergeHow"],
-                                          removeLOH=kwargs["removeLOH"],
-                                          function_dict=kwargs["function_dict"]
+                                          mergeHow=kwargs['mergeHow'],
+                                          removeLOH=kwargs['removeLOH'],
+                                          function_dict=kwargs['function_dict']
                                           )
                 info_table.loc[patient_id,
                                'genes_with_CNV_merged'] = onesample.shape[0]
@@ -903,14 +903,14 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
         check_cols = onesample.columns
     df_isna = onesample.isna()[check_cols]
     if toPrint:
-        logger.info("Missing values for each column:\n")
+        logger.info('Missing values for each column:\n')
         df_isna_sum = df_isna.sum()
         for _i in range(df_isna_sum.shape[0]):
             logger.info(str(df_isna_sum.index[_i])+'\t' +
                         str(df_isna_sum.iloc[_i]))
     if df_isna.sum().sum() > 0:
         if toPrint:
-            logger.info("Remove rows with any missing values in columns:" +
+            logger.info('Remove rows with any missing values in columns:\n' +
                         check_cols)
 
         # keep the rows we will drop
@@ -921,10 +921,10 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
 
         # drop the rows
         if toPrint:
-            logger.info(str(onesample.shape[0])+" rows before")
+            logger.info(str(onesample.shape[0])+' rows before')
         onesample.dropna(axis=0, subset=check_cols,  inplace=True)
         if toPrint:
-            logger.info(str(onesample.shape[0])+" rows after")
+            logger.info(str(onesample.shape[0])+' rows after')
 
     # remove rows with LOH in FUNCTION !!!!!!!!!!!!!!!!!!
     if removeLOH:
@@ -1001,16 +1001,16 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
                            ].shape[0]
     if count_diff > 0:
         if toPrint:
-            logger.info("Aggregate genes that exist in the same " +
-                        "chromosome multiple times: " +
+            logger.info('Aggregate genes that exist in the same ' +
+                        'chromosome multiple times: ' +
                         str(onesample[onesample['CHR_ID'
                                                 ].duplicated(keep=False)
                                       ].shape[0]) +
-                        "rows aggreagated to" +
+                        'rows aggreagated to' +
                         str(onesample[onesample['CHR_ID'
                                                 ].duplicated(keep='first')
                                       ].shape[0]) +
-                        "unique rows")
+                        'unique rows')
             # these will be aggregated into one row:
             # with function with the highest frequency
             # and overall positional region
@@ -1069,9 +1069,9 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
     if mergeHow == 'maxAll':
         if toPrint:
-            logger.info(" -Keep the abs max function value per gene " +
-                        "and merge all positions, " +
-                        "with the min start and the max end")
+            logger.info(' -Keep the abs max function value per gene ' +
+                        'and merge all positions, ' +
+                        'with the min start and the max end')
         # Keep the abs max function value per gene
         genes_functions = \
             {functionArray.index[idx]: np.abs(pd.Series(list(item)).unique()
@@ -1087,8 +1087,8 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
                           for (key, fidx) in genes_functions.items())
     elif mergeHow == 'maxOne':
         if toPrint:
-            logger.info(" -Keep the abs max function value per gene " +
-                        "and its position, discard the rest")
+            logger.info(' -Keep the abs max function value per gene ' +
+                        'and its position, discard the rest')
         # Keep the abs max function value per gene
         genes_functions = \
             {functionArray.index[idx]: np.abs(pd.Series(list(item)).unique()
@@ -1104,9 +1104,9 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
 
     elif mergeHow == 'freqAll':
         if toPrint:
-            logger.info(" -Keep the the value with the higher frequency " +
-                        "per gene and merge all positions, " +
-                        "with the min start and the max end")
+            logger.info(' -Keep the the value with the higher frequency ' +
+                        'per gene and merge all positions, ' +
+                        'with the min start and the max end')
         # choose the value with the higher frequency
         genes_functions = \
             {functionArray.index[idx]:
@@ -1184,8 +1184,8 @@ def load_clinical(datadir, which_dataID=None, fname=None, **read_csv_kwargs):
     if which_dataID is not None:
         missing_samples = patient_ids[which_dataID].isna()
         if missing_samples.any():
-            logger.info(str(missing_samples.sum())+" missing " +
-                        which_dataID+" samples from patient(s): " +
+            logger.info(str(missing_samples.sum())+' missing ' +
+                        which_dataID+' samples from patient(s): ' +
                         patient_ids['patient'][missing_samples].unique())
             patient_ids.drop(patient_ids.index[missing_samples], axis=0,
                              inplace=True)
@@ -1196,8 +1196,8 @@ def load_clinical(datadir, which_dataID=None, fname=None, **read_csv_kwargs):
 def get_code_value(patient_ids, valueFrom, codeFrom, code):
     value = patient_ids[valueFrom][patient_ids[codeFrom] == code].unique()
     if len(value) > 1:
-        logger.error("problem with patient_ids! Multiple values for " +
-                     codeFrom+" : "+str(value))
+        logger.error('problem with patient_ids! Multiple values for ' +
+                     codeFrom+' : '+str(value))
         raise
     else:
         value = value[0]
@@ -1245,10 +1245,10 @@ def get_NexusExpress_diff_analysis(cl1_ampl, cl2_ampl, cl1_del, cl2_del,
 
     if len(np.unique([cl1_ampl.shape[0], cl2_ampl.shape[0],
                       cl1_del.shape[0], cl2_del.shape[0]])) != 1:
-        logger.error("the groups have different Dimensions!\ncl1_ampl: " +
-                     str(cl1_ampl.shape[0])+"\ncl2_ampl: " +
-                     str(cl2_ampl.shape[0])+"\ncl1_del: " +
-                     str(cl1_del.shape[0])+"\ncl2_del: " +
+        logger.error('the groups have different Dimensions!\ncl1_ampl: ' +
+                     str(cl1_ampl.shape[0])+'\ncl2_ampl: ' +
+                     str(cl2_ampl.shape[0])+'\ncl1_del: ' +
+                     str(cl1_del.shape[0])+'\ncl2_del: ' +
                      str(cl2_del.shape[0]))
         raise
 
@@ -1320,10 +1320,10 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
     pca.fit(dat)
 
     c = pca.n_components_
-    logger.info("PCA with "+str(c)+" components")
-    logger.info("Explained variance ratio for each component:" +
+    logger.info('PCA with '+str(c)+' components')
+    logger.info('Explained variance ratio for each component:' +
                 str(pca.explained_variance_ratio_))
-    logger.info("TOTAL Explained variance ratio:" +
+    logger.info('TOTAL Explained variance ratio:' +
                 str(pca.explained_variance_ratio_.sum()))
 
     f, ax = plt.subplots(c-1, c-1, figsize=(12, 11))
@@ -1333,7 +1333,7 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
             if j <= i:
                 ax[j-1, i].axis('off')
             else:
-                logger.info(str(i+1)+" vs. "+str(j+1))
+                logger.info(str(i+1)+' vs. '+str(j+1))
                 ax[j-1, i].axis('on')
                 count = count + 1
 
