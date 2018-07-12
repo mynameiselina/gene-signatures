@@ -276,7 +276,8 @@ def set_up_oncoscan(**set_up_kwargs):
 
     #########################################
     # CREATE dictionary of gene names and their order
-    gene_order_dict = dict((gene_pos[gene_id_col][i], gene_pos['order'][i])
+    gene_order_dict = dict((gene_pos[gene_id_col][i],
+                            int(gene_pos['order'][i]))
                            for i in range(gene_pos.shape[0]))
     #########################################
     # ORDER the  table
