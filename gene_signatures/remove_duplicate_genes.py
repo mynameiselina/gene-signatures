@@ -78,7 +78,8 @@ def remove_duplicate_genes(**set_up_kwargs):
     # sample info input
     sample_info_directory = set_up_kwargs.get('sample_info_directory')
     if ',' in sample_info_directory:
-        sample_info_directory = os.path.join(*sample_info_directory.rsplit(','))
+        sample_info_directory = os.path.join(
+            *sample_info_directory.rsplit(','))
     sample_info_directory = os.path.join(MainDataDir, sample_info_directory)
     # data output
     output_directory = set_up_kwargs.get('output_directory')
@@ -131,8 +132,10 @@ def remove_duplicate_genes(**set_up_kwargs):
                 'select_samples_title: '+str(select_samples_title))
 
     # choose samples to plot heatmap and pairwise correlation
-    ids_tmp = choose_samples(info_table.reset_index(), sample_info_table_index_colname,
-                             choose_from=select_samples_from, choose_what=select_samples_which,
+    ids_tmp = choose_samples(info_table.reset_index(),
+                             sample_info_table_index_colname,
+                             choose_from=select_samples_from,
+                             choose_what=select_samples_which,
                              sortby=select_samples_sort_by_list,
                              ascending=False)
 
@@ -215,7 +218,7 @@ def remove_duplicate_genes(**set_up_kwargs):
             logger.info('Save heatmap')
             plt.savefig(os.path.join(
                 output_directory, 'Fig_heatmap_'+select_samples_title +
-                fext[i_data]+'.png'), 
+                fext[i_data]+'.png'),
                 transparent=True, bbox_inches='tight',
                 pad_inches=0.1, frameon=False)
         if not saveReport:
@@ -236,7 +239,7 @@ def remove_duplicate_genes(**set_up_kwargs):
             logger.info('Save heatmap')
             plt.savefig(os.path.join(
                 output_directory, 'Fig_corr_'+select_samples_title +
-                fext[i_data]+'.png'), 
+                fext[i_data]+'.png'),
                 transparent=True, bbox_inches='tight',
                 pad_inches=0.1, frameon=False)
         if not saveReport:
