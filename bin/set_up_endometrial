@@ -48,13 +48,13 @@ from omics_processing.io import (
     )
 import os
 import sys
+import plac
 import logging
 import matplotlib
 import matplotlib.pyplot as plt
 
 script_path = os.path.dirname(__file__)
 script_fname = os.path.basename(__file__).rsplit('.')[0]
-DEBUG = True
 
 filt_kwargs = {
     'col_pValue': 'Call PValue',
@@ -87,7 +87,7 @@ plot_kwargs = {
     'vmax': 4
 }
 
-set_up_kwargs = {
+set_up_kwargs_default = {
     # script set up params
     'saveReport': True,
     'txt_label': 'set up Oncoscan data',
@@ -119,11 +119,20 @@ set_up_kwargs = {
     'oncoscan_directory': 'fromNexusExpress',
     'oncoscan_files': 'DS_097_all_samples.txt,18044_all_samples.txt',
     'output_directory': 'output',
+    'DEBUG': True
 }
 
 
+@plac.annotations(
+    set_up_kwargs='keyword arguments'
+)
 def main(**set_up_kwargs):
-    if DEBUG:
+
+    # update the default key/value pairs if the user gives different values
+    # and take the union of all pairs
+    set_up_kwargs_default.update(set_up_kwargs)
+
+    if set_up_kwargs_default.get('DEBUG'):
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     #########################################
@@ -142,7 +151,7 @@ def main(**set_up_kwargs):
     #     sys.stdout = log_f
     #########################################
 
-    set_up_oncoscan(**set_up_kwargs)
+    set_up_oncoscan(**set_up_kwargs_default)
 
     #########################################
     # if saveReport:
@@ -152,4 +161,4 @@ def main(**set_up_kwargs):
 
 
 if __name__ == '__main__':
-    main(**set_up_kwargs)
+    plac.call(main)

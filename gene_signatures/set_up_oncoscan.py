@@ -40,7 +40,7 @@ def set_up_oncoscan(**set_up_kwargs):
     # initialize script params
     saveReport = set_up_kwargs.get('saveReport', False)
     toPrint = set_up_kwargs.get('toPrint', False)
-    reportName = set_up_kwargs.get('reportName', 'test_report_name')
+    reportName = set_up_kwargs.get('reportName', script_fname)
     editWith = set_up_kwargs.get('editWith', 'Oncoscan')
     withFilter = set_up_kwargs.get('withFilter', False)
     withPreprocess = set_up_kwargs.get('withPreprocess', True)
@@ -79,7 +79,7 @@ def set_up_oncoscan(**set_up_kwargs):
     output_directory = set_directory(
         os.path.join(MainDataDir,
                      set_up_kwargs.get('output_directory'),
-                     script_fname)
+                     reportName)
         )
     oncoscan_directory = set_up_kwargs.get('oncoscan_directory', '')
     oncoscan_files = set_up_kwargs.get('oncoscan_files', '')
