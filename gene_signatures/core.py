@@ -7,12 +7,15 @@ import scipy.stats as stats
 from statsmodels.sandbox.stats.multicomp import multipletests
 from scipy.stats import binom_test
 from sklearn.decomposition import PCA
+import logging
 
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 from natsort import natsorted
+
+logger = logging.getLogger(__name__)
 
 
 def custom_div_cmap(numcolors=11, name='custom_div_cmap',
@@ -139,7 +142,8 @@ def biplot(dat, ground_truth, pca, pc1=0, pc2=1, n=None, ax=None, isdf=True):
         n = dat.shape[1]
         single_plot = False
         if not ax:
-            print('You have to provide the axis object from the subplot.')
+            logger.info('You have to provide the axis ' +
+                        'object from the subplot.')
             return None
     elif n == 2:
         single_plot = True
@@ -147,7 +151,8 @@ def biplot(dat, ground_truth, pca, pc1=0, pc2=1, n=None, ax=None, isdf=True):
     else:
         single_plot = False
         if not ax:
-            print('You have to provide the axis object from the subplot.')
+            logger.info('You have to provide the axis ' +
+                        'object from the subplot.')
             return None
 
     # project data into PC space
@@ -187,7 +192,7 @@ def biplot(dat, ground_truth, pca, pc1=0, pc2=1, n=None, ax=None, isdf=True):
             ax.text(xs[i], ys[i], labels[i], color='b')
 
     if single_plot:
-        print('test')
+        logger.info('test')
         ax.axis([[xs.min()-xs.std(), xs.max()+xs.std(),
                   ys.min()-ys.std(), ys.max()+ys.std()]])
         plt.show()
@@ -211,7 +216,8 @@ def biplot2(dat, ground_truth, pca, pc1=0, pc2=1, n=None, ax=None, isdf=True,
         n = dat.shape[1]
         single_plot = False
         if not ax:
-            print('You have to provide the axis object from the subplot.')
+            logger.info('You have to provide the axis ' +
+                        'object from the subplot.')
             return None
     elif n == 2:
         single_plot = True
@@ -219,7 +225,8 @@ def biplot2(dat, ground_truth, pca, pc1=0, pc2=1, n=None, ax=None, isdf=True,
     else:
         single_plot = False
         if not ax:
-            print('You have to provide the axis object from the subplot.')
+            logger.info('You have to provide the axis ' +
+                        'object from the subplot.')
             return None
 
     # project data into PC space
@@ -249,7 +256,7 @@ def biplot2(dat, ground_truth, pca, pc1=0, pc2=1, n=None, ax=None, isdf=True,
                      color='k', width=0.0005*min(max(xs), max(ys)),
                      head_width=0)
             gene = dat.columns.values[order][i]
-            print(gene)
+            logger.info(gene)
             # ax.text(xvector[i]*max(xs), yvector[i]*max(ys),
             # 		 gene, color='k', fontsize='small', fontweight='bold')
             offset = (i*aNum*min(max(xs), max(ys)))
@@ -270,7 +277,7 @@ def biplot2(dat, ground_truth, pca, pc1=0, pc2=1, n=None, ax=None, isdf=True,
                 ax.text(xs[i], ys[i], labels[i], color='b')
 
     if single_plot:
-        print('test')
+        logger.info('test')
         ax.axis([[xs.min()-xs.std(), xs.max()+xs.std(),
                   ys.min()-ys.std(), ys.max()+ys.std()]])
         plt.show()
@@ -477,7 +484,7 @@ def boxplot(all_coefs, n, labels, title='', txtbox='',
             sidespace=3, swarm=True, n_names=15):
 
     sidespace = all_coefs.max() * sidespace
-    xpos, xlabels = which_x_toPrint(all_coefs, labels, n_names=n_names)
+    xpos, xlabels = which_x_toprint(all_coefs, labels, n_names=n_names)
 
     plt.figure(figsize=(15, 5))
     ax = sns.boxplot(data=all_coefs, color='white', saturation=1, width=0.5,
@@ -568,7 +575,7 @@ def order_cytoband(cytoband):
     return sorted_cytoband
 
 
-def which_x_toPrint(df, names, n_names=15):
+def which_x_toprint(df, names, n_names=15):
     if df.shape[1] > 30:
         xmeans = abs(df.mean(axis=0))
         mthres = 0.05
@@ -587,14 +594,15 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     # columns with info about:
     # Chromosome Region, Event, Gene Symbols (in this order!!!)
     if 'keep_columns' not in kwargs.keys():
-        print('ERROR: keep_columns kwarg is missing!')
+        logger.error('keep_columns kwarg is missing!')
         raise
     else:
         keep_columns = kwargs['keep_columns']
         if len(keep_columns) > 3:
-            print('ERROR: more than 3 column names are given!\n' +
-                  'give columns with info about: ' +
-                  'Chromosome Region, Event, Gene Symbols (in this order!!!)')
+            logger.error('more than 3 column names are given!\n' +
+                         'give columns with info about: ' +
+                         'Chromosome Region, Event, Gene Symbols ' +
+                         '(in this order!!!)')
             raise
 
     if 'new_columns' not in kwargs.keys():
@@ -602,17 +610,18 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
 
     # choose only the columns: 'Chromosome Region', 'Event', 'Gene Symbols'
     if toPrint:
-        print('keep columns: '+str(keep_columns))
+        logger.info('keep columns: '+str(keep_columns))
     onesample_small = onesample[keep_columns].copy()
     if "'" in onesample_small[keep_columns[0]].iloc[0]:
         if toPrint:
-            print("removing the ' character from the Chromosome Region")
+            logger.info("removing the ' character from the Chromosome Region")
         onesample_small[keep_columns[0]] = \
             onesample_small[keep_columns[0]].str.replace("'", "")
     if "-" in onesample_small[keep_columns[0]].iloc[0]:
         if toPrint:
-            print("replacing the '-' with ':' character to separate the " +
-                  "'start' and 'end' in the Chromosome Region numbers")
+            logger.info("replacing the '-' with ':' character to separate " +
+                        "the 'start' and 'end' in the " +
+                        "Chromosome Region numbers")
         onesample_small[keep_columns[0]] = \
             onesample_small[keep_columns[0]].str.replace("-", ":")
     # change the gene symbols type (from single string to an array of strings)
@@ -621,14 +630,15 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     # remove the row that has NaN in this column
     if onesample_small['Gene Arrays'].isnull().any():
         if toPrint:
-            print('remove rows that have NaN gene symbols:')
+            logger.info('remove rows that have NaN gene symbols:')
         temp = onesample_small.shape[0]
         onesample_small.dropna(subset=['Gene Arrays'], inplace=True)
         if toPrint:
-            print(' - removed '+str(temp - onesample_small.shape[0])+' rows')
+            logger.info(' - removed ' +
+                        str(temp - onesample_small.shape[0])+' rows')
         if onesample_small.empty:
-            print('WARNING: after removing rows with no gene symbols, ' +
-                  'there are no more CNVs for the patient')
+            logger.warning('after removing rows with no gene symbols, ' +
+                           'there are no more CNVs for the patient')
             return onesample_small
 
     # then reset the index
@@ -657,19 +667,20 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
 
     # remove duplicates and drop column 'all'
     if toPrint:
-        print('remove duplicates with the same value in all columns: ' +
-              str(new_columns)+'\n - '+str(onesample_map2genes.shape[0]) +
-              ' rows before')
+        logger.info('remove duplicates with the same value in all columns: ' +
+                    str(new_columns)+'\n - ' +
+                    str(onesample_map2genes.shape[0]) +
+                    ' rows before')
     onesample_map2genes = onesample_map2genes.drop_duplicates()
     if toPrint:
-        print(' - '+str(onesample_map2genes.shape[0])+' rows after')
+        logger.info(' - '+str(onesample_map2genes.shape[0])+' rows after')
     onesample_map2genes = onesample_map2genes.drop(['all'], axis=1)
 
     # reset index
     onesample_map2genes.reset_index(drop=True, inplace=True)
 
     if toPrint:
-        print('Finished pre-processing successfully.\n')
+        logger.info('Finished pre-processing successfully.\n')
 
     return onesample_map2genes
 
@@ -677,13 +688,13 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
 def filter_oncoscan(onesample, toPrint=False, **kwargs):
 
     if 'col_pValue' not in kwargs.keys():
-        print('ERROR: col_pValue kwarg is missing!')
+        logger.error('col_pValue kwarg is missing!')
         raise
     if 'col_probeMedian' not in kwargs.keys():
-        print('ERROR: col_probeMedian kwarg is missing!')
+        logger.error('col_probeMedian kwarg is missing!')
         raise
     if 'col_probeCount' not in kwargs.keys():
-        print('ERROR: col_probeCount kwarg is missing!')
+        logger.error('col_probeCount kwarg is missing!')
         raise
 
     if 'pValue_thres' in kwargs.keys():
@@ -711,8 +722,8 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     if remove_missing_pValues:
         r2drop = onesample.index[onesample[kwargs['col_pValue']].isnull()]
         if toPrint:
-            print('Filtering out '+str(r2drop.shape[0]) +
-                  ' events because the p-Value is missing')
+            logger.info('Filtering out '+str(r2drop.shape[0]) +
+                        ' events because the p-Value is missing')
         dropped_rows = dropped_rows.append(onesample.loc[r2drop, :],
                                            sort=False)
         dropped_rows.loc[r2drop, 'reason2drop'] = \
@@ -724,9 +735,9 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     r2drop = onesample.index[onesample[kwargs['col_pValue']] >
                              kwargs['pValue_thres']]
     if toPrint:
-        print('Filtering out ' +
-              str(r2drop.shape[0])+' events because p-Value > ' +
-              str(kwargs['pValue_thres']))
+        logger.info('Filtering out ' +
+                    str(r2drop.shape[0])+' events because p-Value > ' +
+                    str(kwargs['pValue_thres']))
     dropped_rows = dropped_rows.append(onesample.loc[r2drop, :], sort=False)
     dropped_rows.loc[r2drop, 'reason2drop'] = \
         'filter_'+kwargs['col_pValue']+'_'+str(kwargs['pValue_thres'])
@@ -737,9 +748,9 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     r2drop = onesample.index[abs(onesample[kwargs['col_probeMedian']]) <
                              kwargs['probeMedian_thres']]
     if toPrint:
-        print('Filtering out '+str(r2drop.shape[0]) +
-              ' events because probe median < +/-' +
-              str(kwargs['probeMedian_thres']))
+        logger.info('Filtering out '+str(r2drop.shape[0]) +
+                    ' events because probe median < +/-' +
+                    str(kwargs['probeMedian_thres']))
     dropped_rows = dropped_rows.append(onesample.loc[r2drop, :], sort=False)
     dropped_rows.loc[r2drop, 'reason2drop'] = \
         'filter_'+kwargs['col_probeMedian']+'_' + \
@@ -751,8 +762,9 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     r2drop = onesample.index[onesample[kwargs['col_probeCount']] <
                              kwargs['probeCount_thres']]
     if toPrint:
-        print('Filtering out '+str(r2drop.shape[0]) +
-              ' events because probe count < '+str(kwargs['probeCount_thres']))
+        logger.info('Filtering out '+str(r2drop.shape[0]) +
+                    ' events because probe count < ' +
+                    str(kwargs['probeCount_thres']))
     dropped_rows = dropped_rows.append(onesample.loc[r2drop, :], sort=False)
     dropped_rows.loc[r2drop, 'reason2drop'] = \
         'filter_'+kwargs['col_probeCount']+'_'+str(kwargs['probeCount_thres'])
@@ -764,7 +776,7 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     dropped_rows.reset_index(drop=True, inplace=True)
 
     if toPrint:
-        print('Finished filtering successfully.\n')
+        logger.info('Finished filtering successfully.\n')
 
     return onesample, dropped_rows
 
@@ -805,15 +817,16 @@ def load_and_process_summary_file(fpaths, info_table, editWith="choose_editor",
             if counter == 2:
                 break
             if toPrint:
-                print(patient_id)
+                logger.info(patient_id)
 
             data_or[patient_id] = allsamples[allsamples[samples_colname] ==
                                              patient_id].copy()
             onesample = data_or[patient_id].copy()
             info_table.loc[patient_id, 'oncoscan_events'] = onesample.shape[0]
             if toPrint:
-                print(str(onesample.shape[0])+' oncoscan events for patient ' +
-                      str(patient_id))
+                logger.info(str(onesample.shape[0]) +
+                            ' oncoscan events for patient ' +
+                            str(patient_id))
 
             if 'filt_kwargs' in kwargs.keys() and kwargs['withFilter']:
                 # - pre-process sample - #
@@ -827,15 +840,15 @@ def load_and_process_summary_file(fpaths, info_table, editWith="choose_editor",
                 info_table.loc[patient_id,
                                'oncoscan_events_filt'] = onesample.shape[0]
                 if onesample.empty:
-                    print('WARNING: after filtering ' +
-                          'there are no more CNVs for patient ' +
-                          str(patient_id))
+                    logger.warning('after filtering ' +
+                                   'there are no more CNVs for patient ' +
+                                   str(patient_id))
                     continue
                 else:
                     if toPrint:
-                        print(str(onesample.shape[0]) +
-                              ' oncoscan events for patient ' +
-                              str(patient_id)+' after filtering')
+                        logger.info(str(onesample.shape[0]) +
+                                    ' oncoscan events for patient ' +
+                                    str(patient_id)+' after filtering')
 
             if 'preproc_kwargs' in kwargs.keys() and kwargs['withPreprocess']:
                 # - pre-process sample - #
@@ -844,15 +857,16 @@ def load_and_process_summary_file(fpaths, info_table, editWith="choose_editor",
                 info_table.loc[patient_id,
                                'genes_with_CNV'] = onesample.shape[0]
                 if onesample.empty:
-                    print('WARNING: after pre-processing ' +
-                          'there are no more CNVs for patient ' +
-                          str(patient_id))
+                    logger.warning('after pre-processing ' +
+                                   'there are no more CNVs for patient ' +
+                                   str(patient_id))
                     continue
                 else:
                     if toPrint:
-                        print(str(onesample.shape[0]) +
-                              ' oncoscan events for patient ' +
-                              str(patient_id)+' after after pre-processing')
+                        logger.info(str(onesample.shape[0]) +
+                                    ' oncoscan events for patient ' +
+                                    str(patient_id) +
+                                    ' after after pre-processing')
 
             np.append(onesample.columns, 'reason2drop')
             if editWith == "Oncoscan":
@@ -871,12 +885,12 @@ def load_and_process_summary_file(fpaths, info_table, editWith="choose_editor",
                                                   dropped_rows_map_pat],
                                                  axis=0, sort=False)
             else:
-                print('ERROR: unsupported sample editor '+(editWith))
+                logger.error('unsupported sample editor '+(editWith))
                 raise
             data.append(onesample)
 
             if toPrint:
-                print("\n\n")
+                logger.info("\n\n")
 
     return data, data_or, dropped_rows_filt, dropped_rows_map, info_table
 
@@ -896,11 +910,11 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
         check_cols = onesample.columns
     df_isna = onesample.isna()[check_cols]
     if toPrint:
-        print("Missing values for each column:\n", df_isna.sum())
+        logger.info("Missing values for each column:\n"+str(df_isna.sum()))
     if df_isna.sum().sum() > 0:
         if toPrint:
-            print("\nRemove rows with any missing values in columns:",
-                  check_cols)
+            logger.info("\nRemove rows with any missing values in columns:" +
+                        check_cols)
 
         # keep the rows we will drop
         r2drop = df_isna[df_isna.any(axis=1)].index
@@ -910,10 +924,10 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
 
         # drop the rows
         if toPrint:
-            print(onesample.shape[0], " rows before")
+            logger.info(str(onesample.shape[0])+" rows before")
         onesample.dropna(axis=0, subset=check_cols,  inplace=True)
         if toPrint:
-            print(onesample.shape[0], " rows after")
+            logger.info(str(onesample.shape[0])+" rows after")
 
     # remove rows with LOH in FUNCTION !!!!!!!!!!!!!!!!!!
     if removeLOH:
@@ -930,9 +944,9 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
             onesample.drop(onesample[s_isLOH].index, inplace=True)
             if toPrint:
                 if onesample.shape[0] < tmp_size:
-                    print('\nRemove rows with LOH in FUNCTION: ' +
-                          str(tmp_size - onesample.shape[0]) +
-                          ' rows removed')
+                    logger.info('\nRemove rows with LOH in FUNCTION: ' +
+                                str(tmp_size - onesample.shape[0]) +
+                                ' rows removed')
 
     # remove genes that exist in more than one chromosomes
     tmp_size = onesample.shape[0]
@@ -962,10 +976,12 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
         onesample.drop(onesample[todrop].index, inplace=True)
         if toPrint:
             if onesample.shape[0] < tmp_size:
-                print('\nRemove genes that exist in multiple chromosomes: ' +
-                      str(tmp_size - onesample.shape[0]) +
-                      ' rows and '+str(len(genes_to_remove_dict.keys())) +
-                      ' unique gene IDs removed')
+                logger.info('\nRemove genes that exist ' +
+                            'in multiple chromosomes: ' +
+                            str(tmp_size - onesample.shape[0]) +
+                            ' rows and ' +
+                            str(len(genes_to_remove_dict.keys())) +
+                            ' unique gene IDs removed')
 
     # create a new column with ID and CHR together
     onesample['CHR_ID'] = onesample['chr']+':'+onesample['id']
@@ -988,14 +1004,16 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
                            ].shape[0]
     if count_diff > 0:
         if toPrint:
-            print("Aggregate genes that exist in the same " +
-                  "chromosome multiple times: ",
-                  onesample[onesample['CHR_ID'].duplicated(keep=False)
-                            ].shape[0],
-                  "rows aggreagated to",
-                  onesample[onesample['CHR_ID'].duplicated(keep='first')
-                            ].shape[0],
-                  "unique rows")
+            logger.info("Aggregate genes that exist in the same " +
+                        "chromosome multiple times: " +
+                        str(onesample[onesample['CHR_ID'
+                                                ].duplicated(keep=False)
+                                      ].shape[0]) +
+                        "rows aggreagated to" +
+                        str(onesample[onesample['CHR_ID'
+                                                ].duplicated(keep='first')
+                                      ].shape[0]) +
+                        "unique rows")
             # these will be aggregated into one row:
             # with function with the highest frequency
             # and overall positional region
@@ -1022,11 +1040,11 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
         onesample.drop(onesample[todrop].index, inplace=True)
         if toPrint:
             if onesample.shape[0] < tmp_size:
-                print('\nRemove genes with amplification AND ' +
-                      'deletion values in the same chromosome: ' +
-                      str(tmp_size - onesample.shape[0]) +
-                      ' rows and '+str(len(CHR_ID2drop)) +
-                      ' unique gene IDs removed')
+                logger.info('\nRemove genes with amplification AND ' +
+                            'deletion values in the same chromosome: ' +
+                            str(tmp_size - onesample.shape[0]) +
+                            ' rows and '+str(len(CHR_ID2drop)) +
+                            ' unique gene IDs removed')
 
         # group by CHR_ID and sum over the FUNCTION
         # (to get all different functions for one gene)
@@ -1054,8 +1072,9 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
     if mergeHow == 'maxAll':
         if toPrint:
-            print(" -Keep the abs max function value per gene and merge " +
-                  "all positions, with the min start and the max end")
+            logger.info(" -Keep the abs max function value per gene " +
+                        "and merge all positions, " +
+                        "with the min start and the max end")
         # Keep the abs max function value per gene
         genes_functions = \
             {functionArray.index[idx]: np.abs(pd.Series(list(item)).unique()
@@ -1071,8 +1090,8 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
                           for (key, fidx) in genes_functions.items())
     elif mergeHow == 'maxOne':
         if toPrint:
-            print(" -Keep the abs max function value per gene " +
-                  "and its position, discard the rest")
+            logger.info(" -Keep the abs max function value per gene " +
+                        "and its position, discard the rest")
         # Keep the abs max function value per gene
         genes_functions = \
             {functionArray.index[idx]: np.abs(pd.Series(list(item)).unique()
@@ -1088,9 +1107,9 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
 
     elif mergeHow == 'freqAll':
         if toPrint:
-            print(" -Keep the the value with the higher frequency " +
-                  "per gene and merge all positions, " +
-                  "with the min start and the max end")
+            logger.info(" -Keep the the value with the higher frequency " +
+                        "per gene and merge all positions, " +
+                        "with the min start and the max end")
         # choose the value with the higher frequency
         genes_functions = \
             {functionArray.index[idx]:
@@ -1105,8 +1124,8 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
                            functionArray[key][fidx])
                           for (key, fidx) in genes_functions.items())
     else:
-        print('ERROR: invalid merge option for genes that exist ' +
-              'in the same chromosome multiple times!')
+        logger.error('invalid merge option for genes that exist ' +
+                     'in the same chromosome multiple times!')
         raise
 
     # create a pandas Dataframe for one sample
@@ -1145,7 +1164,7 @@ def choose_samples(ids, dataID, choose_from=None, choose_what=None,
     # sort patients by a column
     if sortby is not None:
         # if type(patient_ids[sortby][0]) is type(''):
-        # 	print('str')
+        # 	logger.info('str')
         ids = ids[bool2].sort_values(by=sortby, **sort_kwargs)
     else:
         ids = ids[bool2]
@@ -1168,9 +1187,9 @@ def load_clinical(datadir, which_dataID=None, fname=None, **read_csv_kwargs):
     if which_dataID is not None:
         missing_samples = patient_ids[which_dataID].isna()
         if missing_samples.any():
-            print(missing_samples.sum(), "missing", which_dataID,
-                  "samples from patient(s):",
-                  patient_ids['patient'][missing_samples].unique())
+            logger.info(str(missing_samples.sum())+" missing " +
+                        which_dataID+" samples from patient(s): " +
+                        patient_ids['patient'][missing_samples].unique())
             patient_ids.drop(patient_ids.index[missing_samples], axis=0,
                              inplace=True)
 
@@ -1180,8 +1199,8 @@ def load_clinical(datadir, which_dataID=None, fname=None, **read_csv_kwargs):
 def get_code_value(patient_ids, valueFrom, codeFrom, code):
     value = patient_ids[valueFrom][patient_ids[codeFrom] == code].unique()
     if len(value) > 1:
-        print("Error with patient_ids! Multiple values for",
-              codeFrom, ":", value)
+        logger.error("problem with patient_ids! Multiple values for " +
+                     codeFrom+" : "+str(value))
         raise
     else:
         value = value[0]
@@ -1229,9 +1248,11 @@ def get_NexusExpress_diff_analysis(cl1_ampl, cl2_ampl, cl1_del, cl2_del,
 
     if len(np.unique([cl1_ampl.shape[0], cl2_ampl.shape[0],
                       cl1_del.shape[0], cl2_del.shape[0]])) != 1:
-        print("ERROR: the groups have different Dimensions!\ncl1_ampl:",
-              cl1_ampl.shape[0], "\ncl2_ampl:", cl2_ampl.shape[0],
-              "\ncl1_del:", cl1_del.shape[0], "\ncl2_del:", cl2_del.shape[0])
+        logger.error("the groups have different Dimensions!\ncl1_ampl: " +
+                     str(cl1_ampl.shape[0])+"\ncl2_ampl: " +
+                     str(cl2_ampl.shape[0])+"\ncl1_del: " +
+                     str(cl1_del.shape[0])+"\ncl2_del: " +
+                     str(cl2_del.shape[0]))
         raise
 
     # Multiple test correction with False Discovery Rate and alpha=0.05
@@ -1250,8 +1271,8 @@ def get_NexusExpress_diff_analysis(cl1_ampl, cl2_ampl, cl1_del, cl2_del,
                       method=multtest_method, returnsorted=False)
     pvals_reject = pd.Series(pvals_reject, index=pvalues.index)
     pvals_corrected = pd.Series(pvals_corrected, index=pvalues.index)
-    print(mytitle+' '+multtest_method+': '+str(pvals_reject.sum()) +
-          ' sign. diff. genes out of '+str(pvals_reject.shape[0]))
+    logger.info(mytitle+' '+multtest_method+': '+str(pvals_reject.sum()) +
+                ' sign. diff. genes out of '+str(pvals_reject.shape[0]))
 
     # compute difference of significantly different genes
     cl1_ampl_new = cl1_ampl.copy()
@@ -1269,22 +1290,28 @@ def get_NexusExpress_diff_analysis(cl1_ampl, cl2_ampl, cl1_del, cl2_del,
     gained = abs(cl1_ampl_new - cl2_ampl_new) >= min_diff_thres
     cl1_ampl_new[~gained] = 0
     cl2_ampl_new[~gained] = 0
-    print('\nwith '+str(min_diff_thres*with_perc)+'% thres: ' +
-          str((cl1_ampl_new != 0).sum())+' sign. gained genes in code==0')
-    print('with '+str(min_diff_thres*with_perc)+'% thres: ' +
-          str((cl2_ampl_new != 0).sum())+' sign. gained genes in code==1')
-    print('with '+str(min_diff_thres*with_perc)+'% thres: ' +
-          str(gained.sum())+' sign. gained genes in total')
+    logger.info('\nwith '+str(min_diff_thres*with_perc)+'% thres: ' +
+                str((cl1_ampl_new != 0).sum()) +
+                ' sign. gained genes in code==0')
+    logger.info('with '+str(min_diff_thres*with_perc)+'% thres: ' +
+                str((cl2_ampl_new != 0).sum()) +
+                ' sign. gained genes in code==1')
+    logger.info('with '+str(min_diff_thres*with_perc)+'% thres: ' +
+                str(gained.sum()) +
+                ' sign. gained genes in total')
 
     deleted = abs(cl1_del_new - cl2_del_new) >= min_diff_thres
     cl1_del_new[~deleted] = 0
     cl2_del_new[~deleted] = 0
-    print('\nwith '+str(min_diff_thres*with_perc)+'% thres: ' +
-          str((cl1_del_new != 0).sum())+' sign. deleted genes in code==0')
-    print('with '+str(min_diff_thres*with_perc)+'% thres: ' +
-          str((cl2_del_new != 0).sum())+' sign. deleted genes in code==1')
-    print('with '+str(min_diff_thres*with_perc)+'% thres: ' +
-          str(deleted.sum())+' sign. deleted genes in total')
+    logger.info('\nwith '+str(min_diff_thres*with_perc)+'% thres: ' +
+                str((cl1_del_new != 0).sum()) +
+                ' sign. deleted genes in code==0')
+    logger.info('with '+str(min_diff_thres*with_perc)+'% thres: ' +
+                str((cl2_del_new != 0).sum()) +
+                ' sign. deleted genes in code==1')
+    logger.info('with '+str(min_diff_thres*with_perc)+'% thres: ' +
+                str(deleted.sum()) +
+                ' sign. deleted genes in total')
 
     return cl1_ampl_new, cl2_ampl_new, cl1_del_new, cl2_del_new, pvalues, \
         pvals_corrected, pvals_reject, gained, deleted
@@ -1296,11 +1323,11 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
     pca.fit(dat)
 
     c = pca.n_components_
-    print("PCA with ", c, " components")
-    print("Explained variance ratio for each component:",
-          pca.explained_variance_ratio_)
-    print("TOTAL Explained variance ratio:",
-          pca.explained_variance_ratio_.sum())
+    logger.info("PCA with "+str(c)+" components")
+    logger.info("Explained variance ratio for each component:" +
+                str(pca.explained_variance_ratio_))
+    logger.info("TOTAL Explained variance ratio:" +
+                str(pca.explained_variance_ratio_.sum()))
 
     f, ax = plt.subplots(c-1, c-1, figsize=(12, 11))
     count = 0
@@ -1309,13 +1336,13 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
             if j <= i:
                 ax[j-1, i].axis('off')
             else:
-                print(i+1, "vs.", j+1)
+                logger.info(str(i+1)+" vs. "+str(j+1))
                 ax[j-1, i].axis('on')
                 count = count + 1
 
                 biplot2(dat, ground_truth.values, pca, pc1=i, pc2=j, n=c,
                         ax=ax[j-1, i], isdf=True, aNum=0.1)
-                print()
+                logger.info('\n')
                 ax[j-1, i].set_xlabel('eigenvector '+str(i+1))
                 ax[j-1, i].set_ylabel('eigenvector '+str(j+1))
 
