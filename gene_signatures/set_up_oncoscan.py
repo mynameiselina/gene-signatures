@@ -89,7 +89,7 @@ def set_up_oncoscan(**set_up_kwargs):
 
     # load info table of samples
     if toPrint:
-        logger.info('\nLoad info table of samples')
+        logger.info('Load info table of samples')
     fpath = os.path.join(input_directory, sample_info_fname)
     info_table = load_clinical(fpath,
                                col_as_index=sample_info_table_index_colname,
@@ -112,7 +112,7 @@ def set_up_oncoscan(**set_up_kwargs):
     #########################################
     # load files from each patient
     if toPrint:
-        logger.info("\n"+txt_label+": load files from all patients\n")
+        logger.info(txt_label+": load files from all patients\n")
 
     pat_data_list, pat_data_or_dict, dropped_rows_filt, \
         dropped_rows_map, info_table = \
@@ -149,7 +149,7 @@ def set_up_oncoscan(**set_up_kwargs):
     # concat all samples in one table and keep union of all genes,
     # then fill NaNs with zero
     if toPrint:
-        logger.info("\nConcantanate all "+editWith +
+        logger.info("Concantanate all "+editWith +
                     " samples in 2 tables (with position, only values)\n")
     # samples in rows, genes in columns
     table_withPos = pd.concat(pat_data_list, join='outer',
@@ -238,7 +238,7 @@ def set_up_oncoscan(**set_up_kwargs):
 
     # ORDER THE GENES FROM ALL SAMPLES
     if toPrint:
-        logger.info("\nCreate a Dataframe with the genes " +
+        logger.info("Create a Dataframe with the genes " +
                     "and their genomic positions")
     gene_pos = pd.concat([
         start_table.apply(
@@ -274,7 +274,7 @@ def set_up_oncoscan(**set_up_kwargs):
             logger.info("genes are unique, continue..")
 
     if toPrint:
-        logger.info("\nOrder genes according to genomic position")
+        logger.info("Order genes according to genomic position")
     gene_order = index_natsorted(gene_pos['toNatSort'])
     gene_pos = gene_pos.iloc[gene_order, :]
     gene_pos.reset_index(drop=True, inplace=True)
@@ -289,7 +289,7 @@ def set_up_oncoscan(**set_up_kwargs):
     #########################################
     # ORDER the  table
     if toPrint:
-        logger.info("\nOrder  table according to genomic position")
+        logger.info("Order  table according to genomic position")
     data = pd.DataFrame(table, columns=sorted(gene_order_dict,
                                               key=gene_order_dict.get))
 
@@ -301,7 +301,7 @@ def set_up_oncoscan(**set_up_kwargs):
         if label in info_table.columns:
             # PLOT Abundance of gene data per sample
             if toPrint:
-                logger.info("\nPlot "+label+" for each sample\n")
+                logger.info("Plot "+label+" for each sample\n")
             mutCount = info_table[[label]].copy()
             patient_new_order = info_table.loc[mutCount.index].sort_values(
                 by=sample_info_table_sortLabels_list)
@@ -361,7 +361,7 @@ def set_up_oncoscan(**set_up_kwargs):
     #########################################
     # PLOT heatmap before gene ordering
     if toPrint:
-        logger.info("\nPlot heatmap before gene ordering")
+        logger.info("Plot heatmap before gene ordering")
     if True:
         plt.figure(figsize=(20, 8))
         patient_new_order = info_table.loc[table.index].sort_values(
@@ -402,7 +402,7 @@ def set_up_oncoscan(**set_up_kwargs):
     #########################################
     # PLOT  heatmap after gene ordering and cleaning
     if toPrint:
-        logger.info("\nPlot heatmap after gene ordering")
+        logger.info("Plot heatmap after gene ordering")
     xlabels, xpos = get_chr_ticks(gene_pos, data, id_col=gene_id_col,
                                   chr_col=chr_col)
     if True:

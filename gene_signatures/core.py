@@ -885,9 +885,6 @@ def load_and_process_summary_file(fpaths, info_table, editWith="choose_editor",
                 raise
             data.append(onesample)
 
-            if toPrint:
-                logger.info("\n\n")
-
     return data, data_or, dropped_rows_filt, dropped_rows_map, info_table
 
 
@@ -913,7 +910,7 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
                         str(df_isna_sum.iloc[_i]))
     if df_isna.sum().sum() > 0:
         if toPrint:
-            logger.info("\nRemove rows with any missing values in columns:" +
+            logger.info("Remove rows with any missing values in columns:" +
                         check_cols)
 
         # keep the rows we will drop
@@ -944,7 +941,7 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
             onesample.drop(onesample[s_isLOH].index, inplace=True)
             if toPrint:
                 if onesample.shape[0] < tmp_size:
-                    logger.info('\nRemove rows with LOH in FUNCTION: ' +
+                    logger.info('Remove rows with LOH in FUNCTION: ' +
                                 str(tmp_size - onesample.shape[0]) +
                                 ' rows removed')
 
@@ -976,7 +973,7 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
         onesample.drop(onesample[todrop].index, inplace=True)
         if toPrint:
             if onesample.shape[0] < tmp_size:
-                logger.info('\nRemove genes that exist ' +
+                logger.info('Remove genes that exist ' +
                             'in multiple chromosomes: ' +
                             str(tmp_size - onesample.shape[0]) +
                             ' rows and ' +
@@ -1040,7 +1037,7 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
         onesample.drop(onesample[todrop].index, inplace=True)
         if toPrint:
             if onesample.shape[0] < tmp_size:
-                logger.info('\nRemove genes with amplification AND ' +
+                logger.info('Remove genes with amplification AND ' +
                             'deletion values in the same chromosome: ' +
                             str(tmp_size - onesample.shape[0]) +
                             ' rows and '+str(len(CHR_ID2drop)) +
@@ -1290,7 +1287,7 @@ def get_NexusExpress_diff_analysis(cl1_ampl, cl2_ampl, cl1_del, cl2_del,
     gained = abs(cl1_ampl_new - cl2_ampl_new) >= min_diff_thres
     cl1_ampl_new[~gained] = 0
     cl2_ampl_new[~gained] = 0
-    logger.info('\nwith '+str(min_diff_thres*with_perc)+'% thres: ' +
+    logger.info('with '+str(min_diff_thres*with_perc)+'% thres: ' +
                 str((cl1_ampl_new != 0).sum()) +
                 ' sign. gained genes in code==0')
     logger.info('with '+str(min_diff_thres*with_perc)+'% thres: ' +
@@ -1303,7 +1300,7 @@ def get_NexusExpress_diff_analysis(cl1_ampl, cl2_ampl, cl1_del, cl2_del,
     deleted = abs(cl1_del_new - cl2_del_new) >= min_diff_thres
     cl1_del_new[~deleted] = 0
     cl2_del_new[~deleted] = 0
-    logger.info('\nwith '+str(min_diff_thres*with_perc)+'% thres: ' +
+    logger.info('with '+str(min_diff_thres*with_perc)+'% thres: ' +
                 str((cl1_del_new != 0).sum()) +
                 ' sign. deleted genes in code==0')
     logger.info('with '+str(min_diff_thres*with_perc)+'% thres: ' +
@@ -1342,7 +1339,6 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
 
                 biplot2(dat, ground_truth.values, pca, pc1=i, pc2=j, n=c,
                         ax=ax[j-1, i], isdf=True, aNum=0.1)
-                logger.info('\n')
                 ax[j-1, i].set_xlabel('eigenvector '+str(i+1))
                 ax[j-1, i].set_ylabel('eigenvector '+str(j+1))
 
