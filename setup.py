@@ -121,7 +121,7 @@ class develop(_develop):
 
 
 scripts = [
-    'bin/set_up_endometrial'
+    'bin/set_up_endometrial',
     'bin/remove_dupl_genes_endometrial'
 ]
 
