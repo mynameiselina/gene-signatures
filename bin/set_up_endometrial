@@ -100,6 +100,7 @@ set_up_kwargs = {
     'chr_col': 'chr_int',
     'gene_id_col': 'gene',
     'gene_order_dict_fname': None,
+    'remove_patients': None,
     'sample_info_fname': '20180704_emca.csv',
     'sample_info_table_index_colname': 'Oncoscan_ID',
     'sample_info_table_sortLabels': 'TP53_mut5,FOXA1_mut5',

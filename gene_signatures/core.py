@@ -799,7 +799,11 @@ def load_and_process_summary_file(fpaths, info_table, editWith="choose_editor",
         dropped_rows_filt = pd.DataFrame()
         dropped_rows_map = pd.DataFrame()
 
+        counter = 0
         for patient_id in natsorted(allsamples[samples_colname].unique()):
+            counter += 1
+            if counter == 2:
+                break
             if toPrint:
                 print(patient_id)
 
