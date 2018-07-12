@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+"""
+
+"""
+from omics_processing.io import (
+    set_directory
+    )
+from gene_signatures.core import (
+    custom_div_cmap
+)
+from gene_signatures.remove_duplicate_genes import (
+    remove_duplicate_genes
+)
+import os
+import sys
+import plac
+import logging
+import matplotlib
+import matplotlib.pyplot as plt
+
+script_path = os.path.dirname(__file__)
+script_fname = os.path.basename(__file__).rsplit('.')[0]
+
+
+plot_kwargs = {
+    'cmap_custom': custom_div_cmap(9),
+    'vmin': -4,
+    'vmax': 4
+}
+
+set_up_kwargs_default = {
+    # chose sample set from data
+    # function: choose_samples()
+    'select_samples_from': None,
+    'select_samples_which': None,
+    'select_samples_sort_by': 'TP53_mut5,FOXA1_mut5',
+    'select_samples_title': 'select_all',
+
+    # script set up params
+    'saveReport': True,
+    'compute_pdist': False,
+    'txt_label': 'set up Oncoscan data',
+    'toPrint': True,
+    'reportName': script_fname,
+    'editWith': 'Oncoscan',
+    'gene_info_fname': 'genes_info.csv',
+    'chr_col': 'chr_int',
+    'gene_id_col': 'gene',
+    'gene_order_dict_fname': None,
+    'sample_info_fname': '20180704_emca.csv',
+    'sample_info_table_index_colname': 'Oncoscan_ID',
+    'sample_info_table_sortLabels': 'TP53_mut5,FOXA1_mut5',
+    'plot_kwargs': plot_kwargs,
+
+    # set directories
+    'input_directory': 'output,set_up_oncoscan_endometrial',
+    'sample_info_directory': 'input',
+    'output_directory': 'output,set_up_oncoscan_endometrial',
+    'DEBUG': True
+}
+
+
+@plac.annotations(
+    set_up_kwargs='keyword arguments'
+)
+def main(**set_up_kwargs):
+
+    # update the default key/value pairs if the user gives different values
+    # and take the union of all pairs
+    set_up_kwargs_default.update(set_up_kwargs)
+
+    if set_up_kwargs_default.get('DEBUG'):
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+    remove_duplicate_genes(**set_up_kwargs_default)
+
+
+if __name__ == '__main__':
+    plac.call(main)

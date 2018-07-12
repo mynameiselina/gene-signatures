@@ -54,7 +54,6 @@ def set_up_oncoscan(**set_up_kwargs):
         remove_patients_list = remove_patients.rsplit(',')
     chr_col = set_up_kwargs.get('chr_col', 'chr_int')
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
-    gene_order_dict_fname = set_up_kwargs.get('gene_order_dict_fname', None)
     sample_info_fname = set_up_kwargs.get('sample_info_fname',
                                           '20180704_emca.csv')
     sample_info_table_index_colname = \
@@ -101,13 +100,6 @@ def set_up_oncoscan(**set_up_kwargs):
         for _i in range(info_table_isna_sum.shape[0]):
             logger.info(str(info_table_isna_sum.index[_i])+'\t' +
                         str(info_table_isna_sum.iloc[_i]))
-
-    # [optional] load_gene_order_dict(fpath)
-    if gene_order_dict_fname is not None:
-        fpath = os.path.join(input_directory, gene_order_dict_fname)
-        gene_order_dict = load_gene_order_dict(fpath)
-    else:
-        gene_order_dict = None
 
     #########################################
     # load files from each patient
@@ -282,10 +274,9 @@ def set_up_oncoscan(**set_up_kwargs):
     gene_pos.reset_index(inplace=True)
 
     #########################################
-    if gene_order_dict is None:
-        # CREATE dictionary of gene names and their order
-        gene_order_dict = dict((gene_pos[gene_id_col][i], gene_pos['order'][i])
-                               for i in range(gene_pos.shape[0]))
+    # CREATE dictionary of gene names and their order
+    gene_order_dict = dict((gene_pos[gene_id_col][i], gene_pos['order'][i])
+                           for i in range(gene_pos.shape[0]))
     #########################################
     # ORDER the  table
     if toPrint:
@@ -449,3 +440,10 @@ def set_up_oncoscan(**set_up_kwargs):
         if toPrint:
             logger.info('-save genes info: '+f)
         gene_pos.to_csv(f, sep='\t', header=True, index=True)
+
+        fname = 'gene_order_dict.json'
+        f = os.path.join(output_directory, fname)
+        if toPrint:
+            logger.info('-save genes order dictionary: '+f)
+        with open(f, 'w') as fp:
+            json.dump(gene_order_dict, fp, indent=4)

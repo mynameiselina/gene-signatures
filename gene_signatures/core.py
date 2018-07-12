@@ -1152,7 +1152,7 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
 def choose_samples(ids, dataID, choose_from=None, choose_what=None,
                    sortby=None, **sort_kwargs):
     # choose patients ID
-    bool1 = (ids[dataID].isnull() is False)
+    bool1 = ids[dataID].notnull()
     # choose a condition to filter patients
     if choose_from is not None:
         bool2 = bool1 & (ids[choose_from] == choose_what)
