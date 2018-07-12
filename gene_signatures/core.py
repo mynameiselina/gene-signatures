@@ -906,7 +906,11 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
         check_cols = onesample.columns
     df_isna = onesample.isna()[check_cols]
     if toPrint:
-        logger.info("Missing values for each column:\n"+str(df_isna.sum()))
+        logger.info("Missing values for each column:\n")
+        df_isna_sum = df_isna.sum()
+        for _i in range(df_isna_sum.shape[0]):
+            logger.info(str(df_isna_sum.index[_i])+'\t' +
+                        str(df_isna_sum.iloc[_i]))
     if df_isna.sum().sum() > 0:
         if toPrint:
             logger.info("\nRemove rows with any missing values in columns:" +

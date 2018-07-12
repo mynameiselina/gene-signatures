@@ -96,8 +96,11 @@ def set_up_oncoscan(**set_up_kwargs):
                                **{'na_values': ' '})
 
     if toPrint:
-        logger.info("Missing values for each column:\n" +
-                    str(info_table.isna().sum()))
+        logger.info("Missing values for each column:\n")
+        info_table_isna_sum = info_table.isna().sum()
+        for _i in range(info_table_isna_sum.shape[0]):
+            logger.info(str(info_table_isna_sum.index[_i])+'\t' +
+                        str(info_table_isna_sum.iloc[_i]))
 
     # [optional] load_gene_order_dict(fpath)
     if gene_order_dict_fname is not None:
