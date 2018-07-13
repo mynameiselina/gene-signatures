@@ -45,7 +45,7 @@ plot_kwargs = {
     'cmap_custom': custom_div_cmap(5),
     'vmin': -2,
     'vmax': 2,
-    'highRes' = True
+    'highRes': True
 }
 
 set_up_kwargs_default = {
@@ -79,9 +79,10 @@ set_up_kwargs_default = {
 
     # set directories
     'input_directory': 'output,set_up_endometrial',
+    'input_fname': 'data_processed.csv',
     'sample_info_directory': 'input',
     'dupl_genes_directory': 'output,set_up_endometrial,remove_dupl_genes',
-    'data_uniq_fname': 'table_ordered__uniq',
+    'data_uniq_fname': 'data_processed__uniq',
     'output_directory': 'output,set_up_endometrial',
     'DEBUG': True
 }

@@ -8,17 +8,20 @@ from omics_processing.remove_duplicates import (
 from gene_signatures.core import (
     custom_div_cmap,
     get_chr_ticks,
+    choose_samples,
     plot_aggr_mut,
     get_NexusExpress_diff_analysis
 )
 
 # basic imports
+import os
 import numpy as np
 import pandas as pd
 import json
 from scipy.spatial.distance import pdist, squareform
 from natsort import natsorted, index_natsorted
 import math
+import logging
 
 # plotting imports
 import matplotlib
@@ -26,6 +29,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('white')
 sns.set_context('poster')
+
+script_fname = os.path.basename(__file__).rsplit('.')[0]
+script_path = os.path.dirname(__file__)
+logger = logging.getLogger(__name__)
 
 
 def _get_ampl_del_from_data(data):
@@ -37,10 +44,10 @@ def _get_ampl_del_from_data(data):
 
 def _plot_oncoscan_frequency_plot(data_ampl, data_del,
                                   select_samples_title, label,
-                                  genes_info_fname, xlabels, xpos,
-                                  saveReport, img_ext, report_outdir):
+                                  gene_info_fname, xlabels, xpos,
+                                  saveReport, img_ext, output_directory):
     # PLOT freq plot
-    if genes_info_fname is not None:
+    if gene_info_fname is not None:
         plot_aggr_mut(data_ampl, data_del, xlabels, xpos,
                       mytitle=select_samples_title+': '+label)
     else:
@@ -49,7 +56,7 @@ def _plot_oncoscan_frequency_plot(data_ampl, data_del,
 
     if saveReport:
         print('Save FreqPlot as '+img_ext)
-        plt.savefig(os.path.join(report_outdir, 'Fig_Freq_' +
+        plt.savefig(os.path.join(output_directory, 'Fig_Freq_' +
                     select_samples_title+'_'+label+img_ext),
                     transparent=True, bbox_inches='tight',
                     pad_inches=0.1, frameon=False)
@@ -78,7 +85,7 @@ def nexus_express(**set_up_kwargs):
     reportName = set_up_kwargs.get('reportName', script_fname)
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
     input_fname = set_up_kwargs.get('input_fname',
-                                    'table_ordered.csv')
+                                    'data_processed.csv')
     gene_info_fname = set_up_kwargs.get('gene_info_fname',
                                         'gene_info_fname.csv')
     chr_col = set_up_kwargs.get('chr_col', 'chr_int')
@@ -88,6 +95,8 @@ def nexus_express(**set_up_kwargs):
     sample_info_table_index_colname = \
         set_up_kwargs.get('sample_info_table_index_colname',
                           'Oncoscan_ID')
+    data_uniq_fname = set_up_kwargs.get('data_uniq_fname',
+                                        'data_processed__uniq')
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
@@ -122,7 +131,6 @@ def nexus_express(**set_up_kwargs):
         dupl_genes_directory = os.path.join(
             *dupl_genes_directory.rsplit(','))
     dupl_genes_directory = os.path.join(MainDataDir, dupl_genes_directory)
-    data_uniq_fname = set_up_kwargs.get('data_uniq_fname')
 
     # data output
     output_directory = set_up_kwargs.get('output_directory')
@@ -155,15 +163,15 @@ def nexus_express(**set_up_kwargs):
     # info_table = info_table.reset_index()
 
     # load gene info
-    if genes_info_fname is not None:
-        fpath = os.path.join(input_directory, genes_info_fname)
+    if gene_info_fname is not None:
+        fpath = os.path.join(input_directory, gene_info_fname)
         genes_positions_table = pd.read_csv(fpath, sep='\t', header=0,
                                             index_col=0)
     else:
         xlabels, xpos = None, None
 
     # get gene chrom position
-    if genes_info_fname is not None:
+    if gene_info_fname is not None:
         xlabels, xpos = get_chr_ticks(genes_positions_table, data,
                                       id_col='gene', chr_col=chr_col)
 
@@ -194,8 +202,8 @@ def nexus_express(**set_up_kwargs):
     data_ampl, data_del = _get_ampl_del_from_data(data)
     _plot_oncoscan_frequency_plot(data_ampl, data_del,
                                   clinical_label, class_labels,
-                                  genes_info_fname, xlabels, xpos,
-                                  saveReport, img_ext, report_outdir)
+                                  gene_info_fname, xlabels, xpos,
+                                  saveReport, img_ext, output_directory)
 
     if toRemoveDupl:
         # keep a copy of the data with duplicate genes
@@ -215,7 +223,7 @@ def nexus_express(**set_up_kwargs):
         data = data.loc[info_table.index, :].copy()
 
         # get gene chrom position
-        if genes_info_fname is not None:
+        if gene_info_fname is not None:
             xlabels, xpos = get_chr_ticks(genes_positions_table,
                                           data, id_col='gene',
                                           chr_col=chr_col)
@@ -224,8 +232,8 @@ def nexus_express(**set_up_kwargs):
         data_ampl, data_del = _get_ampl_del_from_data(data)
         _plot_oncoscan_frequency_plot(data_ampl, data_del,
                                       clinical_label, class_labels,
-                                      genes_info_fname, xlabels, xpos,
-                                      saveReport, img_ext, report_outdir)
+                                      gene_info_fname, xlabels, xpos,
+                                      saveReport, img_ext, output_directory)
 
         # load duplicate genes dictionary
         #  we will need that for the table we will save later
@@ -242,14 +250,14 @@ def nexus_express(**set_up_kwargs):
     group0_ampl, group0_del = _get_ampl_del_from_data(group0)
     _plot_oncoscan_frequency_plot(group0_ampl, group0_del,
                                   clinical_label, class_labels,
-                                  genes_info_fname, xlabels, xpos,
-                                  saveReport, img_ext, report_outdir)
+                                  gene_info_fname, xlabels, xpos,
+                                  saveReport, img_ext, output_directory)
 
     group1_ampl, group1_del = _get_ampl_del_from_data(group1)
     _plot_oncoscan_frequency_plot(group1_ampl, group1_del,
                                   clinical_label, class_labels,
-                                  genes_info_fname, xlabels, xpos,
-                                  saveReport, img_ext, report_outdir)
+                                  gene_info_fname, xlabels, xpos,
+                                  saveReport, img_ext, output_directory)
 
     if toRemoveDupl:
         # plot with the duplicate genes too
@@ -262,23 +270,23 @@ def nexus_express(**set_up_kwargs):
             _get_ampl_del_from_data(group0_wDupl)
         _plot_oncoscan_frequency_plot(group0_ampl_wDupl, group0_del_wDupl,
                                       clinical_label, class_labels,
-                                      genes_info_fname, xlabels_wDupl,
+                                      gene_info_fname, xlabels_wDupl,
                                       xpos_wDupl, saveReport, img_ext,
-                                      report_outdir)
+                                      output_directory)
 
         group1_ampl_wDupl, group1_del_wDupl = \
             _get_ampl_del_from_data(group1_wDupl)
         _plot_oncoscan_frequency_plot(group1_ampl_wDupl, group1_del_wDupl,
                                       clinical_label, class_labels,
-                                      genes_info_fname, xlabels_wDupl,
+                                      gene_info_fname, xlabels_wDupl,
                                       xpos_wDupl, saveReport, img_ext,
-                                      report_outdir)
+                                      output_directory)
 
     # run the Nexus Express diff analysis
     # select genes with significant p-value (multtest_alpha)
     # after mutliple test correction (multtest_method) and
     # absolute change higher than the defined threshold (min_diff_thres)
-    mytitle = select_samples_title+': 'class_labels[0]+' vs. '+class_labels[1]
+    mytitle = select_samples_title+': '+class_labels[0]+' vs. '+class_labels[1]
     group0_ampl_new, group1_ampl_new, group0_del_new, group1_del_new, \
         pvals, pvals_corrected, pvals_reject, gained, deleted = \
         get_NexusExpress_diff_analysis(
@@ -289,7 +297,7 @@ def nexus_express(**set_up_kwargs):
         )
 
     # create table with all genes
-    if genes_info_fname is not None:
+    if gene_info_fname is not None:
         diff_genes = genes_positions_table.set_index(
             ['gene']).loc[data.columns.values][['chr', 'start', 'end']].copy()
     else:
@@ -317,7 +325,7 @@ def nexus_express(**set_up_kwargs):
 
     # save also the positions of these duplicate genes
     diff_genes['aggChrGene'] = diff_genes.index
-    if genes_info_fname is not None:
+    if gene_info_fname is not None:
         diff_genes['newGeneName'] = diff_genes.reset_index()[
             ['gene', 'chr', 'start', 'end']].astype(str).apply(
                 lambda x: ':'.join(x), axis=1).values
@@ -393,20 +401,20 @@ def nexus_express(**set_up_kwargs):
     # save tables
     if saveReport:
         fname = 'diff_genes_'+clinical_label+'.csv'
-        f = os.path.join(report_outdir, fname)
+        f = os.path.join(output_directory, fname)
         print("-save all diff genes in : ", f)
         diff_genes.to_csv(f, sep='\t', header=True, index=True)
 
         if diff_genes_selected.shape[0] > 0:
             # save as tab-delimited csv file
             fname = 'diff_genes_selected_'+clinical_label+'.csv'
-            f = os.path.join(report_outdir, fname)
+            f = os.path.join(output_directory, fname)
             print("-save selected diff genes for", mytitle, "in : ", f)
             diff_genes_selected.to_csv(f, sep='\t', header=True, index=True)
 
             # save also as excel file
             new_fname = pdist_fname+'__diff_genes_selected.xlsx'
-            f = os.path.join(report_outdir, new_fname)
+            f = os.path.join(output_directory, new_fname)
             print('-save csv file as excel too')
             writer = pd.ExcelWriter(f)
             diff_genes_selected.to_excel(writer, sheet_name=pdist_fname)
@@ -417,13 +425,13 @@ def nexus_express(**set_up_kwargs):
         if ((group0_ampl_new != 0).any() or (group0_del_new != 0).any()):
             _plot_oncoscan_frequency_plot(group0_ampl_new, group0_del_new,
                                           clinical_label, class_labels,
-                                          genes_info_fname, xlabels, xpos,
-                                          saveReport, img_ext, report_outdir)
+                                          gene_info_fname, xlabels, xpos,
+                                          saveReport, img_ext, output_directory)
         if ((group1_ampl_new != 0).any() or (group1_del_new != 0).any()):
             _plot_oncoscan_frequency_plot(group1_ampl_new, group1_del_new,
                                           clinical_label, class_labels,
-                                          genes_info_fname, xlabels, xpos,
-                                          saveReport, img_ext, report_outdir)
+                                          gene_info_fname, xlabels, xpos,
+                                          saveReport, img_ext, output_directory)
 
         if toRemoveDupl:
             # plot with the duplicate genes too
@@ -432,16 +440,16 @@ def nexus_express(**set_up_kwargs):
                 _plot_oncoscan_frequency_plot(
                     group0_ampl_new_wDupl, group0_del_new_wDupl,
                     clinical_label, class_labels,
-                    genes_info_fname, xlabels_wDupl, xpos_wDupl,
-                    saveReport, img_ext, report_outdir
+                    gene_info_fname, xlabels_wDupl, xpos_wDupl,
+                    saveReport, img_ext, output_directory
                 )
             if ((group1_ampl_new_wDupl != 0).any() or
                     (group1_del_new_wDupl != 0).any()):
                 _plot_oncoscan_frequency_plot(
                     group1_ampl_new_wDupl, group1_del_new_wDupl,
                     clinical_label, class_labels,
-                    genes_info_fname, xlabels_wDupl, xpos_wDupl,
-                    saveReport, img_ext, report_outdir
+                    gene_info_fname, xlabels_wDupl, xpos_wDupl,
+                    saveReport, img_ext, output_directory
                 )
 
         # PLOT heatmaps of selected features
@@ -462,11 +470,11 @@ def nexus_express(**set_up_kwargs):
             ax = sns.heatmap(data2plot, vmin=vmin, vmax=vmax,
                              xticklabels=geneNames2plot,
                              yticklabels=patientNames2plot,
-                             cmap=cmap_custom, c
-                             bar_kws={'ticks': np.arange(-5, 5)})
+                             cmap=cmap_custom,
+                             cbar_kws={'ticks': np.arange(-5, 5)})
             if saveReport:
                 print('Save Heatmap of selected features as '+img_ext)
-                plt.savefig(os.path.join(report_outdir, 'Fig_Heatmap_' +
+                plt.savefig(os.path.join(output_directory, 'Fig_Heatmap_' +
                             clinical_label +
                             '_'+class_labels[1]+img_ext),
                             transparent=True, bbox_inches='tight',
@@ -490,7 +498,7 @@ def nexus_express(**set_up_kwargs):
                 if saveReport:
                     print('Save Heatmap of selected features as '+img_ext)
                     plt.savefig(
-                        os.path.join(report_outdir, 'Fig_Heatmap_' +
+                        os.path.join(output_directory, 'Fig_Heatmap_' +
                                      clinical_label+'_'+class_labels[1] +
                                      '_wDupl'+img_ext),
                         transparent=True, bbox_inches='tight',
