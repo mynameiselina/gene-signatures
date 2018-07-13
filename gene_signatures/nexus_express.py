@@ -96,8 +96,18 @@ def nexus_express(**set_up_kwargs):
         set_up_kwargs.get('sample_info_table_index_colname',
                           'Oncoscan_ID')
     data_uniq_fname = set_up_kwargs.get('data_uniq_fname',
-                                        'data_processed__uniq')
+                                        'data_processed')
+    data_uniq_fname = data_uniq_fname+'__'+select_samples_title+'__uniq'
     toRemoveDupl = set_up_kwargs.get('toRemoveDupl', True)
+
+    # params for diff analysis
+    min_diff_thres = set_up_kwargs.get('min_diff_thres', 0.25)
+    min_diff_thres = float(min_diff_thres)
+    multtest_method = set_up_kwargs.get('multtest_method', 'fdr_bh')
+    multtest_alpha = set_up_kwargs.get('multtest_alpha', 0.05)
+    multtest_alpha = float(multtest_alpha)
+    with_perc = set_up_kwargs.get('with_perc', 100)
+    with_perc = int(with_perc)
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
@@ -206,6 +216,7 @@ def nexus_express(**set_up_kwargs):
                                   gene_info_fname, xlabels, xpos,
                                   saveReport, img_ext, output_directory)
 
+    extra_label = ''
     if toRemoveDupl:
         # keep a copy of the data with duplicate genes
         data_wDupl = data.copy()
@@ -218,12 +229,13 @@ def nexus_express(**set_up_kwargs):
         fpath = os.path.join(dupl_genes_directory,
                              data_uniq_fname+'.txt')
         if not os.path.exists(fpath):
-            logger.warning('The dupl_genes_directory does not exist, ' +
+            logger.warning('The data_uniq file does not exist, ' +
                            'the analysis will run on the processed data ' +
-                           'only!\ndupl_genes_directory:\n' +
-                           dupl_genes_directory)
+                           'only!\nfile path:\n' +
+                           fpath)
             toRemoveDupl = False
         else:
+            extra_label = 'uniq'
             data = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
             data = data.fillna(0)
 
@@ -240,7 +252,7 @@ def nexus_express(**set_up_kwargs):
             data_ampl, data_del = _get_ampl_del_from_data(data)
             _plot_oncoscan_frequency_plot(data_ampl, data_del,
                                           select_samples_title,
-                                          '_uniq', gene_info_fname,
+                                          extra_label, gene_info_fname,
                                           xlabels, xpos,
                                           saveReport, img_ext,
                                           output_directory)
@@ -259,13 +271,15 @@ def nexus_express(**set_up_kwargs):
 
     group0_ampl, group0_del = _get_ampl_del_from_data(group0)
     _plot_oncoscan_frequency_plot(group0_ampl, group0_del,
-                                  select_samples_title, class_labels[0],
+                                  select_samples_title, class_labels[0] +
+                                  '_'+extra_label,
                                   gene_info_fname, xlabels, xpos,
                                   saveReport, img_ext, output_directory)
 
     group1_ampl, group1_del = _get_ampl_del_from_data(group1)
     _plot_oncoscan_frequency_plot(group1_ampl, group1_del,
-                                  select_samples_title, class_labels[1],
+                                  select_samples_title, class_labels[1] +
+                                  '_'+extra_label,
                                   gene_info_fname, xlabels, xpos,
                                   saveReport, img_ext, output_directory)
 
@@ -297,7 +311,6 @@ def nexus_express(**set_up_kwargs):
     # after mutliple test correction (multtest_method) and
     # absolute change higher than the defined threshold (min_diff_thres)
     mytitle = select_samples_title+': '+class_labels[0]+' vs. '+class_labels[1]
-    with_perc = 100
     group0_ampl_new, group1_ampl_new, group0_del_new, group1_del_new, \
         pvals, pvals_corrected, pvals_reject, gained, deleted = \
         get_NexusExpress_diff_analysis(
@@ -431,93 +444,94 @@ def nexus_express(**set_up_kwargs):
             diff_genes_selected.to_excel(writer, sheet_name=pdist_fname)
             writer.save()
 
-    if toPlot:
-        # plot CNV frequencies OF SELECTED GENES for each group in comparison
-        if ((group0_ampl_new != 0).any() or (group0_del_new != 0).any()):
-            _plot_oncoscan_frequency_plot(group0_ampl_new, group0_del_new,
-                                          select_samples_title,
-                                          class_labels[0],
-                                          gene_info_fname, xlabels, xpos,
-                                          saveReport, img_ext,
-                                          output_directory)
-        if ((group1_ampl_new != 0).any() or (group1_del_new != 0).any()):
-            _plot_oncoscan_frequency_plot(group1_ampl_new, group1_del_new,
-                                          select_samples_title,
-                                          class_labels[1],
-                                          gene_info_fname, xlabels, xpos,
-                                          saveReport, img_ext,
-                                          output_directory)
+    # plot CNV frequencies OF SELECTED GENES for each group in comparison
+    if ((group0_ampl_new != 0).any() or (group0_del_new != 0).any()):
+        _plot_oncoscan_frequency_plot(group0_ampl_new, group0_del_new,
+                                      select_samples_title,
+                                      class_labels[0]+'_'+extra_label,
+                                      gene_info_fname, xlabels, xpos,
+                                      saveReport, img_ext,
+                                      output_directory)
+    if ((group1_ampl_new != 0).any() or (group1_del_new != 0).any()):
+        _plot_oncoscan_frequency_plot(group1_ampl_new, group1_del_new,
+                                      select_samples_title,
+                                      class_labels[1]+'_'+extra_label,
+                                      gene_info_fname, xlabels, xpos,
+                                      saveReport, img_ext,
+                                      output_directory)
+
+    if toRemoveDupl:
+        # plot with the duplicate genes too
+        if ((group0_ampl_new_wDupl != 0).any() or
+                (group0_del_new_wDupl != 0).any()):
+            _plot_oncoscan_frequency_plot(
+                group0_ampl_new_wDupl, group0_del_new_wDupl,
+                select_samples_title, class_labels[0],
+                gene_info_fname, xlabels_wDupl, xpos_wDupl,
+                saveReport, img_ext, output_directory
+            )
+        if ((group1_ampl_new_wDupl != 0).any() or
+                (group1_del_new_wDupl != 0).any()):
+            _plot_oncoscan_frequency_plot(
+                group1_ampl_new_wDupl, group1_del_new_wDupl,
+                select_samples_title, class_labels[1],
+                gene_info_fname, xlabels_wDupl, xpos_wDupl,
+                saveReport, img_ext, output_directory
+            )
+
+    # PLOT heatmaps of selected features
+    if diff_genes_selected.shape[0] > 0:
+        # get only the CNVs from the selected genes
+        data2plot = data[diff_genes_selected.index]
+        # change the name of the genes to reflect the genome area
+        # in case duplicate genes map to it
+        if 'newGeneName' in diff_genes_selected.columns.values:
+            geneNames2plot = diff_genes_selected['newGeneName']
+        else:
+            geneNames2plot = diff_genes_selected.index
+        patientNames2plot = pat_labels_txt
+        ds_y, ds_x = data2plot.shape
+        fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10
+        fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
+        plt.figure(figsize=(fs_x, fs_y))
+        ax = sns.heatmap(data2plot, vmin=vmin, vmax=vmax,
+                         xticklabels=geneNames2plot,
+                         yticklabels=patientNames2plot,
+                         cmap=cmap_custom,
+                         cbar_kws={'ticks': np.arange(-5, 5)})
+        plt.title(mytitle)
+        if saveReport:
+            print('Save Heatmap of selected features as '+img_ext)
+            plt.savefig(os.path.join(output_directory, 'Fig_Heatmap_' +
+                        select_samples_title +
+                        '_'+class_labels[1]+'_'+extra_label+img_ext),
+                        transparent=True, bbox_inches='tight',
+                        pad_inches=0.1, frameon=False)
+            plt.close("all")
+        else:
+            plt.show()
 
         if toRemoveDupl:
-            # plot with the duplicate genes too
-            if ((group0_ampl_new_wDupl != 0).any() or
-                    (group0_del_new_wDupl != 0).any()):
-                _plot_oncoscan_frequency_plot(
-                    group0_ampl_new_wDupl, group0_del_new_wDupl,
-                    clinical_label, class_labels,
-                    gene_info_fname, xlabels_wDupl, xpos_wDupl,
-                    saveReport, img_ext, output_directory
-                )
-            if ((group1_ampl_new_wDupl != 0).any() or
-                    (group1_del_new_wDupl != 0).any()):
-                _plot_oncoscan_frequency_plot(
-                    group1_ampl_new_wDupl, group1_del_new_wDupl,
-                    clinical_label, class_labels,
-                    gene_info_fname, xlabels_wDupl, xpos_wDupl,
-                    saveReport, img_ext, output_directory
-                )
-
-        # PLOT heatmaps of selected features
-        if diff_genes_selected.shape[0] > 0:
-            # get only the CNVs from the selected genes
-            data2plot = data[diff_genes_selected.index]
-            # change the name of the genes to reflect the genome area
-            # in case duplicate genes map to it
-            if 'newGeneName' in diff_genes_selected.columns.values:
-                geneNames2plot = diff_genes_selected['newGeneName']
-            else:
-                geneNames2plot = diff_genes_selected.index
+            data2plot = data_wDupl[list__diff_genes_selected_wDupl]
             patientNames2plot = pat_labels_txt
             ds_y, ds_x = data2plot.shape
             fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10
             fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
             plt.figure(figsize=(fs_x, fs_y))
             ax = sns.heatmap(data2plot, vmin=vmin, vmax=vmax,
-                             xticklabels=geneNames2plot,
+                             xticklabels=True,
                              yticklabels=patientNames2plot,
                              cmap=cmap_custom,
                              cbar_kws={'ticks': np.arange(-5, 5)})
+            plt.title(mytitle)
             if saveReport:
                 print('Save Heatmap of selected features as '+img_ext)
-                plt.savefig(os.path.join(output_directory, 'Fig_Heatmap_' +
-                            clinical_label +
-                            '_'+class_labels[1]+img_ext),
-                            transparent=True, bbox_inches='tight',
-                            pad_inches=0.1, frameon=False)
+                plt.savefig(
+                    os.path.join(output_directory, 'Fig_Heatmap_' +
+                                 select_samples_title+'_'+class_labels[1] +
+                                 '_wDupl'+img_ext),
+                    transparent=True, bbox_inches='tight',
+                    pad_inches=0.1, frameon=False)
                 plt.close("all")
             else:
                 plt.show()
-
-            if toRemoveDupl:
-                data2plot = data_wDupl[list__diff_genes_selected_wDupl]
-                patientNames2plot = pat_labels_txt
-                ds_y, ds_x = data2plot.shape
-                fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10
-                fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
-                plt.figure(figsize=(fs_x, fs_y))
-                ax = sns.heatmap(data2plot, vmin=vmin, vmax=vmax,
-                                 xticklabels=True,
-                                 yticklabels=patientNames2plot,
-                                 cmap=cmap_custom,
-                                 cbar_kws={'ticks': np.arange(-5, 5)})
-                if saveReport:
-                    print('Save Heatmap of selected features as '+img_ext)
-                    plt.savefig(
-                        os.path.join(output_directory, 'Fig_Heatmap_' +
-                                     clinical_label+'_'+class_labels[1] +
-                                     '_wDupl'+img_ext),
-                        transparent=True, bbox_inches='tight',
-                        pad_inches=0.1, frameon=False)
-                    plt.close("all")
-                else:
-                    plt.show()
