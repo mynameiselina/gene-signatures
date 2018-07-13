@@ -1343,8 +1343,5 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
                 ax[j-1, i].set_ylabel('eigenvector '+str(j+1))
 
     plt.suptitle(title)
-    # plt.tight_layout()
-    # plt.savefig(fname+'_PCA.png')
-    # plt.show()
 
     return pca

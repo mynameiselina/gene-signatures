@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+"""
+assuming set_up_oncoscan has run:
+load processed data
+select the samples for the chosen comparison (e.g. all, only TP53wt, etc)
+
+[optional]
+assuming remove_duplicate_genes has run:
+load the duplicate genes dictionary for this comparison
+load the data w/o the duplicate genes
+
+plot CNV frequencies:
+- for all samples in comparison
+(only comparison between 2 groups are supported at the moment)
+- for each group in comparison
+[if with remove_duplicate_genes, produce plot w/ and w/o duplicates]
+
+run Nexus Express method to select differentially mutated genes
+
+plot CNV frequencies OF SELECTED GENES for each group in comparison
+plot heatmap of CNVs OF SELECTED GENES (sorted by group)
+[if with remove_duplicate_genes, produce plot w/ and w/o duplicates]
+"""
+from omics_processing.io import (
+    set_directory
+    )
+from gene_signatures.core import (
+    custom_div_cmap
+)
+from gene_signatures.nexus_express import (
+    nexus_express
+)
+import os
+import sys
+import plac
+import logging
+import matplotlib
+import matplotlib.pyplot as plt
+
+script_path = os.path.dirname(__file__)
+script_fname = os.path.basename(__file__).rsplit('.')[0]
+
+
+plot_kwargs = {
+    'cmap_custom': custom_div_cmap(5),
+    'vmin': -2,
+    'vmax': 2,
+    'highRes' = True
+}
+
+set_up_kwargs_default = {
+    # chose sample set from data
+    # function: choose_samples()
+    'select_samples_from': None,
+    'select_samples_which': None,
+    'select_samples_sort_by': 'TP53_mut5,FOXA1_mut5',
+    'select_samples_title': 'select_all',
+
+    # script set up params
+    'saveReport': True,
+    'compute_pdist': False,
+    'txt_label': 'Nexus Express for feature selection',
+    'toPrint': True,
+    'reportName': script_fname,
+    'gene_info_fname': 'genes_info.csv',
+    'chr_col': 'chr_int',
+    'gene_id_col': 'gene',
+    'gene_order_dict_fname': None,
+    'sample_info_fname': '20180704_emca.csv',
+    'sample_info_table_index_colname': 'Oncoscan_ID',
+    'sample_info_table_sortLabels': 'TP53_mut5,FOXA1_mut5',
+    'plot_kwargs': plot_kwargs,
+
+    # params for diff analysis
+    'min_diff_thres': 0.25,
+    'multtest_method': 'fdr_bh',
+    'multtest_alpha': 0.05,
+    'with_perc': 100,
+
+    # set directories
+    'input_directory': 'output,set_up_endometrial',
+    'sample_info_directory': 'input',
+    'dupl_genes_directory': 'output,set_up_endometrial,remove_dupl_genes',
+    'data_uniq_fname': 'table_ordered__uniq',
+    'output_directory': 'output,set_up_endometrial',
+    'DEBUG': True
+}
+
+
+@plac.annotations(
+    set_up_kwargs='keyword arguments'
+)
+def main(**set_up_kwargs):
+
+    # update the default key/value pairs if the user gives different values
+    # and take the union of all pairs
+    set_up_kwargs_default.update(set_up_kwargs)
+
+    if set_up_kwargs_default.get('DEBUG'):
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+    nexus_express(**set_up_kwargs_default)
+
+
+if __name__ == '__main__':
+    plac.call(main)

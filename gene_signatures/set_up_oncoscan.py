@@ -195,27 +195,27 @@ def set_up_oncoscan(**set_up_kwargs):
                     genes2drop)
 
     if (genes2drop.shape[0] > 0):
-        if saveReport:
-            fname = 'chr_table.csv'
-            f = os.path.join(output_directory, fname)
-            if toPrint:
-                logger.info('-save chromosomes in: '+f)
-            chr_table.to_csv(f, sep='\t', header=True, index=True)
+        # if saveReport:
+        #     fname = 'chr_table.csv'
+        #     f = os.path.join(output_directory, fname)
+        #     if toPrint:
+        #         logger.info('-save chromosomes in: '+f)
+        #     chr_table.to_csv(f, sep='\t', header=True, index=True)
 
-            fname = 'chr_table_uniq.csv'
-            f = os.path.join(output_directory, fname)
-            if toPrint:
-                logger.info('-save unique chromosomes in: '+f)
-            uniq_chr_per_gene.to_csv(f, sep='\t', header=True, index=True)
+        #     fname = 'chr_table_uniq.csv'
+        #     f = os.path.join(output_directory, fname)
+        #     if toPrint:
+        #         logger.info('-save unique chromosomes in: '+f)
+        #     uniq_chr_per_gene.to_csv(f, sep='\t', header=True, index=True)
 
-            fname = 'chr_table_uniq_genes2drop.csv'
-            f = os.path.join(output_directory, fname)
-            if toPrint:
-                logger.info('-save unique chromosomes ' +
-                            'from genes to drop in: '+f)
-            uniq_chr_per_gene.loc[:, genes2drop].to_csv(f, sep='\t',
-                                                        header=True,
-                                                        index=True)
+        #     fname = 'chr_table_uniq_genes2drop.csv'
+        #     f = os.path.join(output_directory, fname)
+        #     if toPrint:
+        #         logger.info('-save unique chromosomes ' +
+        #                     'from genes to drop in: '+f)
+        #     uniq_chr_per_gene.loc[:, genes2drop].to_csv(f, sep='\t',
+        #                                                 header=True,
+        #                                                 index=True)
 
         start_table.drop(genes2drop, axis=1, inplace=True)
         end_table.drop(genes2drop, axis=1, inplace=True)
@@ -280,7 +280,7 @@ def set_up_oncoscan(**set_up_kwargs):
                             int(gene_pos['order'][i]))
                            for i in range(gene_pos.shape[0]))
     #########################################
-    # ORDER the  table
+    # ORDER the table
     if toPrint:
         logger.info('Order  table according to genomic position')
     data = pd.DataFrame(table, columns=sorted(gene_order_dict,
@@ -307,79 +307,75 @@ def set_up_oncoscan(**set_up_kwargs):
             rank = mutCount[label].argsort().argsort().values
             pal = sns.cubehelix_palette(mutCount.shape[0],
                                         reverse=True, dark=.40, light=.95)
-            if True:
-                plt.figure(figsize=(10, 5))
-                g = sns.barplot(np.arange(mutCount.shape[0]), mutCount[label],
-                                palette=np.array(pal[::-1])[rank])
-                g.set_xticklabels(xticklabels, rotation=90)
-                g.set(xlabel='samples', ylabel='count')
-                g.set_title('Abundance of '+label+' per sample: ' +
-                            str((mutCount[label] <= 0).sum())+' empty samples')
-                if 'oncoscan' in label:
-                    plt.ylim([-1, oncoscan_count_max])
-                else:
-                    plt.ylim([-1, gene_count_max])
-                if saveReport:
-                    logger.info('Save figure')
-                    plt.savefig(os.path.join(output_directory, 'Fig_samples_' +
-                                label+'.png'),
-                                transparent=True, bbox_inches='tight',
-                                pad_inches=0.1, frameon=False)
-                if not saveReport:
-                    plt.show()
-                else:
-                    plt.close('all')
+            plt.figure(figsize=(10, 5))
+            g = sns.barplot(np.arange(mutCount.shape[0]), mutCount[label],
+                            palette=np.array(pal[::-1])[rank])
+            g.set_xticklabels(xticklabels, rotation=90)
+            g.set(xlabel='samples', ylabel='count')
+            g.set_title('Abundance of '+label+' per sample: ' +
+                        str((mutCount[label] <= 0).sum())+' empty samples')
+            if 'oncoscan' in label:
+                plt.ylim([-1, oncoscan_count_max])
+            else:
+                plt.ylim([-1, gene_count_max])
+            if saveReport:
+                logger.info('Save figure')
+                plt.savefig(os.path.join(output_directory, 'Fig_samples_' +
+                            label+'.png'),
+                            transparent=True, bbox_inches='tight',
+                            pad_inches=0.1, frameon=False)
+                plt.close("all")
+            else:
+                plt.show()
 
     #########################################
-    # SAVE table w/ and w/o positions
-    if saveReport:
-        # save table
-        fname = 'table_withPos.csv'
-        f = os.path.join(output_directory, fname)
-        if toPrint:
-            logger.info('-save table in: '+f)
-        table_withPos.to_csv(f, sep='\t', header=True, index=True)
+    # # SAVE table w/ and w/o positions
+    # if saveReport:
+    #     # save table
+    #     fname = 'table_withPos.csv'
+    #     f = os.path.join(output_directory, fname)
+    #     if toPrint:
+    #         logger.info('-save table in: '+f)
+    #     table_withPos.to_csv(f, sep='\t', header=True, index=True)
 
-    if saveReport:
-        # save table
-        fname = 'table.csv'
-        f = os.path.join(output_directory, fname)
-        if toPrint:
-            logger.info('-save table in: '+f)
-        table.to_csv(f, sep='\t', header=True, index=True)
+    # if saveReport:
+    #     # save table
+    #     fname = 'table.csv'
+    #     f = os.path.join(output_directory, fname)
+    #     if toPrint:
+    #         logger.info('-save table in: '+f)
+    #     table.to_csv(f, sep='\t', header=True, index=True)
 
-    if toPrint:
-        logger.info('Dimensions of table (samples,genes):'+str(table.shape))
+    # if toPrint:
+    #     logger.info('Dimensions of table (samples,genes):'+str(table.shape))
 
     #########################################
     # PLOT heatmap before gene ordering
     if toPrint:
         logger.info('Plot heatmap before gene ordering')
-    if True:
-        plt.figure(figsize=(20, 8))
-        patient_new_order = info_table.loc[table.index].sort_values(
-            by=sample_info_table_sortLabels_list)
-        yticklabels = list(zip(patient_new_order.index.values, info_table.loc[
-            patient_new_order.index, sample_info_table_sortLabels_list
-            ].values))
-        ax = sns.heatmap(table.fillna(0).loc[patient_new_order.index],
-                         vmin=vmin, vmax=vmax, xticklabels=False,
-                         yticklabels=yticklabels, cmap=cmap_custom, cbar=False)
-        cbar = ax.figure.colorbar(ax.collections[0])
-        if 'VCF' in editWith:
-            myTicks = [0, 1, 2, 3, 4, 5]
-            cbar.set_ticks(myTicks)
-            cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-        if saveReport:
-            if toPrint:
-                logger.info('Save heatmap')
-            plt.savefig(os.path.join(output_directory, 'Fig_heatmap.png'),
-                        transparent=True, bbox_inches='tight',
-                        pad_inches=0.1, frameon=False)
-        if not saveReport:
-            plt.show()
-        else:
-            plt.close('all')
+    plt.figure(figsize=(20, 8))
+    patient_new_order = info_table.loc[table.index].sort_values(
+        by=sample_info_table_sortLabels_list)
+    yticklabels = list(zip(patient_new_order.index.values, info_table.loc[
+        patient_new_order.index, sample_info_table_sortLabels_list
+        ].values))
+    ax = sns.heatmap(table.fillna(0).loc[patient_new_order.index],
+                     vmin=vmin, vmax=vmax, xticklabels=False,
+                     yticklabels=yticklabels, cmap=cmap_custom, cbar=False)
+    cbar = ax.figure.colorbar(ax.collections[0])
+    if 'VCF' in editWith:
+        myTicks = [0, 1, 2, 3, 4, 5]
+        cbar.set_ticks(myTicks)
+        cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
+    if saveReport:
+        if toPrint:
+            logger.info('Save heatmap')
+        plt.savefig(os.path.join(output_directory, 'Fig_heatmap.png'),
+                    transparent=True, bbox_inches='tight',
+                    pad_inches=0.1, frameon=False)
+        plt.close("all")
+    else:
+        plt.show()
 
     #########################################
     # CHECK if there are empty genes and remove them
@@ -398,40 +394,38 @@ def set_up_oncoscan(**set_up_kwargs):
         logger.info('Plot heatmap after gene ordering')
     xlabels, xpos = get_chr_ticks(gene_pos, data, id_col=gene_id_col,
                                   chr_col=chr_col)
-    if True:
-        plt.figure(figsize=(20, 8))
-        patient_new_order = info_table.loc[data.index].sort_values(
-            by=sample_info_table_sortLabels_list)
-        yticklabels = list(zip(patient_new_order.index.values, info_table.loc[
-            patient_new_order.index, sample_info_table_sortLabels_list
-            ].values))
-        ax = sns.heatmap(data.fillna(0).loc[patient_new_order.index],
-                         vmin=vmin, vmax=vmax, xticklabels=False,
-                         yticklabels=yticklabels, cmap=cmap_custom, cbar=False)
-        ax.set_xticks(xpos)
-        ax.set_xticklabels(xlabels, rotation=0)
-        cbar = ax.figure.colorbar(ax.collections[0])
-        myTicks = np.arange(vmin, vmax+2, 1)
-        cbar.set_ticks(myTicks)
-        if 'VCF' in editWith:
-            cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-        if saveReport:
-            if toPrint:
-                logger.info('Save heatmap')
-            plt.savefig(os.path.join(output_directory,
-                                     'Fig_heatmap_ordered.png'),
-                        transparent=True, bbox_inches='tight',
-                        pad_inches=0.1, frameon=False)
-        if not saveReport:
-            plt.show()
-        else:
-            plt.close('all')
+    plt.figure(figsize=(20, 8))
+    patient_new_order = info_table.loc[data.index].sort_values(
+        by=sample_info_table_sortLabels_list)
+    yticklabels = list(zip(patient_new_order.index.values, info_table.loc[
+        patient_new_order.index, sample_info_table_sortLabels_list
+        ].values))
+    ax = sns.heatmap(data.fillna(0).loc[patient_new_order.index],
+                     vmin=vmin, vmax=vmax, xticklabels=False,
+                     yticklabels=yticklabels, cmap=cmap_custom, cbar=False)
+    ax.set_xticks(xpos)
+    ax.set_xticklabels(xlabels, rotation=0)
+    cbar = ax.figure.colorbar(ax.collections[0])
+    myTicks = np.arange(vmin, vmax+2, 1)
+    cbar.set_ticks(myTicks)
+    if 'VCF' in editWith:
+        cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
+    if saveReport:
+        if toPrint:
+            logger.info('Save heatmap')
+        plt.savefig(os.path.join(output_directory,
+                                 'Fig_heatmap_ordered.png'),
+                    transparent=True, bbox_inches='tight',
+                    pad_inches=0.1, frameon=False)
+        plt.close("all")
+    else:
+        plt.show()
 
     #########################################
     # SAVE ordered table and gene pos info table
     if saveReport:
         # save files
-        fname = 'table_ordered.csv'
+        fname = 'data_processed.csv'
         f = os.path.join(output_directory, fname)
         if toPrint:
             logger.info('-save ordered table: '+f)

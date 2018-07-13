@@ -35,6 +35,11 @@ PLOT  heatmap after gene ordering and cleaning
 SAVE ordered table and gene pos info table:
 'table_ordered.csv'
 'genes_info.csv'
+
+$ set_up_endometrial withFilter=False reportName=set_up_endometrial
+    >> ./data/output/set_up_endometrial.log
+$ set_up_endometrial withFilter=True reportName=set_up_endometrial_FILT
+    >> ./data/output/set_up_endometrial_FILT.log
 """
 
 from gene_signatures.set_up_oncoscan import (

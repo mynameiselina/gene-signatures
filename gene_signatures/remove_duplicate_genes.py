@@ -8,7 +8,8 @@ from omics_processing.remove_duplicates import (
 from gene_signatures.core import (
     choose_samples,
     custom_div_cmap,
-    get_chr_ticks
+    get_chr_ticks,
+    distplot_breakYaxis
 )
 
 # basic imports
@@ -18,7 +19,9 @@ import pandas as pd
 import scipy as sp
 import math
 import logging
-
+from scipy.spatial.distance import (
+    pdist, squareform
+)
 # plotting imports
 import matplotlib
 import seaborn as sns
@@ -39,6 +42,8 @@ def remove_duplicate_genes(**set_up_kwargs):
     # function: choose_samples()
     select_samples_from = set_up_kwargs.get('select_samples_from', None)
     select_samples_which = set_up_kwargs.get('select_samples_which', None)
+    if select_samples_which is not None:
+        select_samples_which = int(select_samples_which)
     select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
                                                'TP53_mut5,FOXA1_mut5')
     select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
@@ -51,7 +56,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     reportName = set_up_kwargs.get('reportName', script_fname)
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
     input_fname = set_up_kwargs.get('input_fname',
-                                    'table_ordered.csv')
+                                    'data_processed.csv')
     gene_info_fname = set_up_kwargs.get('gene_info_fname',
                                         'gene_info_fname.csv')
     chr_col = set_up_kwargs.get('chr_col', 'chr_int')
@@ -150,7 +155,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     uniqdata, dupldict, _, _ = remove_andSave_duplicates(
         data.fillna(0), to_compute_euclidean_distances=compute_pdist,
         to_save_euclidean_distances=saveReport, to_save_output=saveReport,
-        output_filename=input_fname.rsplit('.')[0],
+        output_filename=input_fname.rsplit('.')[0]+'__'+select_samples_title,
         output_directory=output_directory)
     # get gene chrom position
     xlabels_uniq, xpos_uniq = get_chr_ticks(genes_positions_table, uniqdata,
@@ -167,15 +172,14 @@ def remove_duplicate_genes(**set_up_kwargs):
             plt.title("Copy number abundance in "+txt_label+" (uniq genes)")
             if saveReport:
                 logger.info('Save distplot')
-                plt.savefig(os.join.path(
+                plt.savefig(os.path.join(
                     output_directory, 'Fig_distplot_' +
                     select_samples_title+fext[i_data]+'.png'),
                     transparent=True, bbox_inches='tight',
                     pad_inches=0.1, frameon=False)
-            if not saveReport:
-                plt.show()
-            else:
                 plt.close("all")
+            else:
+                plt.show()
 
             # distplot break Y-axis
             _, uniq_count = np.unique(choose_data.fillna(0).values.flatten(),
@@ -198,10 +202,9 @@ def remove_duplicate_genes(**set_up_kwargs):
                     select_samples_title+fext[i_data]+'.png'),
                     transparent=True, bbox_inches='tight',
                     pad_inches=0.1, frameon=False)
-            if not saveReport:
-                plt.show()
-            else:
                 plt.close("all")
+            else:
+                plt.show()
 
         # Plot heatmap
         plt.figure(figsize=(20, 8))
@@ -221,10 +224,9 @@ def remove_duplicate_genes(**set_up_kwargs):
                 fext[i_data]+'.png'),
                 transparent=True, bbox_inches='tight',
                 pad_inches=0.1, frameon=False)
-        if not saveReport:
-            plt.show()
-        else:
             plt.close("all")
+        else:
+            plt.show()
 
         # Plot pairwise sample correlations
         data_cor = 1-squareform(pdist(choose_data.fillna(0), 'correlation'))
@@ -242,7 +244,6 @@ def remove_duplicate_genes(**set_up_kwargs):
                 fext[i_data]+'.png'),
                 transparent=True, bbox_inches='tight',
                 pad_inches=0.1, frameon=False)
-        if not saveReport:
-            plt.show()
-        else:
             plt.close("all")
+        else:
+            plt.show()
