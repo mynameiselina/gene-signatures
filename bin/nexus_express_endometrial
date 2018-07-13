@@ -70,6 +70,7 @@ set_up_kwargs_default = {
     'sample_info_table_index_colname': 'Oncoscan_ID',
     'sample_info_table_sortLabels': 'TP53_mut5,FOXA1_mut5',
     'plot_kwargs': plot_kwargs,
+    'toRemoveDupl': True,
 
     # params for diff analysis
     'min_diff_thres': 0.25,

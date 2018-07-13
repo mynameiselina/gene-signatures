@@ -97,6 +97,7 @@ def nexus_express(**set_up_kwargs):
                           'Oncoscan_ID')
     data_uniq_fname = set_up_kwargs.get('data_uniq_fname',
                                         'data_processed__uniq')
+    toRemoveDupl = set_up_kwargs.get('toRemoveDupl', True)
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
@@ -201,7 +202,7 @@ def nexus_express(**set_up_kwargs):
     # plot CNV frequencies of all samples
     data_ampl, data_del = _get_ampl_del_from_data(data)
     _plot_oncoscan_frequency_plot(data_ampl, data_del,
-                                  clinical_label, class_labels,
+                                  select_samples_title, '',
                                   gene_info_fname, xlabels, xpos,
                                   saveReport, img_ext, output_directory)
 
@@ -214,32 +215,41 @@ def nexus_express(**set_up_kwargs):
         data_ampl_wDupl, data_del_wDupl = data_ampl.copy(), data_del.copy()
 
         # load data with uniq genes (this will be the default data from now on)
-        data = pd.read_csv(os.path.join(dupl_genes_directory,
-                                        data_uniq_fname+'.txt'),
-                           sep='\t', header=0, index_col=0)
-        data = data.fillna(0)
+        fpath = os.path.join(dupl_genes_directory,
+                             data_uniq_fname+'.txt')
+        if not os.path.exists(fpath):
+            logger.warning('The dupl_genes_directory does not exist, ' +
+                           'the analysis will run on the processed data ' +
+                           'only!\ndupl_genes_directory:\n' +
+                           dupl_genes_directory)
+            toRemoveDupl = False
+        else:
+            data = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
+            data = data.fillna(0)
 
-        # keep the same samples as before
-        data = data.loc[info_table.index, :].copy()
+            # keep the same samples as before
+            data = data.loc[info_table.index, :].copy()
 
-        # get gene chrom position
-        if gene_info_fname is not None:
-            xlabels, xpos = get_chr_ticks(genes_positions_table,
-                                          data, id_col='gene',
-                                          chr_col=chr_col)
+            # get gene chrom position
+            if gene_info_fname is not None:
+                xlabels, xpos = get_chr_ticks(genes_positions_table,
+                                              data, id_col='gene',
+                                              chr_col=chr_col)
 
-        # plot CNV frequencies of all samples with uniq genes
-        data_ampl, data_del = _get_ampl_del_from_data(data)
-        _plot_oncoscan_frequency_plot(data_ampl, data_del,
-                                      clinical_label, class_labels,
-                                      gene_info_fname, xlabels, xpos,
-                                      saveReport, img_ext, output_directory)
+            # plot CNV frequencies of all samples with uniq genes
+            data_ampl, data_del = _get_ampl_del_from_data(data)
+            _plot_oncoscan_frequency_plot(data_ampl, data_del,
+                                          select_samples_title,
+                                          '_uniq', gene_info_fname,
+                                          xlabels, xpos,
+                                          saveReport, img_ext,
+                                          output_directory)
 
-        # load duplicate genes dictionary
-        #  we will need that for the table we will save later
-        fpath = os.path.join(dupl_genes_directory, data_uniq_fname+'.json')
-        with open(fpath, 'r') as fp:
-            dupl_genes_dict = json.load(fp)
+            # load duplicate genes dictionary
+            #  we will need that for the table we will save later
+            fpath = os.path.join(dupl_genes_directory, data_uniq_fname+'.json')
+            with open(fpath, 'r') as fp:
+                dupl_genes_dict = json.load(fp)
 
     # separate patient groups and plot their CNV frequencies
     group0 = data.loc[info_table.index[
@@ -249,13 +259,13 @@ def nexus_express(**set_up_kwargs):
 
     group0_ampl, group0_del = _get_ampl_del_from_data(group0)
     _plot_oncoscan_frequency_plot(group0_ampl, group0_del,
-                                  clinical_label, class_labels,
+                                  select_samples_title, class_labels[0],
                                   gene_info_fname, xlabels, xpos,
                                   saveReport, img_ext, output_directory)
 
     group1_ampl, group1_del = _get_ampl_del_from_data(group1)
     _plot_oncoscan_frequency_plot(group1_ampl, group1_del,
-                                  clinical_label, class_labels,
+                                  select_samples_title, class_labels[1],
                                   gene_info_fname, xlabels, xpos,
                                   saveReport, img_ext, output_directory)
 
@@ -269,7 +279,7 @@ def nexus_express(**set_up_kwargs):
         group0_ampl_wDupl, group0_del_wDupl = \
             _get_ampl_del_from_data(group0_wDupl)
         _plot_oncoscan_frequency_plot(group0_ampl_wDupl, group0_del_wDupl,
-                                      clinical_label, class_labels,
+                                      select_samples_title, class_labels[0],
                                       gene_info_fname, xlabels_wDupl,
                                       xpos_wDupl, saveReport, img_ext,
                                       output_directory)
@@ -277,7 +287,7 @@ def nexus_express(**set_up_kwargs):
         group1_ampl_wDupl, group1_del_wDupl = \
             _get_ampl_del_from_data(group1_wDupl)
         _plot_oncoscan_frequency_plot(group1_ampl_wDupl, group1_del_wDupl,
-                                      clinical_label, class_labels,
+                                      select_samples_title, class_labels[1],
                                       gene_info_fname, xlabels_wDupl,
                                       xpos_wDupl, saveReport, img_ext,
                                       output_directory)
@@ -287,6 +297,7 @@ def nexus_express(**set_up_kwargs):
     # after mutliple test correction (multtest_method) and
     # absolute change higher than the defined threshold (min_diff_thres)
     mytitle = select_samples_title+': '+class_labels[0]+' vs. '+class_labels[1]
+    with_perc = 100
     group0_ampl_new, group1_ampl_new, group0_del_new, group1_del_new, \
         pvals, pvals_corrected, pvals_reject, gained, deleted = \
         get_NexusExpress_diff_analysis(
@@ -424,14 +435,18 @@ def nexus_express(**set_up_kwargs):
         # plot CNV frequencies OF SELECTED GENES for each group in comparison
         if ((group0_ampl_new != 0).any() or (group0_del_new != 0).any()):
             _plot_oncoscan_frequency_plot(group0_ampl_new, group0_del_new,
-                                          clinical_label, class_labels,
+                                          select_samples_title,
+                                          class_labels[0],
                                           gene_info_fname, xlabels, xpos,
-                                          saveReport, img_ext, output_directory)
+                                          saveReport, img_ext,
+                                          output_directory)
         if ((group1_ampl_new != 0).any() or (group1_del_new != 0).any()):
             _plot_oncoscan_frequency_plot(group1_ampl_new, group1_del_new,
-                                          clinical_label, class_labels,
+                                          select_samples_title,
+                                          class_labels[1],
                                           gene_info_fname, xlabels, xpos,
-                                          saveReport, img_ext, output_directory)
+                                          saveReport, img_ext,
+                                          output_directory)
 
         if toRemoveDupl:
             # plot with the duplicate genes too
