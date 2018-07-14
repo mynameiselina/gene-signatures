@@ -35,29 +35,29 @@ logger = logging.getLogger(__name__)
 
 
 def _run_classification(dat, dat_target):
-	model = linear_model.LogisticRegression(penalty = 'l1', C = 1)
-	estimators = []
-	correct = 0
-	wrong = 0
-	all_coefs = np.zeros(dat.shape)
-	for choose_sample in range(dat.shape[0]):
-		X = dat.drop(dat.index[choose_sample:choose_sample+1])
-		y = dat_target.drop(dat.index[choose_sample:choose_sample+1])
-		one_sample = dat.iloc[choose_sample:choose_sample+1,:]
-		y_real = dat_target.iloc[choose_sample:choose_sample+1]
+    model = linear_model.LogisticRegression(penalty = 'l1', C = 1)
+    estimators = []
+    correct = 0
+    wrong = 0
+    all_coefs = np.zeros(dat.shape)
+    for choose_sample in range(dat.shape[0]):
+        X = dat.drop(dat.index[choose_sample:choose_sample+1])
+        y = dat_target.drop(dat.index[choose_sample:choose_sample+1])
+        one_sample = dat.iloc[choose_sample:choose_sample+1,:]
+        y_real = dat_target.iloc[choose_sample:choose_sample+1]
 
-		model.fit(X, y)
+        model.fit(X, y)
 
-		# plt.plot(model.coef_[0])
-		all_coefs[choose_sample:choose_sample+1, :] = model.coef_[0]
-		# plt.scatter(range(X.shape[1]),model.coef_[0], color='k')
+        # plt.plot(model.coef_[0])
+        all_coefs[choose_sample:choose_sample+1, :] = model.coef_[0]
+        # plt.scatter(range(X.shape[1]),model.coef_[0], color='k')
 
-		y_pred = model.predict(one_sample)
+        y_pred = model.predict(one_sample)
 
-		if (y_pred[0] == y_real.values[0]):
-			correct = correct + 1
-		else:
-			wrong = wrong + 1
+        if (y_pred[0] == y_real.values[0]):
+            correct = correct + 1
+        else:
+            wrong = wrong + 1
 
 
-	return all_coefs, (correct,wrong)
+    return all_coefs, (correct,wrong)

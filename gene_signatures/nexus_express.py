@@ -55,9 +55,10 @@ def _plot_oncoscan_frequency_plot(data_ampl, data_del,
                       mytitle=select_samples_title+': '+label)
 
     if saveReport:
-        print('Save FreqPlot as '+img_ext)
-        plt.savefig(os.path.join(output_directory, 'Fig_Freq_' +
-                    select_samples_title+'_'+label+img_ext),
+        fpath = os.path.join(output_directory, 'Fig_Freq_' +
+                             select_samples_title+'_'+label+img_ext)
+        logger.info('Save FreqPlot as '+img_ext+' in:\n'+fpath)
+        plt.savefig(fpath,
                     transparent=True, bbox_inches='tight',
                     pad_inches=0.1, frameon=False)
         plt.close("all")
@@ -80,8 +81,14 @@ def nexus_express(**set_up_kwargs):
     class_values = [0, 1]  # WT:0, MUT:1
 
     # initialize script params
-    saveReport = set_up_kwargs.get('saveReport', False)
-    toPrint = set_up_kwargs.get('toPrint', False)
+    saveReport = parse_arg_type(
+        set_up_kwargs.get('saveReport', False),
+        bool
+    )
+    toPrint = parse_arg_type(
+        set_up_kwargs.get('toPrint', False),
+        bool
+    )
     reportName = set_up_kwargs.get('reportName', script_fname)
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
     input_fname = set_up_kwargs.get('input_fname',
@@ -95,26 +102,49 @@ def nexus_express(**set_up_kwargs):
     sample_info_table_index_colname = \
         set_up_kwargs.get('sample_info_table_index_colname',
                           'Oncoscan_ID')
-    data_uniq_fname = set_up_kwargs.get('data_uniq_fname',
-                                        'data_processed')
-    data_uniq_fname = data_uniq_fname+'__'+select_samples_title+'__uniq'
-    toRemoveDupl = set_up_kwargs.get('toRemoveDupl', True)
+    data_uniq_fname = input_fname.rsplit('.')[0]+'__' + \
+        select_samples_title+'__uniq'
+    toRemoveDupl = parse_arg_type(
+        set_up_kwargs.get('toRemoveDupl', True),
+        bool
+    )
 
     # params for diff analysis
-    min_diff_thres = set_up_kwargs.get('min_diff_thres', 0.25)
-    min_diff_thres = float(min_diff_thres)
+    min_diff_thres = parse_arg_type(
+        set_up_kwargs.get('min_diff_thres', 0.25),
+        float
+    )
+    multtest_alpha = parse_arg_type(
+        set_up_kwargs.get('multtest_alpha', 0.05),
+        float
+    )
+    with_perc = parse_arg_type(
+        set_up_kwargs.get('with_perc', 100),
+        int
+    )
     multtest_method = set_up_kwargs.get('multtest_method', 'fdr_bh')
-    multtest_alpha = set_up_kwargs.get('multtest_alpha', 0.05)
-    multtest_alpha = float(multtest_alpha)
-    with_perc = set_up_kwargs.get('with_perc', 100)
-    with_perc = int(with_perc)
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
     cmap_custom = plot_kwargs.get('cmap_custom', None)
-    vmin = plot_kwargs.get('vmin', None)
-    vmax = plot_kwargs.get('vmax', None)
-    highRes = plot_kwargs.get('highRes', False)
+    vmin = parse_arg_type(
+        plot_kwargs.get('vmin', None),
+        int
+    )
+    vmax = parse_arg_type(
+        plot_kwargs.get('vmax', None),
+        int
+    )
+    if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
+        custom_div_cmap_arg = abs(vmin)+abs(vmax)
+        if (vmin < 0) or (vmax < 0):
+            custom_div_cmap_arg = custom_div_cmap_arg + 1
+        cmap_custom = custom_div_cmap(custom_div_cmap_arg)
+        
+    highRes = parse_arg_type(
+        plot_kwargs.get('highRes', False),
+        bool
+    )
     if highRes:
         img_ext = '.pdf'
     else:
@@ -188,9 +218,9 @@ def nexus_express(**set_up_kwargs):
 
     # select the samples for the chosen comparison (e.g. all, only TP53wt, etc)
     logger.info('select_samples_from: '+str(select_samples_from) +
-                'select_samples_which: '+str(select_samples_which) +
-                'select_samples_sort_by: '+str(select_samples_sort_by) +
-                'select_samples_title: '+str(select_samples_title))
+                ', select_samples_which: '+str(select_samples_which) +
+                ', select_samples_sort_by: '+str(select_samples_sort_by) +
+                ', select_samples_title: '+str(select_samples_title))
 
     ids_tmp = choose_samples(info_table.reset_index(),
                              sample_info_table_index_colname,
@@ -235,7 +265,7 @@ def nexus_express(**set_up_kwargs):
                            fpath)
             toRemoveDupl = False
         else:
-            extra_label = 'uniq'
+            extra_label = '_uniq'
             data = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
             data = data.fillna(0)
 
@@ -272,14 +302,14 @@ def nexus_express(**set_up_kwargs):
     group0_ampl, group0_del = _get_ampl_del_from_data(group0)
     _plot_oncoscan_frequency_plot(group0_ampl, group0_del,
                                   select_samples_title, class_labels[0] +
-                                  '_'+extra_label,
+                                  extra_label,
                                   gene_info_fname, xlabels, xpos,
                                   saveReport, img_ext, output_directory)
 
     group1_ampl, group1_del = _get_ampl_del_from_data(group1)
     _plot_oncoscan_frequency_plot(group1_ampl, group1_del,
                                   select_samples_title, class_labels[1] +
-                                  '_'+extra_label,
+                                  extra_label,
                                   gene_info_fname, xlabels, xpos,
                                   saveReport, img_ext, output_directory)
 
@@ -425,21 +455,23 @@ def nexus_express(**set_up_kwargs):
     # save tables
     if saveReport:
         fname = 'diff_genes_'+clinical_label+'.csv'
-        f = os.path.join(output_directory, fname)
-        print("-save all diff genes in : ", f)
-        diff_genes.to_csv(f, sep='\t', header=True, index=True)
+        fpath = os.path.join(output_directory, fname)
+        logger.info("-save all diff genes in :\n"+fpath)
+        diff_genes.to_csv(fpath, sep='\t', header=True, index=True)
 
         if diff_genes_selected.shape[0] > 0:
             # save as tab-delimited csv file
             fname = 'diff_genes_selected_'+clinical_label+'.csv'
-            f = os.path.join(output_directory, fname)
-            print("-save selected diff genes for", mytitle, "in : ", f)
-            diff_genes_selected.to_csv(f, sep='\t', header=True, index=True)
+            fpath = os.path.join(output_directory, fname)
+            logger.info("-save selected diff genes for " +
+                        mytitle+" in :\n"+fpath)
+            diff_genes_selected.to_csv(fpath, sep='\t', 
+                                       header=True, index=True)
 
             # save also as excel file
             new_fname = pdist_fname+'__diff_genes_selected.xlsx'
             f = os.path.join(output_directory, new_fname)
-            print('-save csv file as excel too')
+            logger.info('-save csv file as excel too')
             writer = pd.ExcelWriter(f)
             diff_genes_selected.to_excel(writer, sheet_name=pdist_fname)
             writer.save()
@@ -448,14 +480,14 @@ def nexus_express(**set_up_kwargs):
     if ((group0_ampl_new != 0).any() or (group0_del_new != 0).any()):
         _plot_oncoscan_frequency_plot(group0_ampl_new, group0_del_new,
                                       select_samples_title,
-                                      class_labels[0]+'_'+extra_label,
+                                      class_labels[0]+extra_label,
                                       gene_info_fname, xlabels, xpos,
                                       saveReport, img_ext,
                                       output_directory)
     if ((group1_ampl_new != 0).any() or (group1_del_new != 0).any()):
         _plot_oncoscan_frequency_plot(group1_ampl_new, group1_del_new,
                                       select_samples_title,
-                                      class_labels[1]+'_'+extra_label,
+                                      class_labels[1]+extra_label,
                                       gene_info_fname, xlabels, xpos,
                                       saveReport, img_ext,
                                       output_directory)
@@ -501,10 +533,12 @@ def nexus_express(**set_up_kwargs):
                          cbar_kws={'ticks': np.arange(-5, 5)})
         plt.title(mytitle)
         if saveReport:
-            print('Save Heatmap of selected features as '+img_ext)
-            plt.savefig(os.path.join(output_directory, 'Fig_Heatmap_' +
-                        select_samples_title +
-                        '_'+class_labels[1]+'_'+extra_label+img_ext),
+            fpath = os.path.join(output_directory, 'Fig_Heatmap_' +
+                                 select_samples_title +
+                                 '_'+class_labels[1]+extra_label+img_ext)
+            logger.info('Save Heatmap of selected features as '+img_ext +
+                        ' in:\n'+fpath)
+            plt.savefig(fpath,
                         transparent=True, bbox_inches='tight',
                         pad_inches=0.1, frameon=False)
             plt.close("all")
@@ -525,13 +559,14 @@ def nexus_express(**set_up_kwargs):
                              cbar_kws={'ticks': np.arange(-5, 5)})
             plt.title(mytitle)
             if saveReport:
-                print('Save Heatmap of selected features as '+img_ext)
-                plt.savefig(
-                    os.path.join(output_directory, 'Fig_Heatmap_' +
-                                 select_samples_title+'_'+class_labels[1] +
-                                 '_wDupl'+img_ext),
-                    transparent=True, bbox_inches='tight',
-                    pad_inches=0.1, frameon=False)
+                fpath = os.path.join(output_directory, 'Fig_Heatmap_' +
+                                     select_samples_title+'_'+class_labels[1] +
+                                     '_wDupl'+img_ext)
+                logger.info('Save Heatmap of selected features as '+img_ext +
+                            ' in:\n'+fpath)
+                plt.savefig(fpath,
+                            transparent=True, bbox_inches='tight',
+                            pad_inches=0.1, frameon=False)
                 plt.close("all")
             else:
                 plt.show()

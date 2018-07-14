@@ -18,6 +18,16 @@ from natsort import natsorted
 logger = logging.getLogger(__name__)
 
 
+def parse_arg_type(arg, type):
+    if arg is not None:
+        if not isinstance(arg, type):
+            if type == bool:
+                arg = bool(strtobool(arg))
+            else:
+                arg = type(arg)
+    return arg
+
+
 def custom_div_cmap(numcolors=11, name='custom_div_cmap',
                     mincol='red', midcol='white', maxcol='blue'):
     # """ Create a custom diverging colormap with three colors
@@ -687,52 +697,42 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
 
 def filter_oncoscan(onesample, toPrint=False, **kwargs):
 
-    if 'col_pValue' not in kwargs.keys():
+    col_pValue = kwargs.get('col_pValue', None)
+    if col_pValue is None:
         logger.error('col_pValue kwarg is missing!')
         raise
-    if 'col_probeMedian' not in kwargs.keys():
+    col_probeMedian = kwargs.get('col_probeMedian', None)
+    if col_probeMedian is None:
         logger.error('col_probeMedian kwarg is missing!')
         raise
-    if 'col_probeCount' not in kwargs.keys():
+    col_probeCount = kwargs.get('col_probeCount', None)
+    if col_probeCount is None:
         logger.error('col_probeCount kwarg is missing!')
         raise
 
-    if 'pValue_thres' in kwargs.keys():
-        pValue_thres = kwargs['pValue_thres']
-    else:
-        pValue_thres = 0.01
-    if 'probeMedian_thres' in kwargs.keys():
-        probeMedian_thres = kwargs['probeMedian_thres']
-    else:
-        probeMedian_thres = 0.3
-    if 'probeCount_thres' in kwargs.keys():
-        probeCount_thres = kwargs['probeCount_thres']
-    else:
-        probeCount_thres = 20
-
-    if 'remove_missing_pValues' in kwargs.keys():
-        remove_missing_pValues = kwargs['remove_missing_pValues']
-    else:
-        remove_missing_pValues = False
+    pValue_thres = kwargs.get('pValue_thres', 0.01)
+    probeMedian_thres = kwargs.get('probeMedian_thres', 0.3)
+    probeCount_thres = kwargs.get('probeCount_thres', 20)
+    remove_missing_pValues = kwargs.get('remove_missing_pValues', False)
 
     dropped_rows = pd.DataFrame([], columns=np.append(onesample.columns,
                                 'reason2drop'))
 
     # keep the rows we will drop
     if remove_missing_pValues:
-        r2drop = onesample.index[onesample[kwargs['col_pValue']].isnull()]
+        r2drop = onesample.index[onesample[col_pValue].isnull()]
         if toPrint:
             logger.info('Filtering out '+str(r2drop.shape[0]) +
                         ' events because the p-Value is missing')
         dropped_rows = dropped_rows.append(onesample.loc[r2drop, :],
                                            sort=False)
         dropped_rows.loc[r2drop, 'reason2drop'] = \
-            'filter_'+kwargs['col_pValue']+'_missing'
+            'filter_'+col_pValue+'_missing'
         # drop the rows
         onesample = onesample.drop(r2drop, axis=0)
 
     # keep the rows we will drop
-    r2drop = onesample.index[onesample[kwargs['col_pValue']] >
+    r2drop = onesample.index[onesample[col_pValue] >
                              kwargs['pValue_thres']]
     if toPrint:
         logger.info('Filtering out ' +
@@ -740,7 +740,7 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
                     str(kwargs['pValue_thres']))
     dropped_rows = dropped_rows.append(onesample.loc[r2drop, :], sort=False)
     dropped_rows.loc[r2drop, 'reason2drop'] = \
-        'filter_'+kwargs['col_pValue']+'_'+str(kwargs['pValue_thres'])
+        'filter_'+col_pValue+'_'+str(kwargs['pValue_thres'])
     # drop the rows
     onesample = onesample.drop(r2drop, axis=0)
 
@@ -783,15 +783,24 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
 
 def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                                   toPrint=False, **kwargs):
-
-    if 'comment' in kwargs.keys():
-        comment = kwargs['comment']
-    else:
-        comment = None
-    if 'names' in kwargs.keys():
-        names = kwargs['names']
-    else:
-        names = None
+    withFilter = parse_arg_type(
+        kwargs.get('withFilter', False),
+        bool
+    )
+    withPreprocess = parse_arg_type(
+        kwargs.get('withPreprocess', True),
+        bool
+    )
+    removeLOH = parse_arg_type(
+        kwargs.get('removeLOH', True),
+        bool
+    )
+    comment = kwargs.get('comment', None)
+    names = kwargs.get('names', None)
+    filt_kwargs = kwargs.get('filt_kwargs', {})
+    preproc_kwargs = kwargs.get('preproc_kwargs', {})
+    mergeHow = kwargs.get('mergeHow', 'maxAll')
+    function_dict = kwargs.get('function_dict', {})
 
     # oncoscan load files from each patient
     data_or = dict()
@@ -803,10 +812,8 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
     for fpath in fpaths:
         allsamples = pd.read_csv(fpath, sep='\t', header=0,
                                  comment=comment, names=names)
-        if 'samples_colname' in kwargs.keys():
-            samples_colname = kwargs['samples_colname']
-        else:
-            samples_colname = allsamples.index.values
+        samples_colname = kwargs.get('samples_colname', 
+                                     allsamples.index.values)
 
         dropped_rows_filt = pd.DataFrame()
         dropped_rows_map = pd.DataFrame()
@@ -824,11 +831,11 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                             ' oncoscan events for patient ' +
                             str(patient_id))
 
-            if 'filt_kwargs' in kwargs.keys() and kwargs['withFilter']:
+            if bool(filt_kwargs) and withFilter:
                 # - pre-process sample - #
                 onesample, dropped_rows_filt_pat = \
                     filter_oncoscan(onesample, toPrint=toPrint,
-                                    **kwargs['filt_kwargs'])
+                                    **filt_kwargs)
                 if dropped_rows_filt_pat.shape[0] > 0:
                     dropped_rows_filt = pd.concat([dropped_rows_filt,
                                                    dropped_rows_filt_pat],
@@ -846,10 +853,10 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                                     ' oncoscan events for patient ' +
                                     str(patient_id)+' after filtering')
 
-            if 'preproc_kwargs' in kwargs.keys() and kwargs['withPreprocess']:
+            if bool(preproc_kwargs) and withPreprocess:
                 # - pre-process sample - #
                 onesample = preprocess_oncoscan(onesample, toPrint=toPrint,
-                                                **kwargs['preproc_kwargs'])
+                                                **preproc_kwargs)
                 info_table.loc[patient_id,
                                'genes_with_CNV'] = onesample.shape[0]
                 if onesample.empty:
@@ -870,9 +877,9 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                 onesample, dropped_rows_map_pat = \
                     map_oncoscan_to_genes(onesample, patient_id,
                                           toPrint=toPrint,
-                                          mergeHow=kwargs['mergeHow'],
-                                          removeLOH=kwargs['removeLOH'],
-                                          function_dict=kwargs['function_dict']
+                                          mergeHow=mergeHow,
+                                          removeLOH=removeLOH,
+                                          function_dict=function_dict
                                           )
                 info_table.loc[patient_id,
                                'genes_with_CNV_merged'] = onesample.shape[0]

@@ -9,7 +9,8 @@ from gene_signatures.core import (
     choose_samples,
     custom_div_cmap,
     get_chr_ticks,
-    distplot_breakYaxis
+    distplot_breakYaxis,
+    parse_arg_type
 )
 
 # basic imports
@@ -41,9 +42,10 @@ def remove_duplicate_genes(**set_up_kwargs):
     # chose sample set from data
     # function: choose_samples()
     select_samples_from = set_up_kwargs.get('select_samples_from', None)
-    select_samples_which = set_up_kwargs.get('select_samples_which', None)
-    if select_samples_which is not None:
-        select_samples_which = int(select_samples_which)
+    select_samples_which = parse_arg_type(
+        set_up_kwargs.get('select_samples_which', None),
+        int
+    )
     select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
                                                'TP53_mut5,FOXA1_mut5')
     select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
@@ -51,8 +53,14 @@ def remove_duplicate_genes(**set_up_kwargs):
                                              'select_all')
 
     # initialize script params
-    saveReport = set_up_kwargs.get('saveReport', False)
-    toPrint = set_up_kwargs.get('toPrint', False)
+    saveReport = parse_arg_type(
+        set_up_kwargs.get('saveReport', False),
+        bool
+    )
+    toPrint = parse_arg_type(
+        set_up_kwargs.get('toPrint', False),
+        bool
+    )
     reportName = set_up_kwargs.get('reportName', script_fname)
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
     input_fname = set_up_kwargs.get('input_fname',
@@ -70,8 +78,19 @@ def remove_duplicate_genes(**set_up_kwargs):
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
     cmap_custom = plot_kwargs.get('cmap_custom', None)
-    vmin = plot_kwargs.get('vmin', None)
-    vmax = plot_kwargs.get('vmax', None)
+    vmin = parse_arg_type(
+        plot_kwargs.get('vmin', None),
+        int
+    )
+    vmax = parse_arg_type(
+        plot_kwargs.get('vmax', None),
+        int
+    )
+    if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
+        custom_div_cmap_arg = abs(vmin)+abs(vmax)
+        if (vmin < 0) or (vmax < 0):
+            custom_div_cmap_arg = custom_div_cmap_arg + 1
+        cmap_custom = custom_div_cmap(custom_div_cmap_arg)
 
     # initialize directories
     MainDataDir = os.path.join(script_path, '..', 'data')
@@ -95,7 +114,10 @@ def remove_duplicate_genes(**set_up_kwargs):
     )
 
     # pairwise distances params
-    compute_pdist = set_up_kwargs.get('compute_pdist', False)
+    compute_pdist = parse_arg_type(
+        set_up_kwargs.get('compute_pdist', False),
+        bool
+    )
     pdist_fname = 'data_'+select_samples_title+'__genes_pdist.h5'
     pdist_fpath = os.path.join(input_directory, pdist_fname)
     if not os.path.exists(pdist_fpath):

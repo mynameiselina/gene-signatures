@@ -1,12 +1,13 @@
 # custom imports
 from omics_processing.io import (
     set_directory, load_clinical
-    )
+)
 from gene_signatures.core import (
     load_and_process_summary_file,
     custom_div_cmap,
-    get_chr_ticks
-    )
+    get_chr_ticks,
+    parse_arg_type
+)
 
 # basic imports
 import os
@@ -17,6 +18,7 @@ import json
 import scipy as sp
 from natsort import natsorted, index_natsorted
 import logging
+from distutils.util import strtobool
 
 # plotting imports
 import matplotlib
@@ -39,12 +41,24 @@ def _uniq_chr_per_gene(x, n):
 
 def set_up_oncoscan(**set_up_kwargs):
     # initialize script params
-    saveReport = set_up_kwargs.get('saveReport', False)
-    toPrint = set_up_kwargs.get('toPrint', False)
+    saveReport = parse_arg_type(
+        set_up_kwargs.get('saveReport', False),
+        bool
+    )
+    toPrint = parse_arg_type(
+        set_up_kwargs.get('toPrint', False),
+        bool
+    )
     reportName = set_up_kwargs.get('reportName', script_fname)
     editWith = set_up_kwargs.get('editWith', 'Oncoscan')
-    withFilter = set_up_kwargs.get('withFilter', False)
-    withPreprocess = set_up_kwargs.get('withPreprocess', True)
+    withFilter = parse_arg_type(
+        set_up_kwargs.get('withFilter', False),
+        bool
+    )
+    withPreprocess = parse_arg_type(
+        set_up_kwargs.get('withPreprocess', True),
+        bool
+    )
     filt_kwargs = set_up_kwargs.get('filt_kwargs', {})
     preproc_kwargs = set_up_kwargs.get('preproc_kwargs', {})
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
