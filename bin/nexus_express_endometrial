@@ -20,6 +20,19 @@ run Nexus Express method to select differentially mutated genes
 plot CNV frequencies OF SELECTED GENES for each group in comparison
 plot heatmap of CNVs OF SELECTED GENES (sorted by group)
 [if with remove_duplicate_genes, produce plot w/ and w/o duplicates]
+
+# run for un-filtered data
+nexus_express_endometrial reportName='nexus_express' >> ./data/output/set_up_endometrial/nexus_express__select_all.log
+nexus_express_endometrial reportName='nexus_express' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial/nexus_express__select_all_sortFOXA1.log
+nexus_express_endometrial reportName='nexus_express' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/nexus_express__select_TP53wt.log
+nexus_express_endometrial reportName='nexus_express' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/nexus_express__select_TP53mut.log
+
+# run for filtered data
+nexus_express_endometrial reportName='nexus_express' input_directory='output,set_up_endometrial_FILT' >> ./data/output/set_up_endometrial_FILT/nexus_express__select_all.log
+nexus_express_endometrial reportName='nexus_express' input_directory='output,set_up_endometrial_FILT' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial_FILT/nexus_express__select_all_sortFOXA1.log
+nexus_express_endometrial reportName='nexus_express' input_directory='output,set_up_endometrial_FILT' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/nexus_express__select_TP53wt.log
+nexus_express_endometrial reportName='nexus_express' input_directory='output,set_up_endometrial_FILT' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/nexus_express__select_TP53mut.log
+
 """
 from omics_processing.io import (
     set_directory
@@ -82,9 +95,8 @@ set_up_kwargs_default = {
     'input_directory': 'output,set_up_endometrial',
     'input_fname': 'data_processed.csv',
     'sample_info_directory': 'input',
-    'dupl_genes_directory': 'output,set_up_endometrial,remove_dupl_genes',
-    # 'data_uniq_fname': 'data_processed__uniq',
-    'output_directory': 'output,set_up_endometrial',
+    'dupl_genes_directory': 'remove_dupl_genes',
+    'output_directory': None,
     'DEBUG': True
 }
 

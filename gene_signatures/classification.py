@@ -21,6 +21,7 @@ from natsort import natsorted, index_natsorted
 import math
 import logging
 from sklearn import linear_model
+from distutils.util import strtobool
 
 # plotting imports
 import matplotlib

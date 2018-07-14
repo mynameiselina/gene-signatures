@@ -10,7 +10,8 @@ from gene_signatures.core import (
     get_chr_ticks,
     choose_samples,
     plot_aggr_mut,
-    get_NexusExpress_diff_analysis
+    get_NexusExpress_diff_analysis,
+    parse_arg_type
 )
 
 # basic imports
@@ -22,6 +23,7 @@ from scipy.spatial.distance import pdist, squareform
 from natsort import natsorted, index_natsorted
 import math
 import logging
+from distutils.util import strtobool
 
 # plotting imports
 import matplotlib
@@ -168,18 +170,20 @@ def nexus_express(**set_up_kwargs):
 
     # dupl_genes input
     dupl_genes_directory = set_up_kwargs.get('dupl_genes_directory')
-    if ',' in dupl_genes_directory:
-        dupl_genes_directory = os.path.join(
-            *dupl_genes_directory.rsplit(','))
-    dupl_genes_directory = os.path.join(MainDataDir, dupl_genes_directory)
+    dupl_genes_directory = os.path.join(input_directory, dupl_genes_directory)
 
     # data output
     output_directory = set_up_kwargs.get('output_directory')
-    if ',' in output_directory:
-        output_directory = os.path.join(*output_directory.rsplit(','))
-    output_directory = set_directory(
-        os.path.join(MainDataDir, output_directory, reportName)
-    )
+    if output_directory is None:
+        output_directory = set_directory(
+            os.path.join(input_directory, reportName)
+        )
+    else:
+        if ',' in output_directory:
+            output_directory = os.path.join(*output_directory.rsplit(','))
+        output_directory = set_directory(
+            os.path.join(MainDataDir, output_directory, reportName)
+        )
 
     # load info table of samples
     if toPrint:
@@ -454,14 +458,14 @@ def nexus_express(**set_up_kwargs):
 
     # save tables
     if saveReport:
-        fname = 'diff_genes_'+clinical_label+'.csv'
+        fname = 'diff_genes_'+select_samples_title+'.csv'
         fpath = os.path.join(output_directory, fname)
         logger.info("-save all diff genes in :\n"+fpath)
         diff_genes.to_csv(fpath, sep='\t', header=True, index=True)
 
         if diff_genes_selected.shape[0] > 0:
             # save as tab-delimited csv file
-            fname = 'diff_genes_selected_'+clinical_label+'.csv'
+            fname = 'diff_genes_selected_'+select_samples_title+'.csv'
             fpath = os.path.join(output_directory, fname)
             logger.info("-save selected diff genes for " +
                         mytitle+" in :\n"+fpath)
@@ -469,11 +473,11 @@ def nexus_express(**set_up_kwargs):
                                        header=True, index=True)
 
             # save also as excel file
-            new_fname = pdist_fname+'__diff_genes_selected.xlsx'
-            f = os.path.join(output_directory, new_fname)
+            fname = 'diff_genes_selected_'+select_samples_title+'.xlsx'
+            fpath = os.path.join(output_directory, fname)
             logger.info('-save csv file as excel too')
-            writer = pd.ExcelWriter(f)
-            diff_genes_selected.to_excel(writer, sheet_name=pdist_fname)
+            writer = pd.ExcelWriter(fpath)
+            diff_genes_selected.to_excel(writer, sheet_name=select_samples_title)
             writer.save()
 
     # plot CNV frequencies OF SELECTED GENES for each group in comparison

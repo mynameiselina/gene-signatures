@@ -83,8 +83,27 @@ def set_up_oncoscan(**set_up_kwargs):
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
     cmap_custom = plot_kwargs.get('cmap_custom', None)
-    vmin = plot_kwargs.get('vmin', None)
-    vmax = plot_kwargs.get('vmax', None)
+    vmin = parse_arg_type(
+        plot_kwargs.get('vmin', None),
+        int
+    )
+    vmax = parse_arg_type(
+        plot_kwargs.get('vmax', None),
+        int
+    )
+    if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
+        custom_div_cmap_arg = abs(vmin)+abs(vmax)
+        if (vmin < 0) or (vmax < 0):
+            custom_div_cmap_arg = custom_div_cmap_arg + 1
+        cmap_custom = custom_div_cmap(custom_div_cmap_arg)
+    highRes = parse_arg_type(
+        plot_kwargs.get('highRes', False),
+        bool
+    )
+    if highRes:
+        img_ext = '.pdf'
+    else:
+        img_ext = '.png'
 
     # initialize directories
     MainDataDir = os.path.join(script_path, '..', 'data')
@@ -206,7 +225,7 @@ def set_up_oncoscan(**set_up_kwargs):
         logger.info('Remove '+str(genes2drop.shape[0]) +
                     ' genes that exist in multiple chromosomes ' +
                     'across samples:\n' +
-                    genes2drop)
+                    str(genes2drop))
 
     if (genes2drop.shape[0] > 0):
         # if saveReport:
@@ -296,7 +315,7 @@ def set_up_oncoscan(**set_up_kwargs):
     #########################################
     # ORDER the table
     if toPrint:
-        logger.info('Order  table according to genomic position')
+        logger.info('Order data according to genomic position')
     data = pd.DataFrame(table, columns=sorted(gene_order_dict,
                                               key=gene_order_dict.get))
 
@@ -308,7 +327,7 @@ def set_up_oncoscan(**set_up_kwargs):
         if label in info_table.columns:
             # PLOT Abundance of gene data per sample
             if toPrint:
-                logger.info('Plot '+label+' for each sample\n')
+                logger.info('Plot '+label+' for each sample')
             mutCount = info_table[[label]].copy()
             patient_new_order = info_table.loc[mutCount.index].sort_values(
                 by=sample_info_table_sortLabels_list)
@@ -335,7 +354,7 @@ def set_up_oncoscan(**set_up_kwargs):
             if saveReport:
                 logger.info('Save figure')
                 plt.savefig(os.path.join(output_directory, 'Fig_samples_' +
-                            label+'.png'),
+                            label+img_ext),
                             transparent=True, bbox_inches='tight',
                             pad_inches=0.1, frameon=False)
                 plt.close("all")
@@ -384,7 +403,7 @@ def set_up_oncoscan(**set_up_kwargs):
     if saveReport:
         if toPrint:
             logger.info('Save heatmap')
-        plt.savefig(os.path.join(output_directory, 'Fig_heatmap.png'),
+        plt.savefig(os.path.join(output_directory, 'Fig_heatmap'+img_ext),
                     transparent=True, bbox_inches='tight',
                     pad_inches=0.1, frameon=False)
         plt.close("all")
@@ -428,7 +447,7 @@ def set_up_oncoscan(**set_up_kwargs):
         if toPrint:
             logger.info('Save heatmap')
         plt.savefig(os.path.join(output_directory,
-                                 'Fig_heatmap_ordered.png'),
+                                 'Fig_heatmap_ordered'+img_ext),
                     transparent=True, bbox_inches='tight',
                     pad_inches=0.1, frameon=False)
         plt.close("all")
@@ -442,7 +461,7 @@ def set_up_oncoscan(**set_up_kwargs):
         fname = 'data_processed.csv'
         f = os.path.join(output_directory, fname)
         if toPrint:
-            logger.info('-save ordered table: '+f)
+            logger.info('-save ordered data: '+f)
         data.to_csv(f, sep='\t', header=True, index=True)
 
         fname = 'genes_info.csv'

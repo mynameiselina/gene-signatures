@@ -8,6 +8,7 @@ from statsmodels.sandbox.stats.multicomp import multipletests
 from scipy.stats import binom_test
 from sklearn.decomposition import PCA
 import logging
+from distutils.util import strtobool
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -690,7 +691,7 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     onesample_map2genes.reset_index(drop=True, inplace=True)
 
     if toPrint:
-        logger.info('Finished pre-processing successfully.\n')
+        logger.info('Finished pre-processing successfully.')
 
     return onesample_map2genes
 
@@ -869,7 +870,7 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                         logger.info(str(onesample.shape[0]) +
                                     ' oncoscan events for patient ' +
                                     str(patient_id) +
-                                    ' after after pre-processing')
+                                    ' after pre-processing')
 
             np.append(onesample.columns, 'reason2drop')
             if editWith == 'Oncoscan':
@@ -887,6 +888,11 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                     dropped_rows_map = pd.concat([dropped_rows_map,
                                                   dropped_rows_map_pat],
                                                  axis=0, sort=False)
+                if toPrint:
+                    logger.info(str(onesample.shape[0]) +
+                                ' oncoscan events for patient ' +
+                                str(patient_id) +
+                                ' after editting')
             else:
                 logger.error('unsupported sample editor '+(editWith))
                 raise
@@ -910,7 +916,7 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
         check_cols = onesample.columns
     df_isna = onesample.isna()[check_cols]
     if toPrint:
-        logger.info('Missing values for each column:\n')
+        logger.info('Missing values for each column:')
         df_isna_sum = df_isna.sum()
         for _i in range(df_isna_sum.shape[0]):
             logger.info(str(df_isna_sum.index[_i])+'\t' +
@@ -1013,11 +1019,11 @@ def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
                         str(onesample[onesample['CHR_ID'
                                                 ].duplicated(keep=False)
                                       ].shape[0]) +
-                        'rows aggreagated to' +
+                        ' rows aggregated to' +
                         str(onesample[onesample['CHR_ID'
                                                 ].duplicated(keep='first')
                                       ].shape[0]) +
-                        'unique rows')
+                        ' unique rows')
             # these will be aggregated into one row:
             # with function with the highest frequency
             # and overall positional region

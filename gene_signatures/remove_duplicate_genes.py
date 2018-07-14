@@ -23,6 +23,8 @@ import logging
 from scipy.spatial.distance import (
     pdist, squareform
 )
+from distutils.util import strtobool
+
 # plotting imports
 import matplotlib
 import seaborn as sns
@@ -91,7 +93,14 @@ def remove_duplicate_genes(**set_up_kwargs):
         if (vmin < 0) or (vmax < 0):
             custom_div_cmap_arg = custom_div_cmap_arg + 1
         cmap_custom = custom_div_cmap(custom_div_cmap_arg)
-
+    highRes = parse_arg_type(
+        plot_kwargs.get('highRes', False),
+        bool
+    )
+    if highRes:
+        img_ext = '.pdf'
+    else:
+        img_ext = '.png'
     # initialize directories
     MainDataDir = os.path.join(script_path, '..', 'data')
     # data input
@@ -107,11 +116,16 @@ def remove_duplicate_genes(**set_up_kwargs):
     sample_info_directory = os.path.join(MainDataDir, sample_info_directory)
     # data output
     output_directory = set_up_kwargs.get('output_directory')
-    if ',' in output_directory:
-        output_directory = os.path.join(*output_directory.rsplit(','))
-    output_directory = set_directory(
-        os.path.join(MainDataDir, output_directory, reportName)
-    )
+    if output_directory is None:
+        output_directory = set_directory(
+            os.path.join(input_directory, reportName)
+        )
+    else:
+        if ',' in output_directory:
+            output_directory = os.path.join(*output_directory.rsplit(','))
+        output_directory = set_directory(
+            os.path.join(MainDataDir, output_directory, reportName)
+        )
 
     # pairwise distances params
     compute_pdist = parse_arg_type(
@@ -196,7 +210,7 @@ def remove_duplicate_genes(**set_up_kwargs):
                 logger.info('Save distplot')
                 plt.savefig(os.path.join(
                     output_directory, 'Fig_distplot_' +
-                    select_samples_title+fext[i_data]+'.png'),
+                    select_samples_title+fext[i_data]+img_ext),
                     transparent=True, bbox_inches='tight',
                     pad_inches=0.1, frameon=False)
                 plt.close("all")
@@ -221,7 +235,7 @@ def remove_duplicate_genes(**set_up_kwargs):
                 logger.info('Save distplot')
                 plt.savefig(os.path.join(
                     output_directory, 'Fig_distplot_breakYaxis_' +
-                    select_samples_title+fext[i_data]+'.png'),
+                    select_samples_title+fext[i_data]+img_ext),
                     transparent=True, bbox_inches='tight',
                     pad_inches=0.1, frameon=False)
                 plt.close("all")
@@ -243,7 +257,7 @@ def remove_duplicate_genes(**set_up_kwargs):
             logger.info('Save heatmap')
             plt.savefig(os.path.join(
                 output_directory, 'Fig_heatmap_'+select_samples_title +
-                fext[i_data]+'.png'),
+                fext[i_data]+img_ext),
                 transparent=True, bbox_inches='tight',
                 pad_inches=0.1, frameon=False)
             plt.close("all")
@@ -263,7 +277,7 @@ def remove_duplicate_genes(**set_up_kwargs):
             logger.info('Save heatmap')
             plt.savefig(os.path.join(
                 output_directory, 'Fig_corr_'+select_samples_title +
-                fext[i_data]+'.png'),
+                fext[i_data]+img_ext),
                 transparent=True, bbox_inches='tight',
                 pad_inches=0.1, frameon=False)
             plt.close("all")

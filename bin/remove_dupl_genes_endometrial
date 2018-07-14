@@ -13,10 +13,10 @@ remove_dupl_genes_endometrial reportName='remove_dupl_genes' select_samples_from
 remove_dupl_genes_endometrial reportName='remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/remove_dupl_genes__select_TP53mut.log
 
 # run for filtered data
-remove_dupl_genes_endometrial input_directory='output,set_up_endometrial_FILT' output_directory='output,set_up_endometrial_FILT' reportName='remove_dupl_genes' >> ./data/output/set_up_endometrial_FILT/remove_dupl_genes__select_all.log
-remove_dupl_genes_endometrial input_directory='output,set_up_endometrial_FILT' output_directory='output,set_up_endometrial_FILT' reportName='remove_dupl_genes' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial_FILT/remove_dupl_genes__select_all_sortFOXA1.log
-remove_dupl_genes_endometrial input_directory='output,set_up_endometrial_FILT' output_directory='output,set_up_endometrial_FILT' reportName='remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/remove_dupl_genes__select_TP53wt.log
-remove_dupl_genes_endometrial input_directory='output,set_up_endometrial_FILT' output_directory='output,set_up_endometrial_FILT' reportName='remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/remove_dupl_genes__select_TP53mut.log
+remove_dupl_genes_endometrial input_directory='output,set_up_endometrial_FILT' reportName='remove_dupl_genes' >> ./data/output/set_up_endometrial_FILT/remove_dupl_genes__select_all.log
+remove_dupl_genes_endometrial input_directory='output,set_up_endometrial_FILT' reportName='remove_dupl_genes' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial_FILT/remove_dupl_genes__select_all_sortFOXA1.log
+remove_dupl_genes_endometrial input_directory='output,set_up_endometrial_FILT' reportName='remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/remove_dupl_genes__select_TP53wt.log
+remove_dupl_genes_endometrial input_directory='output,set_up_endometrial_FILT' reportName='remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/remove_dupl_genes__select_TP53mut.log
 """
 from omics_processing.io import (
     set_directory
@@ -41,7 +41,8 @@ script_fname = os.path.basename(__file__).rsplit('.')[0]
 plot_kwargs = {
     'cmap_custom': custom_div_cmap(9),
     'vmin': -4,
-    'vmax': 4
+    'vmax': 4,
+    'highRes': True
 }
 
 set_up_kwargs_default = {
@@ -71,7 +72,7 @@ set_up_kwargs_default = {
     # set directories
     'input_directory': 'output,set_up_endometrial',
     'sample_info_directory': 'input',
-    'output_directory': 'output,set_up_endometrial',
+    'output_directory': None,
     'DEBUG': True
 }
 
