@@ -56,9 +56,15 @@ def _plot_oncoscan_frequency_plot(data_ampl, data_del,
         plot_aggr_mut(data_ampl, data_del, None, None,
                       mytitle=select_samples_title+': '+label)
 
+    if label == '':
+        connection_str = '_'
+    else:
+        connection_str = ''
+
     if saveReport:
         fpath = os.path.join(output_directory, 'Fig_Freq_' +
-                             select_samples_title+'_'+label+img_ext)
+                             select_samples_title+connection_str +
+                             label+img_ext)
         logger.info('Save FreqPlot as '+img_ext+' in:\n'+fpath)
         plt.savefig(fpath,
                     transparent=True, bbox_inches='tight',
@@ -72,7 +78,10 @@ def nexus_express(**set_up_kwargs):
     # chose sample set from data
     # function: choose_samples()
     select_samples_from = set_up_kwargs.get('select_samples_from', None)
-    select_samples_which = set_up_kwargs.get('select_samples_which', None)
+    select_samples_which = parse_arg_type(
+        set_up_kwargs.get('select_samples_which', None),
+        int
+    )
     select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
                                                'TP53_mut5,FOXA1_mut5')
     select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
@@ -477,20 +486,21 @@ def nexus_express(**set_up_kwargs):
             fpath = os.path.join(output_directory, fname)
             logger.info('-save csv file as excel too')
             writer = pd.ExcelWriter(fpath)
-            diff_genes_selected.to_excel(writer, sheet_name=select_samples_title)
+            diff_genes_selected.to_excel(
+                writer, sheet_name=select_samples_title)
             writer.save()
 
     # plot CNV frequencies OF SELECTED GENES for each group in comparison
     if ((group0_ampl_new != 0).any() or (group0_del_new != 0).any()):
         _plot_oncoscan_frequency_plot(group0_ampl_new, group0_del_new,
-                                      select_samples_title,
+                                      select_samples_title+'_DIFF',
                                       class_labels[0]+extra_label,
                                       gene_info_fname, xlabels, xpos,
                                       saveReport, img_ext,
                                       output_directory)
     if ((group1_ampl_new != 0).any() or (group1_del_new != 0).any()):
         _plot_oncoscan_frequency_plot(group1_ampl_new, group1_del_new,
-                                      select_samples_title,
+                                      select_samples_title+'_DIFF',
                                       class_labels[1]+extra_label,
                                       gene_info_fname, xlabels, xpos,
                                       saveReport, img_ext,
@@ -502,7 +512,7 @@ def nexus_express(**set_up_kwargs):
                 (group0_del_new_wDupl != 0).any()):
             _plot_oncoscan_frequency_plot(
                 group0_ampl_new_wDupl, group0_del_new_wDupl,
-                select_samples_title, class_labels[0],
+                select_samples_title+'_DIFF', class_labels[0],
                 gene_info_fname, xlabels_wDupl, xpos_wDupl,
                 saveReport, img_ext, output_directory
             )
@@ -510,7 +520,7 @@ def nexus_express(**set_up_kwargs):
                 (group1_del_new_wDupl != 0).any()):
             _plot_oncoscan_frequency_plot(
                 group1_ampl_new_wDupl, group1_del_new_wDupl,
-                select_samples_title, class_labels[1],
+                select_samples_title+'_DIFF', class_labels[1],
                 gene_info_fname, xlabels_wDupl, xpos_wDupl,
                 saveReport, img_ext, output_directory
             )
