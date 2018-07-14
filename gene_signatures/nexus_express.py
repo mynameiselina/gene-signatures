@@ -140,7 +140,7 @@ def nexus_express(**set_up_kwargs):
         if (vmin < 0) or (vmax < 0):
             custom_div_cmap_arg = custom_div_cmap_arg + 1
         cmap_custom = custom_div_cmap(custom_div_cmap_arg)
-        
+
     highRes = parse_arg_type(
         plot_kwargs.get('highRes', False),
         bool
@@ -465,7 +465,7 @@ def nexus_express(**set_up_kwargs):
             fpath = os.path.join(output_directory, fname)
             logger.info("-save selected diff genes for " +
                         mytitle+" in :\n"+fpath)
-            diff_genes_selected.to_csv(fpath, sep='\t', 
+            diff_genes_selected.to_csv(fpath, sep='\t',
                                        header=True, index=True)
 
             # save also as excel file

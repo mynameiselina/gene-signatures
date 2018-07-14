@@ -812,7 +812,7 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
     for fpath in fpaths:
         allsamples = pd.read_csv(fpath, sep='\t', header=0,
                                  comment=comment, names=names)
-        samples_colname = kwargs.get('samples_colname', 
+        samples_colname = kwargs.get('samples_colname',
                                      allsamples.index.values)
 
         dropped_rows_filt = pd.DataFrame()
