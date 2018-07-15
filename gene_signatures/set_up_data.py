@@ -349,10 +349,8 @@ def set_up_data(**set_up_kwargs):
                                               key=gene_order_dict.get))
 
     #########################################
-    oncoscan_count_max = info_table['oncoscan_events'].values.max()
-    gene_count_max = info_table['genes_with_CNV'].values.max()
-    for label in ['oncoscan_events', 'oncoscan_events_filt',
-                  'genes_with_CNV', 'genes_with_CNV_merged']:
+    for label in ['rows_in_sample', 'rows_in_sample_filt',
+                  'rows_in_sample_processed', 'rows_in_sample_editted']:
         if label in info_table.columns:
             # PLOT Abundance of gene data per sample
             if toPrint:
@@ -376,10 +374,6 @@ def set_up_data(**set_up_kwargs):
             g.set(xlabel='samples', ylabel='count')
             g.set_title('Abundance of '+label+' per sample: ' +
                         str((mutCount[label] <= 0).sum())+' empty samples')
-            if 'oncoscan' in label:
-                plt.ylim([-1, oncoscan_count_max])
-            else:
-                plt.ylim([-1, gene_count_max])
             if saveReport:
                 logger.info('Save figure')
                 plt.savefig(os.path.join(output_directory, 'Fig_samples_' +

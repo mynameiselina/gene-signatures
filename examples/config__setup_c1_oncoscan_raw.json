@@ -1,0 +1,59 @@
+{
+    "reportName": "setup_c1_oncoscan_raw",
+    "saveReport": true,
+    "txt_label": "set up raw Oncoscan data",
+    "toPrint": true,
+
+    "load_files": true,
+    "fext": "_events.txt",
+
+    "editWith": "Oncoscan",
+    "withFilter": false,
+    "withPreprocess": true,
+
+    "preproc_kwargs": {
+        "keep_columns": "Chromosome Region,Event,Gene Symbols",
+        "new_columns": "chr,start,end,id,function"
+    },
+    "filt_kwargs": {},
+    "edit_kwargs": {
+        "function_dict": {
+            "Homozygous Copy Loss": -4,
+            "CN Loss": -2,
+            "CN Gain": 2,
+            "High Copy Gain": 4,
+            "LOH": -1
+        },
+        "mergeHow":"maxAll",
+        "removeLOH":true
+    },
+
+    "comment": "#",
+    "names": null,
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+    "remove_patients": "DS-107_0001",
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
+        "highRes": false
+    },
+    
+    "input_directory": "input,headneck,cohort1",
+    "oncoscan_directory": "oncoscan,raw",
+    "oncoscan_files": "DS_101,DS_107",
+
+    "sample_info_read_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0
+    },
+    "sample_info_fname": "sample_info.txt",
+    "sample_info_table_index_colname": "cnvID",
+    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
+    
+    "output_directory": "output,headneck",
+    "DEBUG": true
+}

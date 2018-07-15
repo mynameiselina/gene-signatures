@@ -63,21 +63,24 @@ logger = logging.getLogger(__name__)
 
 
 params = {
-    # 'reportName': script_fname,
+    'reportName': script_fname,
 
-    "reportName": "setup_c1_oncoscan_byNexus",
+    "reportName": "setup_c1_oncoscan_raw",
     "saveReport": True,
-    "txt_label": "set up processed Oncoscan data by Nexus",
+    "txt_label": "set up raw Oncoscan data",
     "toPrint": True,
 
     "load_files": True,
-    "fext": "_events_cnvAll.txt",
+    "fext": "_events.txt",
 
     "editWith": "Oncoscan",
     "withFilter": False,
-    "withPreprocess": False,
+    "withPreprocess": True,
 
-    "preproc_kwargs": {},
+    "preproc_kwargs": {
+        "keep_columns": "Chromosome Region,Event,Gene Symbols",
+        "new_columns": "chr,start,end,id,function"
+    },
     "filt_kwargs": {},
     "edit_kwargs": {
         "function_dict": {
@@ -87,12 +90,12 @@ params = {
             "High Copy Gain": 4,
             "LOH": -1
         },
-        "mergeHow":"maxAll",
-        "removeLOH":True
+        "mergeHow": "maxAll",
+        "removeLOH": True
     },
 
     "comment": "#",
-    "names": "chr,id,value,function,pos",
+    "names": None,
     "chr_col": "chr_int",
     "gene_id_col": "gene",
     "remove_patients": None,
@@ -105,7 +108,7 @@ params = {
     },
 
     "input_directory": "input,headneck,cohort1",
-    "oncoscan_directory": "oncoscan,processed_byNexus",
+    "oncoscan_directory": "oncoscan,raw",
     "oncoscan_files": "DS_101,DS_107",
 
     "sample_info_fname": "sample_info.txt",

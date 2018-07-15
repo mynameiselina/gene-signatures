@@ -619,11 +619,12 @@ def _format_position(position, toPrint):
 def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     # columns with info about:
     # Chromosome Region, Event, Gene Symbols (in this order!!!)
-    if 'keep_columns' not in kwargs.keys():
+    keep_columns = kwargs.get('keep_columns', None)
+    if keep_columns is None:
         logger.error('keep_columns kwarg is missing!')
         raise
     else:
-        keep_columns = kwargs['keep_columns']
+        keep_columns = keep_columns.rsplit(',')
         if len(keep_columns) > 3:
             logger.error('more than 3 column names are given!\n' +
                          'give columns with info about: ' +
@@ -631,7 +632,10 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
                          '(in this order!!!)')
             raise
 
-    if 'new_columns' not in kwargs.keys():
+    new_columns = kwargs.get('new_columns', None)
+    if new_columns is not None:
+        new_columns = new_columns.rsplit(',')
+    else:
         new_columns = ['chr', 'start', 'end', 'id', 'function']
 
     # choose only the columns: 'Chromosome Region', 'Event', 'Gene Symbols'
@@ -639,7 +643,7 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
         logger.info('keep columns: '+str(keep_columns))
     onesample_small = onesample[keep_columns].copy()
 
-    # format the Chromosome Region 
+    # format the Chromosome Region
     onesample_small[keep_columns[0]] = \
         _format_position(onesample_small[keep_columns[0]], toPrint)
 
@@ -682,7 +686,7 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
         onesample_map2genes[new_columns[2]], \
         onesample_map2genes[new_columns[3]], \
         onesample_map2genes[new_columns[4]] = \
-        zip(*onesample_map2genes['all'].str.split(':'))
+        list(zip(*onesample_map2genes['all'].str.split(':')))
 
     # remove duplicates and drop column 'all'
     if toPrint:
@@ -795,7 +799,8 @@ def _preprocessing(patient_id, onesample, info_table,
                    withPreprocess, preproc_kwargs,
                    editWith, edit_kwargs,
                    toPrint):
-    info_table.loc[patient_id, 'oncoscan_events'] = onesample.shape[0]
+
+    info_table.loc[patient_id, 'rows_in_sample'] = onesample.shape[0]
     if onesample.empty:
         logger.warning('EMPTY patient! there are no CNVs for patient ' +
                        str(patient_id))
@@ -803,7 +808,7 @@ def _preprocessing(patient_id, onesample, info_table,
 
     if toPrint:
         logger.info(str(onesample.shape[0]) +
-                    ' oncoscan events for patient ' +
+                    ' rows for patient ' +
                     str(patient_id))
 
     if bool(filt_kwargs) and withFilter:
@@ -811,8 +816,7 @@ def _preprocessing(patient_id, onesample, info_table,
         onesample, dropped_rows_filt_pat = \
             filter_oncoscan(onesample, toPrint=toPrint,
                             **filt_kwargs)
-        info_table.loc[
-            patient_id, 'oncoscan_events_filt'] = onesample.shape[0]
+        info_table.loc[patient_id, 'rows_in_sample_filt'] = onesample.shape[0]
         if onesample.empty:
             logger.warning('after filtering ' +
                            'there are no more CNVs for patient ' +
@@ -821,7 +825,7 @@ def _preprocessing(patient_id, onesample, info_table,
         else:
             if toPrint:
                 logger.info(str(onesample.shape[0]) +
-                            ' oncoscan events for patient ' +
+                            ' rows for patient ' +
                             str(patient_id)+' after filtering')
     else:
         dropped_rows_filt_pat = pd.DataFrame([])
@@ -831,7 +835,7 @@ def _preprocessing(patient_id, onesample, info_table,
         onesample = preprocess_oncoscan(onesample, toPrint=toPrint,
                                         **preproc_kwargs)
         info_table.loc[
-            patient_id, 'genes_with_CNV'] = onesample.shape[0]
+            patient_id, 'rows_in_sample_processed'] = onesample.shape[0]
         if onesample.empty:
             logger.warning('after pre-processing ' +
                            'there are no more CNVs for patient ' +
@@ -840,11 +844,11 @@ def _preprocessing(patient_id, onesample, info_table,
         else:
             if toPrint:
                 logger.info(str(onesample.shape[0]) +
-                            ' oncoscan events for patient ' +
+                            ' rows for patient ' +
                             str(patient_id) +
                             ' after pre-processing')
 
-    np.append(onesample.columns, 'reason2drop')
+    # np.append(onesample.columns, 'reason2drop')
     if editWith == 'Oncoscan':
         # for consistency convert to lowercase
         onesample.columns = onesample.columns.str.lower()
@@ -874,10 +878,10 @@ def _preprocessing(patient_id, onesample, info_table,
             **edit_kwargs
         )
         info_table.loc[
-            patient_id, 'genes_with_CNV_merged'] = onesample.shape[0]
+            patient_id, 'rows_in_sample_editted'] = onesample.shape[0]
         if toPrint:
             logger.info(str(onesample.shape[0]) +
-                        ' oncoscan events for patient ' +
+                        ' rows for patient ' +
                         str(patient_id) +
                         ' after editting')
     else:
@@ -909,10 +913,12 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
     # oncoscan load files from each patient
     data_or = dict()
     data = []
-    info_table['oncoscan_events'] = 0
-    info_table['oncoscan_events_filt'] = 0
-    info_table['genes_with_CNV'] = 0
-    info_table['genes_with_CNV_merged'] = 0
+    info_table['rows_in_sample'] = 0
+    if withFilter:
+        info_table['rows_in_sample_filt'] = 0
+    if withPreprocess:
+        info_table['rows_in_sample_processed'] = 0
+    info_table['rows_in_sample_editted'] = 0
     for fpath in fpaths:
         allsamples = pd.read_csv(fpath, sep='\t', header=0,
                                  comment=comment, names=names)
@@ -979,10 +985,12 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
     # oncoscan load files from each patient
     data_or = dict()
     data = []
-    info_table['oncoscan_events'] = 0
-    info_table['oncoscan_events_filt'] = 0
-    info_table['genes_with_CNV'] = 0
-    info_table['genes_with_CNV_merged'] = 0
+    info_table['rows_in_sample'] = 0
+    if withFilter:
+        info_table['rows_in_sample_filt'] = 0
+    if withPreprocess:
+        info_table['rows_in_sample_processed'] = 0
+    info_table['rows_in_sample_editted'] = 0
     for fpath in fpaths:
         for filename in natsorted(os.listdir(fpath)):
             if filename.endswith(fext):
