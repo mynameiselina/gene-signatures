@@ -40,8 +40,8 @@ set_up_endometrial withFilter=False reportName=set_up_endometrial >> ./data/outp
 set_up_endometrial withFilter=True reportName=set_up_endometrial_FILT >> ./data/output/set_up_endometrial_FILT.log
 """
 
-from gene_signatures.set_up_oncoscan import (
-    set_up_oncoscan
+from gene_signatures.set_up_data import (
+    set_up_data
 )
 from gene_signatures.core import (
     custom_div_cmap
@@ -84,6 +84,12 @@ function_dict = {
     'LOH': -1
 }
 
+edit_kwargs = {
+        "function_dict": function_dict,
+        "mergeHow": "maxAll",
+        "removeLOH": True
+}
+
 plot_kwargs = {
     'cmap_custom': custom_div_cmap(9),
     'vmin': -4,
@@ -97,14 +103,17 @@ set_up_kwargs_default = {
     'txt_label': 'set up Oncoscan data',
     'toPrint': True,
     'reportName': script_fname,
+    'load_files': False,
     'editWith': 'Oncoscan',
     'withFilter': False,
     'withPreprocess': True,
-    'filt_kwargs': filt_kwargs,
     'chr_col': 'chr_int',
     'gene_id_col': 'gene',
     'remove_patients': None,
     'sample_info_fname': '20180704_emca.csv',
+    'sample_info_read_csv_kwargs': {
+        'na_values': ' '
+    },
     'sample_info_table_index_colname': 'Oncoscan_ID',
     'sample_info_table_sortLabels': 'TP53_mut5,FOXA1_mut5',
     'plot_kwargs': plot_kwargs,
@@ -112,11 +121,10 @@ set_up_kwargs_default = {
     # params only for internal usage in function
     # load_and_process_summary_file() in core.py
     'samples_colname': 'Sample',
+    'filt_kwargs': filt_kwargs,
     'preproc_kwargs': preproc_kwargs,
+    'edit_kwargs': edit_kwargs,
     'comment': "#",
-    'removeLOH': True,
-    'function_dict': function_dict,
-    'mergeHow': 'maxAll',
 
     # set directories
     'input_directory': 'input,endometrial',
@@ -139,7 +147,7 @@ def main(**set_up_kwargs):
     if set_up_kwargs_default.get('DEBUG'):
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-    set_up_oncoscan(**set_up_kwargs_default)
+    set_up_data(**set_up_kwargs_default)
 
 
 if __name__ == '__main__':

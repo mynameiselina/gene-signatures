@@ -601,6 +601,21 @@ def which_x_toPrint(df, names, n_names=15):
     return xpos, xlabels
 
 
+def _format_position(position, toPrint):
+    if "'" in position.iloc[0]:
+        if toPrint:
+            logger.info("removing the ' character from the Chromosome Region")
+        position = position.str.replace("'", "")
+    if "-" in position.iloc[0]:
+        if toPrint:
+            logger.info("replacing the '-' with ':' character to separate " +
+                        "the 'start' and 'end' in the " +
+                        "Chromosome Region numbers")
+        position = position.str.replace("-", ":")
+
+    return position
+
+
 def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     # columns with info about:
     # Chromosome Region, Event, Gene Symbols (in this order!!!)
@@ -623,18 +638,11 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     if toPrint:
         logger.info('keep columns: '+str(keep_columns))
     onesample_small = onesample[keep_columns].copy()
-    if "'" in onesample_small[keep_columns[0]].iloc[0]:
-        if toPrint:
-            logger.info("removing the ' character from the Chromosome Region")
-        onesample_small[keep_columns[0]] = \
-            onesample_small[keep_columns[0]].str.replace("'", "")
-    if "-" in onesample_small[keep_columns[0]].iloc[0]:
-        if toPrint:
-            logger.info("replacing the '-' with ':' character to separate " +
-                        "the 'start' and 'end' in the " +
-                        "Chromosome Region numbers")
-        onesample_small[keep_columns[0]] = \
-            onesample_small[keep_columns[0]].str.replace("-", ":")
+
+    # format the Chromosome Region 
+    onesample_small[keep_columns[0]] = \
+        _format_position(onesample_small[keep_columns[0]], toPrint)
+
     # change the gene symbols type (from single string to an array of strings)
     onesample_small['Gene Arrays'] = \
         onesample_small[keep_columns[2]].str.split(', ')
@@ -782,6 +790,103 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     return onesample, dropped_rows
 
 
+def _preprocessing(patient_id, onesample, info_table,
+                   withFilter, filt_kwargs,
+                   withPreprocess, preproc_kwargs,
+                   editWith, edit_kwargs,
+                   toPrint):
+    info_table.loc[patient_id, 'oncoscan_events'] = onesample.shape[0]
+    if onesample.empty:
+        logger.warning('EMPTY patient! there are no CNVs for patient ' +
+                       str(patient_id))
+        return onesample, info_table, pd.DataFrame([]), pd.DataFrame([])
+
+    if toPrint:
+        logger.info(str(onesample.shape[0]) +
+                    ' oncoscan events for patient ' +
+                    str(patient_id))
+
+    if bool(filt_kwargs) and withFilter:
+        # - filter sample - #
+        onesample, dropped_rows_filt_pat = \
+            filter_oncoscan(onesample, toPrint=toPrint,
+                            **filt_kwargs)
+        info_table.loc[
+            patient_id, 'oncoscan_events_filt'] = onesample.shape[0]
+        if onesample.empty:
+            logger.warning('after filtering ' +
+                           'there are no more CNVs for patient ' +
+                           str(patient_id))
+            return onesample, info_table, dropped_rows_filt_pat, pd.DataFrame([])
+        else:
+            if toPrint:
+                logger.info(str(onesample.shape[0]) +
+                            ' oncoscan events for patient ' +
+                            str(patient_id)+' after filtering')
+    else:
+        dropped_rows_filt_pat = pd.DataFrame([])
+
+    if bool(preproc_kwargs) and withPreprocess:
+        # - pre-process sample - #
+        onesample = preprocess_oncoscan(onesample, toPrint=toPrint,
+                                        **preproc_kwargs)
+        info_table.loc[
+            patient_id, 'genes_with_CNV'] = onesample.shape[0]
+        if onesample.empty:
+            logger.warning('after pre-processing ' +
+                           'there are no more CNVs for patient ' +
+                           str(patient_id))
+            return onesample, info_table, dropped_rows_filt_pat, pd.DataFrame([])
+        else:
+            if toPrint:
+                logger.info(str(onesample.shape[0]) +
+                            ' oncoscan events for patient ' +
+                            str(patient_id) +
+                            ' after pre-processing')
+
+    np.append(onesample.columns, 'reason2drop')
+    if editWith == 'Oncoscan':
+        # for consistency convert to lowercase
+        onesample.columns = onesample.columns.str.lower()
+
+        # format the Chromosome Region and split pos in start and end
+        if (('start' not in onesample.columns) and
+                ('pos' in onesample.columns)):
+            onesample['pos'] = _format_position(onesample['pos'], toPrint)
+            _chr_col, onesample['start'], onesample['end'] = \
+                onesample['pos'].str.rsplit(':').str
+
+            if (('chr' not in onesample.columns) and
+                    ('chrom' not in onesample.columns)):
+                onesample['chr'] = _chr_col
+
+        # verify the chromosome column name
+        if 'chr' not in onesample.columns:
+            if 'chrom' in onesample.columns:
+                onesample['chr'] = onesample['chrom']
+                onesample.drop(['chrom'], inplace=True, axis=1)
+            else:
+                logger.error('Columns not found: chr|chrom')
+                raise
+        # - edit sample - #
+        onesample, dropped_rows_map_pat = edit_oncoscan(
+            onesample, patient_id, toPrint=toPrint,
+            **edit_kwargs
+        )
+        info_table.loc[
+            patient_id, 'genes_with_CNV_merged'] = onesample.shape[0]
+        if toPrint:
+            logger.info(str(onesample.shape[0]) +
+                        ' oncoscan events for patient ' +
+                        str(patient_id) +
+                        ' after editting')
+    else:
+        logger.error('unsupported sample editor '+(editWith))
+        raise
+
+    return onesample, info_table, dropped_rows_filt_pat, dropped_rows_map_pat
+
+
 def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                                   toPrint=False, **kwargs):
     withFilter = parse_arg_type(
@@ -792,16 +897,14 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
         kwargs.get('withPreprocess', True),
         bool
     )
-    removeLOH = parse_arg_type(
-        kwargs.get('removeLOH', True),
-        bool
-    )
     comment = kwargs.get('comment', None)
     names = kwargs.get('names', None)
+    if names is not None:
+        if ',' in names:
+            names = names.rsplit(',')
     filt_kwargs = kwargs.get('filt_kwargs', {})
     preproc_kwargs = kwargs.get('preproc_kwargs', {})
-    mergeHow = kwargs.get('mergeHow', 'maxAll')
-    function_dict = kwargs.get('function_dict', {})
+    edit_kwargs = kwargs.get('edit_kwargs', {})
 
     # oncoscan load files from each patient
     data_or = dict()
@@ -814,7 +917,7 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
         allsamples = pd.read_csv(fpath, sep='\t', header=0,
                                  comment=comment, names=names)
         samples_colname = kwargs.get('samples_colname',
-                                     allsamples.index.values)
+                                     allsamples.columns.values[0])
 
         dropped_rows_filt = pd.DataFrame()
         dropped_rows_map = pd.DataFrame()
@@ -826,84 +929,120 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
             data_or[patient_id] = allsamples[allsamples[samples_colname] ==
                                              patient_id].copy()
             onesample = data_or[patient_id].copy()
-            info_table.loc[patient_id, 'oncoscan_events'] = onesample.shape[0]
-            if toPrint:
-                logger.info(str(onesample.shape[0]) +
-                            ' oncoscan events for patient ' +
-                            str(patient_id))
 
-            if bool(filt_kwargs) and withFilter:
-                # - pre-process sample - #
-                onesample, dropped_rows_filt_pat = \
-                    filter_oncoscan(onesample, toPrint=toPrint,
-                                    **filt_kwargs)
-                if dropped_rows_filt_pat.shape[0] > 0:
-                    dropped_rows_filt = pd.concat([dropped_rows_filt,
-                                                   dropped_rows_filt_pat],
-                                                  axis=0, sort=False)
-                info_table.loc[patient_id,
-                               'oncoscan_events_filt'] = onesample.shape[0]
-                if onesample.empty:
-                    logger.warning('after filtering ' +
-                                   'there are no more CNVs for patient ' +
-                                   str(patient_id))
-                    continue
-                else:
-                    if toPrint:
-                        logger.info(str(onesample.shape[0]) +
-                                    ' oncoscan events for patient ' +
-                                    str(patient_id)+' after filtering')
-
-            if bool(preproc_kwargs) and withPreprocess:
-                # - pre-process sample - #
-                onesample = preprocess_oncoscan(onesample, toPrint=toPrint,
-                                                **preproc_kwargs)
-                info_table.loc[patient_id,
-                               'genes_with_CNV'] = onesample.shape[0]
-                if onesample.empty:
-                    logger.warning('after pre-processing ' +
-                                   'there are no more CNVs for patient ' +
-                                   str(patient_id))
-                    continue
-                else:
-                    if toPrint:
-                        logger.info(str(onesample.shape[0]) +
-                                    ' oncoscan events for patient ' +
-                                    str(patient_id) +
-                                    ' after pre-processing')
-
-            np.append(onesample.columns, 'reason2drop')
-            if editWith == 'Oncoscan':
-                # - edit sample - #
-                onesample, dropped_rows_map_pat = \
-                    map_oncoscan_to_genes(onesample, patient_id,
-                                          toPrint=toPrint,
-                                          mergeHow=mergeHow,
-                                          removeLOH=removeLOH,
-                                          function_dict=function_dict
-                                          )
-                info_table.loc[patient_id,
-                               'genes_with_CNV_merged'] = onesample.shape[0]
-                if dropped_rows_map_pat.shape[0] > 0:
-                    dropped_rows_map = pd.concat([dropped_rows_map,
-                                                  dropped_rows_map_pat],
-                                                 axis=0, sort=False)
-                if toPrint:
-                    logger.info(str(onesample.shape[0]) +
-                                ' oncoscan events for patient ' +
-                                str(patient_id) +
-                                ' after editting')
-            else:
-                logger.error('unsupported sample editor '+(editWith))
-                raise
+            # preprocess one sample
+            onesample, info_table, \
+                dropped_rows_filt_pat, dropped_rows_map_pat = \
+                _preprocessing(
+                    patient_id, onesample, info_table,
+                    withFilter, filt_kwargs,
+                    withPreprocess, preproc_kwargs,
+                    editWith, edit_kwargs,
+                    toPrint
+                )
+            if dropped_rows_filt_pat.shape[0] > 0:
+                dropped_rows_filt = pd.concat(
+                    [dropped_rows_filt, dropped_rows_filt_pat],
+                    axis=0, sort=False)
+            if dropped_rows_map_pat.shape[0] > 0:
+                dropped_rows_map = pd.concat(
+                    [dropped_rows_map, dropped_rows_map_pat],
+                    axis=0, sort=False)
+            #######
             data.append(onesample)
 
     return data, data_or, dropped_rows_filt, dropped_rows_map, info_table
 
 
-# mergeHow: 'maxAll', 'maxOne', 'freqAll'
-def map_oncoscan_to_genes(onesample, sample_name, toPrint=True, removeLOH=True,
-                          function_dict=None, mergeHow='maxAll'):
+def load_and_process_files(fpaths, info_table, editWith='choose_editor',
+                           toPrint=False, **kwargs):
+    withFilter = parse_arg_type(
+        kwargs.get('withFilter', False),
+        bool
+    )
+    withPreprocess = parse_arg_type(
+        kwargs.get('withPreprocess', True),
+        bool
+    )
+    comment = kwargs.get('comment', None)
+    names = kwargs.get('names', None)
+    if names is not None:
+        if ',' in names:
+            names = names.rsplit(',')
+    filt_kwargs = kwargs.get('filt_kwargs', {})
+    preproc_kwargs = kwargs.get('preproc_kwargs', {})
+    edit_kwargs = kwargs.get('edit_kwargs', {})
+
+    fext = kwargs.get('fext', None)
+    split_patID = kwargs.get('split_patID', None)
+
+    # oncoscan load files from each patient
+    data_or = dict()
+    data = []
+    info_table['oncoscan_events'] = 0
+    info_table['oncoscan_events_filt'] = 0
+    info_table['genes_with_CNV'] = 0
+    info_table['genes_with_CNV_merged'] = 0
+    for fpath in fpaths:
+        for filename in natsorted(os.listdir(fpath)):
+            if filename.endswith(fext):
+                if toPrint:
+                    logger.info('filename: '+filename)
+
+                patient_id = filename.rsplit(fext)[0]
+                if split_patID is not None:
+                    patient_id = patient_id.rsplit(split_patID)[0]
+
+                if toPrint:
+                    logger.info('patient_id: '+patient_id)
+
+                sample_fpath = os.path.join(fpath, filename)
+                onesample_or = pd.read_csv(
+                    sample_fpath, sep='\t', header=0,
+                    comment=comment, names=names)
+
+                data_or[patient_id] = onesample_or.copy()
+
+                dropped_rows_filt = pd.DataFrame()
+                dropped_rows_map = pd.DataFrame()
+
+                onesample = data_or[patient_id].copy()
+
+                # preprocess one sample
+                onesample, info_table, \
+                    dropped_rows_filt_pat, dropped_rows_map_pat = \
+                    _preprocessing(
+                        patient_id, onesample, info_table,
+                        withFilter, filt_kwargs,
+                        withPreprocess, preproc_kwargs,
+                        editWith, edit_kwargs,
+                        toPrint
+                    )
+
+                if dropped_rows_filt_pat.shape[0] > 0:
+                    dropped_rows_filt = pd.concat(
+                        [dropped_rows_filt, dropped_rows_filt_pat],
+                        axis=0, sort=False)
+                if dropped_rows_map_pat.shape[0] > 0:
+                    dropped_rows_map = pd.concat(
+                        [dropped_rows_map, dropped_rows_map_pat],
+                        axis=0, sort=False)
+                #######
+                if not onesample.empty:
+                    data.append(onesample)
+
+    return data, data_or, dropped_rows_filt, dropped_rows_map, info_table
+
+
+def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
+
+    removeLOH = parse_arg_type(
+        kwargs.get('removeLOH', True),
+        bool
+    )
+    function_dict = kwargs.get('function_dict', {})
+    # mergeHow: 'maxAll', 'maxOne', 'freqAll'
+    mergeHow = kwargs.get('mergeHow', 'maxAll')
 
     # for each sample
     dropped_rows = pd.DataFrame([], columns=np.append(onesample.columns,

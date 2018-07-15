@@ -1,0 +1,56 @@
+{
+    "reportName": "setup_c1_oncoscan_byNexus",
+    "saveReport": true,
+    "txt_label": "set up processed Oncoscan data by Nexus",
+    "toPrint": true,
+
+    "load_files": true,
+    "fext": "_events_cnvAll.txt",
+
+    "editWith": "Oncoscan",
+    "withFilter": false,
+    "withPreprocess": false,
+
+    "preproc_kwargs": {},
+    "filt_kwargs": {},
+    "edit_kwargs": {
+        "function_dict": {
+            "Homozygous Copy Loss": -4,
+            "CN Loss": -2,
+            "CN Gain": 2,
+            "High Copy Gain": 4,
+            "LOH": -1
+        },
+        "mergeHow":"maxAll",
+        "removeLOH":true
+    },
+
+    "comment": "#",
+    "names": "chr,id,value,function,pos",
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+    "remove_patients": null,
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
+        "highRes": false
+    },
+    
+    "input_directory": "input,headneck,cohort1",
+    "oncoscan_directory": "oncoscan,processed_byNexus",
+    "oncoscan_files": "DS_101,DS_107",
+
+    "sample_info_read_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0
+    },
+    "sample_info_fname": "sample_info.txt",
+    "sample_info_table_index_colname": "cnvID",
+    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
+    
+    "output_directory": "output,headneck",
+    "DEBUG": true
+}

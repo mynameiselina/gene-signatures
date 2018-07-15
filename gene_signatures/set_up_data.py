@@ -4,6 +4,7 @@ from omics_processing.io import (
 )
 from gene_signatures.core import (
     load_and_process_summary_file,
+    load_and_process_files,
     custom_div_cmap,
     get_chr_ticks,
     parse_arg_type
@@ -39,7 +40,7 @@ def _uniq_chr_per_gene(x, n):
     return x[n] if n < len(x) else np.nan
 
 
-def set_up_oncoscan(**set_up_kwargs):
+def set_up_data(**set_up_kwargs):
     # initialize script params
     saveReport = parse_arg_type(
         set_up_kwargs.get('saveReport', False),
@@ -50,6 +51,10 @@ def set_up_oncoscan(**set_up_kwargs):
         bool
     )
     reportName = set_up_kwargs.get('reportName', script_fname)
+    load_files = parse_arg_type(
+        set_up_kwargs.get('load_files', False),
+        bool
+    )
     editWith = set_up_kwargs.get('editWith', 'Oncoscan')
     withFilter = parse_arg_type(
         set_up_kwargs.get('withFilter', False),
@@ -59,8 +64,6 @@ def set_up_oncoscan(**set_up_kwargs):
         set_up_kwargs.get('withPreprocess', True),
         bool
     )
-    filt_kwargs = set_up_kwargs.get('filt_kwargs', {})
-    preproc_kwargs = set_up_kwargs.get('preproc_kwargs', {})
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
     remove_patients = set_up_kwargs.get('remove_patients', None)
     if remove_patients is None:
@@ -71,6 +74,9 @@ def set_up_oncoscan(**set_up_kwargs):
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     sample_info_fname = set_up_kwargs.get('sample_info_fname',
                                           '20180704_emca.csv')
+    sample_info_read_csv_kwargs = set_up_kwargs.get(
+        'sample_info_read_csv_kwargs', {}
+    )
     sample_info_table_index_colname = \
         set_up_kwargs.get('sample_info_table_index_colname',
                           'Oncoscan_ID')
@@ -123,7 +129,12 @@ def set_up_oncoscan(**set_up_kwargs):
             os.path.join(MainDataDir, output_directory, reportName)
         )
 
-    oncoscan_directory = set_up_kwargs.get('oncoscan_directory', '')
+    oncoscan_directory = set_up_kwargs.get('oncoscan_directory', None)
+    if oncoscan_directory is None:
+        oncoscan_directory = input_directory
+    else:
+        if ',' in oncoscan_directory:
+            oncoscan_directory = os.path.join(*oncoscan_directory.rsplit(','))
     oncoscan_files = set_up_kwargs.get('oncoscan_files', '')
     oncoscan_files_list = oncoscan_files.rsplit(',')
     fpaths = [os.path.join(input_directory, oncoscan_directory, aFile)
@@ -135,7 +146,7 @@ def set_up_oncoscan(**set_up_kwargs):
     fpath = os.path.join(input_directory, sample_info_fname)
     info_table = load_clinical(fpath,
                                col_as_index=sample_info_table_index_colname,
-                               **{'na_values': ' '})
+                               **sample_info_read_csv_kwargs)
 
     if toPrint:
         logger.info('Missing values for each column:\n')
@@ -145,14 +156,23 @@ def set_up_oncoscan(**set_up_kwargs):
                         str(info_table_isna_sum.iloc[_i]))
 
     #########################################
-    # load files from each patient
-    if toPrint:
-        logger.info(txt_label+': load files from all patients\n')
+    # load data/files from each patient
+    if load_files:
+        if toPrint:
+            logger.info(txt_label+': load files from all patients\n')
 
-    pat_data_list, pat_data_or_dict, dropped_rows_filt, \
-        dropped_rows_map, info_table = \
-        load_and_process_summary_file(fpaths, info_table,
-                                      **set_up_kwargs)
+        pat_data_list, pat_data_or_dict, dropped_rows_filt, \
+            dropped_rows_map, info_table = \
+            load_and_process_files(fpaths, info_table,
+                                   **set_up_kwargs)
+    else:
+        if toPrint:
+            logger.info(txt_label+': load data from all patients\n')
+
+        pat_data_list, pat_data_or_dict, dropped_rows_filt, \
+            dropped_rows_map, info_table = \
+            load_and_process_summary_file(fpaths, info_table,
+                                          **set_up_kwargs)
 
     if (dropped_rows_filt.shape[0] > 0) and (saveReport):
         f_new = 'allsamples__dropped_rows_filt.txt'
