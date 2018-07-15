@@ -107,13 +107,22 @@ def set_up_oncoscan(**set_up_kwargs):
 
     # initialize directories
     MainDataDir = os.path.join(script_path, '..', 'data')
-    input_directory = os.path.join(MainDataDir,
-                                   set_up_kwargs.get('input_directory'))
-    output_directory = set_directory(
-        os.path.join(MainDataDir,
-                     set_up_kwargs.get('output_directory'),
-                     reportName)
+    input_directory = set_up_kwargs.get('input_directory')
+    if ',' in input_directory:
+        input_directory = os.path.join(*input_directory.rsplit(','))
+    input_directory = os.path.join(MainDataDir, input_directory)
+    output_directory = set_up_kwargs.get('output_directory')
+    if output_directory is None:
+        output_directory = set_directory(
+            os.path.join(input_directory, reportName)
         )
+    else:
+        if ',' in output_directory:
+            output_directory = os.path.join(*output_directory.rsplit(','))
+        output_directory = set_directory(
+            os.path.join(MainDataDir, output_directory, reportName)
+        )
+
     oncoscan_directory = set_up_kwargs.get('oncoscan_directory', '')
     oncoscan_files = set_up_kwargs.get('oncoscan_files', '')
     oncoscan_files_list = oncoscan_files.rsplit(',')

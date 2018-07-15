@@ -177,6 +177,17 @@ def nexus_express(**set_up_kwargs):
             *sample_info_directory.rsplit(','))
     sample_info_directory = os.path.join(MainDataDir, sample_info_directory)
 
+    # gene info input
+    gene_info_directory = set_up_kwargs.get('gene_info_directory')
+    if gene_info_directory is None:
+        gene_info_directory = input_directory
+    else:
+        if ',' in gene_info_directory:
+            gene_info_directory = os.path.join(
+                *gene_info_directory.rsplit(','))
+            gene_info_directory = os.path.join(
+                MainDataDir, gene_info_directory)
+
     # dupl_genes input
     dupl_genes_directory = set_up_kwargs.get('dupl_genes_directory')
     dupl_genes_directory = os.path.join(input_directory, dupl_genes_directory)
@@ -218,7 +229,7 @@ def nexus_express(**set_up_kwargs):
 
     # load gene info
     if gene_info_fname is not None:
-        fpath = os.path.join(input_directory, gene_info_fname)
+        fpath = os.path.join(gene_info_directory, gene_info_fname)
         genes_positions_table = pd.read_csv(fpath, sep='\t', header=0,
                                             index_col=0)
         # get gene chrom position

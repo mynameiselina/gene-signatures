@@ -70,7 +70,8 @@ set_up_kwargs_default = {
 
     # set directories
     'input_directory': 'output,set_up_endometrial',
-    'sample_info_directory': 'input',
+    'sample_info_directory': 'input,endometrial',
+    'gene_info_directory': None,
     'output_directory': None,
     'DEBUG': True
 }

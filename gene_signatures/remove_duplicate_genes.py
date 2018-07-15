@@ -103,17 +103,31 @@ def remove_duplicate_genes(**set_up_kwargs):
         img_ext = '.png'
     # initialize directories
     MainDataDir = os.path.join(script_path, '..', 'data')
+
     # data input
     input_directory = set_up_kwargs.get('input_directory')
     if ',' in input_directory:
         input_directory = os.path.join(*input_directory.rsplit(','))
     input_directory = os.path.join(MainDataDir, input_directory)
+
     # sample info input
     sample_info_directory = set_up_kwargs.get('sample_info_directory')
     if ',' in sample_info_directory:
         sample_info_directory = os.path.join(
             *sample_info_directory.rsplit(','))
     sample_info_directory = os.path.join(MainDataDir, sample_info_directory)
+
+    # gene info input
+    gene_info_directory = set_up_kwargs.get('gene_info_directory')
+    if gene_info_directory is None:
+        gene_info_directory = input_directory
+    else:
+        if ',' in gene_info_directory:
+            gene_info_directory = os.path.join(
+                *gene_info_directory.rsplit(','))
+            gene_info_directory = os.path.join(
+                MainDataDir, gene_info_directory)
+
     # data output
     output_directory = set_up_kwargs.get('output_directory')
     if output_directory is None:
@@ -145,7 +159,7 @@ def remove_duplicate_genes(**set_up_kwargs):
                                col_as_index=sample_info_table_index_colname,
                                **{'na_values': ' '})
 
-    # load input_fname
+    # load input_data
     fpath = os.path.join(input_directory, input_fname)
     input_data = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
     empty_pat = input_data.sum(axis=1).isnull()
@@ -160,7 +174,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     # info_table = info_table.reset_index()
 
     # load gene info
-    fpath = os.path.join(input_directory, gene_info_fname)
+    fpath = os.path.join(gene_info_directory, gene_info_fname)
     genes_positions_table = pd.read_csv(fpath, sep='\t', header=0,
                                         index_col=0)
     # get gene chrom position

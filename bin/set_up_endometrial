@@ -119,7 +119,7 @@ set_up_kwargs_default = {
     'mergeHow': 'maxAll',
 
     # set directories
-    'input_directory': 'input',
+    'input_directory': 'input,endometrial',
     'oncoscan_directory': 'fromNexusExpress',
     'oncoscan_files': 'DS_097_all_samples.txt,18044_all_samples.txt',
     'output_directory': 'output',

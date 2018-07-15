@@ -94,6 +94,7 @@ set_up_kwargs_default = {
     'input_directory': 'output,set_up_endometrial',
     'input_fname': 'data_processed.csv',
     'sample_info_directory': 'input',
+    'gene_info_directory': None,
     'dupl_genes_directory': 'remove_dupl_genes',
     'output_directory': None,
     'DEBUG': True
