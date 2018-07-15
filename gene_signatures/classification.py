@@ -233,7 +233,7 @@ def classification(**set_up_kwargs):
     data = data.loc[info_table.index, :].copy()
 
     # load selected genes
-    fname = 'diff_genes_'+select_samples_title+'.csv'
+    fname = 'diff_genes_selected_'+select_samples_title+'.csv'
     fpath = os.path.join(selected_genes_directory, fname)
     diff_genes = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
 
@@ -317,8 +317,8 @@ def classification(**set_up_kwargs):
         ground_truth.values.flatten().astype(str)
     bwr_custom = custom_div_cmap(5)
     ax = sns.heatmap(data, vmin=vmin, vmax=vmax,
-                        yticklabels=ticklabels, xticklabels=False,
-                        cmap=cmap_custom, cbar=True)
+                     yticklabels=ticklabels, xticklabels=False,
+                     cmap=cmap_custom, cbar=True)
     plt.xticks(xpos, xlabels, rotation=90)
     plt.title(title+' diff mutated genes')
 

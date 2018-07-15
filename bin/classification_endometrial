@@ -21,16 +21,16 @@ plot:
 -heatmap of highlighted selected genes
 
 # run for un-filtered data
-classification_endometrial reportName='classification' input_fname='data_processed__select_all__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' >> ./data/output/set_up_endometrial/classification__select_all.log
-classification_endometrial reportName='classification' input_fname='data_processed__select_all_sortFOXA1__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial/classification__select_all_sortFOXA1.log
-classification_endometrial reportName='classification' input_fname='data_processed__select_TP53wt__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/classification__select_TP53wt.log
-classification_endometrial reportName='classification' input_fname='data_processed__select_TP53mut__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/classification__select_TP53mut.log
+classification_endometrial reportName='classification' output_directory='output,set_up_endometrial' input_fname='data_processed__select_all__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' >> ./data/output/set_up_endometrial/classification__select_all.log
+classification_endometrial reportName='classification' output_directory='output,set_up_endometrial' input_fname='data_processed__select_all_sortFOXA1__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial/classification__select_all_sortFOXA1.log
+classification_endometrial reportName='classification' output_directory='output,set_up_endometrial' input_fname='data_processed__select_TP53wt__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/classification__select_TP53wt.log
+classification_endometrial reportName='classification' output_directory='output,set_up_endometrial' input_fname='data_processed__select_TP53mut__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/classification__select_TP53mut.log
 
 # run for filtered data
-# classification_endometrial reportName='classification' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_all__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' >> ./data/output/set_up_endometrial_FILT/classification__select_all.log
-# classification_endometrial reportName='classification' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_all_sortFOXA1__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_all_sortFOXA1.log
-# classification_endometrial reportName='classification' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_TP53wt__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_TP53wt.log
-classification_endometrial reportName='classification' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_TP53mut__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_TP53mut.log
+# classification_endometrial reportName='classification' output_directory='output,set_up_endometrial_FILT' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_all__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' >> ./data/output/set_up_endometrial_FILT/classification__select_all.log
+# classification_endometrial reportName='classification' output_directory='output,set_up_endometrial_FILT' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_all_sortFOXA1__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_all_sortFOXA1.log
+# classification_endometrial reportName='classification' output_directory='output,set_up_endometrial_FILT' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_TP53wt__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_TP53wt.log
+classification_endometrial reportName='classification' output_directory='output,set_up_endometrial_FILT' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_TP53mut__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_TP53mut.log
 
 """
 from omics_processing.io import (
@@ -72,7 +72,7 @@ set_up_kwargs_default = {
     'saveReport': True,
     'txt_label': 'Classification',
     'toPrint': True,
-    'reportName': script_fname,
+    'reportName': 'DEBUG_'+script_fname,
     'gene_info_fname': 'genes_info.csv',
     'chr_col': 'chr_int',
     'gene_id_col': 'gene',
@@ -85,7 +85,7 @@ set_up_kwargs_default = {
 
     # set directories
     'input_directory': 'output,set_up_endometrial,remove_dupl_genes',
-    'input_fname': 'data_processed.csv',
+    'input_fname': 'data_processed__select_TP53mut__uniq.txt',
     'gene_info_directory': 'output,set_up_endometrial',
     'sample_info_directory': 'input',
     'selected_genes_directory': 'output,set_up_endometrial,nexus_express',
