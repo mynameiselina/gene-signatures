@@ -547,7 +547,7 @@ def nexus_express(**set_up_kwargs):
         if saveReport:
             fpath = os.path.join(output_directory, 'Fig_Heatmap_' +
                                  select_samples_title +
-                                 +extra_label+img_ext)
+                                 extra_label+img_ext)
             logger.info('Save Heatmap of selected features as '+img_ext +
                         ' in:\n'+fpath)
             plt.savefig(fpath,
