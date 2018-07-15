@@ -495,7 +495,7 @@ def boxplot(all_coefs, n, labels, title='', txtbox='',
             sidespace=3, swarm=True, n_names=15):
 
     sidespace = all_coefs.max() * sidespace
-    xpos, xlabels = which_x_toprint(all_coefs, labels, n_names=n_names)
+    xpos, xlabels = which_x_toPrint(all_coefs, labels, n_names=n_names)
 
     plt.figure(figsize=(15, 5))
     ax = sns.boxplot(data=all_coefs, color='white', saturation=1, width=0.5,
@@ -586,7 +586,7 @@ def order_cytoband(cytoband):
     return sorted_cytoband
 
 
-def which_x_toprint(df, names, n_names=15):
+def which_x_toPrint(df, names, n_names=15):
     if df.shape[1] > 30:
         xmeans = abs(df.mean(axis=0))
         mthres = 0.05

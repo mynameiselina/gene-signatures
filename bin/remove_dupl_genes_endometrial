@@ -50,8 +50,8 @@ set_up_kwargs_default = {
     # function: choose_samples()
     'select_samples_from': None,
     'select_samples_which': None,
+    'select_samples_sort_by': 'TP53_mut5,FOXA1_mut5',
     'select_samples_title': 'select_all',
-    'select_samples_title': 'select_TP53wt',
 
     # script set up params
     'saveReport': True,
@@ -66,7 +66,6 @@ set_up_kwargs_default = {
     'gene_order_dict_fname': None,
     'sample_info_fname': '20180704_emca.csv',
     'sample_info_table_index_colname': 'Oncoscan_ID',
-    'sample_info_table_sortLabels': 'TP53_mut5,FOXA1_mut5',
     'plot_kwargs': plot_kwargs,
 
     # set directories

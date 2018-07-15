@@ -1,25 +1,37 @@
 #!/usr/bin/env python3
 """
-assuming set_up_oncoscan has run:
-load processed data
+load data
 select the samples for the chosen comparison (e.g. all, only TP53wt, etc)
 
-[optional]
-assuming remove_duplicate_genes has run:
-load the duplicate genes dictionary for this comparison
-load the data w/o the duplicate genes
+load selected genes for classification (e.g. from nexus express)
 
-plot CNV frequencies:
-- for all samples in comparison
-(only comparison between 2 groups are supported at the moment)
-- for each group in comparison
-[if with remove_duplicate_genes, produce plot w/ and w/o duplicates]
+Run Classification:
+linear_model.LogisticRegression
+run n times: n = number of samples
+each time run on n-1 samples and predict on 1 sample
+do a binom_test on the predictions
 
-run Nexus Express method to select differentially mutated genes
+figures: highlight the names from the first genes with the
+highest absolute coefficients across all classification runs
 
-plot CNV frequencies OF SELECTED GENES for each group in comparison
-plot heatmap of CNVs OF SELECTED GENES (sorted by group)
-[if with remove_duplicate_genes, produce plot w/ and w/o duplicates]
+plot:
+-boxplot
+-swarmplot
+-heatmap of all selected genes
+-heatmap of highlighted selected genes
+
+# run for un-filtered data
+classification_endometrial reportName='classification' input_fname='data_processed__select_all__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' >> ./data/output/set_up_endometrial/classification__select_all.log
+classification_endometrial reportName='classification' input_fname='data_processed__select_all_sortFOXA1__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial/classification__select_all_sortFOXA1.log
+classification_endometrial reportName='classification' input_fname='data_processed__select_TP53wt__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/classification__select_TP53wt.log
+classification_endometrial reportName='classification' input_fname='data_processed__select_TP53mut__uniq.txt' input_directory='output,set_up_endometrial,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial/classification__select_TP53mut.log
+
+# run for filtered data
+# classification_endometrial reportName='classification' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_all__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' >> ./data/output/set_up_endometrial_FILT/classification__select_all.log
+# classification_endometrial reportName='classification' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_all_sortFOXA1__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_title='select_all_sortFOXA1' select_samples_sort_by='FOXA1_mut5,TP53_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_all_sortFOXA1.log
+# classification_endometrial reportName='classification' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_TP53wt__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=0 select_samples_title='select_TP53wt' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_TP53wt.log
+classification_endometrial reportName='classification' selected_genes_directory='output,set_up_endometrial_FILT,nexus_express' gene_info_directory='output,set_up_endometrial_FILT' input_fname='data_processed__select_TP53mut__uniq.txt' input_directory='output,set_up_endometrial_FILT,remove_dupl_genes' select_samples_from='TP53_mut5' select_samples_which=1 select_samples_title='select_TP53mut' select_samples_sort_by='FOXA1_mut5' >> ./data/output/set_up_endometrial_FILT/classification__select_TP53mut.log
+
 """
 from omics_processing.io import (
     set_directory
@@ -27,8 +39,8 @@ from omics_processing.io import (
 from gene_signatures.core import (
     custom_div_cmap
 )
-from gene_signatures.nexus_express import (
-    nexus_express
+from gene_signatures.classification import (
+    classification
 )
 import os
 import sys
@@ -42,10 +54,10 @@ script_fname = os.path.basename(__file__).rsplit('.')[0]
 
 
 plot_kwargs = {
-    'cmap_custom': custom_div_cmap(5),
-    'vmin': -2,
-    'vmax': 2,
-    'highRes': True
+    'cmap_custom': custom_div_cmap(9),
+    'vmin': -4,
+    'vmax': 4,
+    'highRes': False
 }
 
 set_up_kwargs_default = {
@@ -58,8 +70,7 @@ set_up_kwargs_default = {
 
     # script set up params
     'saveReport': True,
-    'compute_pdist': False,
-    'txt_label': 'Nexus Express for feature selection',
+    'txt_label': 'Classification',
     'toPrint': True,
     'reportName': script_fname,
     'gene_info_fname': 'genes_info.csv',
@@ -68,23 +79,17 @@ set_up_kwargs_default = {
     'gene_order_dict_fname': None,
     'sample_info_fname': '20180704_emca.csv',
     'sample_info_table_index_colname': 'Oncoscan_ID',
-    'sample_info_table_sortLabels': 'TP53_mut5,FOXA1_mut5',
     'plot_kwargs': plot_kwargs,
     'toRemoveDupl': True,
-
-    # params for diff analysis
-    'min_diff_thres': 0.25,
-    'multtest_method': 'fdr_bh',
-    'multtest_alpha': 0.05,
-    'with_perc': 100,
+    'rename_genes': 'newGeneName',
 
     # set directories
-    'input_directory': 'output,set_up_endometrial',
+    'input_directory': 'output,set_up_endometrial,remove_dupl_genes',
     'input_fname': 'data_processed.csv',
+    'gene_info_directory': 'output,set_up_endometrial',
     'sample_info_directory': 'input',
-    'dupl_genes_directory': 'output,set_up_endometrial,remove_dupl_genes',
-    'data_uniq_fname': 'data_processed__uniq',
-    'output_directory': 'output,set_up_endometrial',
+    'selected_genes_directory': 'output,set_up_endometrial,nexus_express',
+    'output_directory': None,
     'DEBUG': True
 }
 
@@ -101,7 +106,7 @@ def main(**set_up_kwargs):
     if set_up_kwargs_default.get('DEBUG'):
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-    nexus_express(**set_up_kwargs_default)
+    classification(**set_up_kwargs_default)
 
 
 if __name__ == '__main__':

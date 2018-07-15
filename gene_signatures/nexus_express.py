@@ -221,13 +221,11 @@ def nexus_express(**set_up_kwargs):
         fpath = os.path.join(input_directory, gene_info_fname)
         genes_positions_table = pd.read_csv(fpath, sep='\t', header=0,
                                             index_col=0)
-    else:
-        xlabels, xpos = None, None
-
-    # get gene chrom position
-    if gene_info_fname is not None:
+        # get gene chrom position
         xlabels, xpos = get_chr_ticks(genes_positions_table, data,
                                       id_col='gene', chr_col=chr_col)
+    else:
+        xlabels, xpos = None, None
 
     # select the samples for the chosen comparison (e.g. all, only TP53wt, etc)
     logger.info('select_samples_from: '+str(select_samples_from) +
