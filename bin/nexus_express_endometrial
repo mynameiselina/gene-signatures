@@ -68,6 +68,8 @@ set_up_kwargs_default = {
     'select_samples_which': None,
     'select_samples_sort_by': 'TP53_mut5,FOXA1_mut5',
     'select_samples_title': 'select_all',
+    'class_labels': 'TP53wt,TP53mut',
+    'class_values': '0,1',
 
     # script set up params
     'saveReport': True,

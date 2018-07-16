@@ -823,7 +823,8 @@ def _preprocessing(patient_id, onesample, info_table,
     if onesample.empty:
         logger.warning('EMPTY patient! there are no CNVs for patient ' +
                        str(patient_id))
-        return onesample, info_table, pd.DataFrame([]), pd.DataFrame([]), pd.DataFrame([])
+        return onesample, info_table, pd.DataFrame([]), \
+            pd.DataFrame([]), pd.DataFrame([])
 
     if toPrint:
         logger.info(str(onesample.shape[0]) +

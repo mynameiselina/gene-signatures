@@ -22,13 +22,12 @@
     "select_samples_title": "select_TP53mut",
 
     
-    "input_directory": "output,endometrial,set_up_endometrial",
+    "input_directory": "output,endometrial,setup_endometrial",
     "input_fname": "data_processed.csv",
     "gene_info_directory": null,
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     "sample_info_directory": "input,endometrial",
-    "oncoscan_files": "DS_097_all_samples.txt,18044_all_samples.txt",
 
     "sample_info_read_csv_kwargs":{
         "na_values": " "

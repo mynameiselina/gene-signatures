@@ -104,6 +104,8 @@ def classification(**set_up_kwargs):
     sample_info_table_index_colname = \
         set_up_kwargs.get('sample_info_table_index_colname',
                           'Oncoscan_ID')
+    sample_info_read_csv_kwargs = set_up_kwargs.get(
+        'sample_info_read_csv_kwargs', {})
     rename_genes = set_up_kwargs.get('rename_genes', 'newGeneName')
 
     # plotting params
@@ -182,7 +184,7 @@ def classification(**set_up_kwargs):
     fpath = os.path.join(sample_info_directory, sample_info_fname)
     info_table = load_clinical(fpath,
                                col_as_index=sample_info_table_index_colname,
-                               **{'na_values': ' '})
+                               **sample_info_read_csv_kwargs)
 
     # load data
     fpath = os.path.join(input_directory, input_fname)

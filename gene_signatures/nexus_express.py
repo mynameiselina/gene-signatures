@@ -88,8 +88,15 @@ def nexus_express(**set_up_kwargs):
     select_samples_title = set_up_kwargs.get('select_samples_title',
                                              'select_all')
     clinical_label = select_samples_sort_by_list[0]
-    class_labels = [clinical_label+'WT', clinical_label+'MUT']
-    class_values = [0, 1]  # WT:0, MUT:1
+    class_labels = set_up_kwargs.get('class_labels', None)
+    if class_labels is not None:
+        if ',' in class_labels:
+            class_labels = class_labels.rsplit(',')
+    class_values = set_up_kwargs.get('class_values', None)
+    if class_values is not None:
+        if ',' in class_values:
+            class_values = class_values.rsplit(',')
+            class_values = np.array(class_values).astype(int)
 
     # initialize script params
     saveReport = parse_arg_type(
@@ -113,6 +120,8 @@ def nexus_express(**set_up_kwargs):
     sample_info_table_index_colname = \
         set_up_kwargs.get('sample_info_table_index_colname',
                           'Oncoscan_ID')
+    sample_info_read_csv_kwargs = set_up_kwargs.get(
+        'sample_info_read_csv_kwargs', {})
     data_uniq_fname = input_fname.rsplit('.')[0]+'__' + \
         select_samples_title+'__uniq'
     toRemoveDupl = parse_arg_type(
@@ -211,7 +220,7 @@ def nexus_express(**set_up_kwargs):
     fpath = os.path.join(sample_info_directory, sample_info_fname)
     info_table = load_clinical(fpath,
                                col_as_index=sample_info_table_index_colname,
-                               **{'na_values': ' '})
+                               **sample_info_read_csv_kwargs)
 
     # load processed data
     fpath = os.path.join(input_directory, input_fname)

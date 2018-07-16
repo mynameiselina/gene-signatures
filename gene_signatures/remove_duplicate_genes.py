@@ -73,9 +73,13 @@ def remove_duplicate_genes(**set_up_kwargs):
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     sample_info_fname = set_up_kwargs.get('sample_info_fname',
                                           '20180704_emca.csv')
+    if ',' in sample_info_fname:
+        sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
     sample_info_table_index_colname = \
         set_up_kwargs.get('sample_info_table_index_colname',
                           'Oncoscan_ID')
+    sample_info_read_csv_kwargs = set_up_kwargs.get(
+        'sample_info_read_csv_kwargs', {})
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
@@ -157,7 +161,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     fpath = os.path.join(sample_info_directory, sample_info_fname)
     info_table = load_clinical(fpath,
                                col_as_index=sample_info_table_index_colname,
-                               **{'na_values': ' '})
+                               **sample_info_read_csv_kwargs)
 
     # load input_data
     fpath = os.path.join(input_directory, input_fname)

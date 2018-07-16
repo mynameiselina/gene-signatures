@@ -1,7 +1,7 @@
 {
-    "reportName": "rm_dpl_emca_all",
+    "reportName": "rm_dpl",
     "saveReport": true,
-    "txt_label": "remove duplicate gene profiles from all EMCA samples",
+    "txt_label": "remove duplicate gene profiles from cohort 2 HNSCC samples",
     "toPrint": true,
 
     "chr_col": "chr_int",
@@ -9,8 +9,8 @@
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -4,
-        "vmax": 4,
+        "vmin": -2,
+        "vmax": 2,
         "highRes": false
     },
 
@@ -18,23 +18,24 @@
     
     "select_samples_from": null,
     "select_samples_which": null,
-    "select_samples_sort_by": "TP53_mut5,FOXA1_mut5",
+    "select_samples_sort_by": "Local_Control",
     "select_samples_title": "select_all",
-
     
-    "input_directory": "output,endometrial,setup_endometrial",
+    "input_directory": "output,headneck,setup_c2_excavator2_byNexus",
     "input_fname": "data_processed.csv",
     "gene_info_directory": null,
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
-    "sample_info_directory": "input,endometrial",
+    "sample_info_directory": "input,headneck,cohort2",
 
     "sample_info_read_csv_kwargs":{
-        "na_values": " "
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0
     },
-    "sample_info_fname": "20180704_emca.csv",
-    "sample_info_table_index_colname": "Oncoscan_ID",
-    "sample_info_table_sortLabels": "TP53_mut5,FOXA1_mut5",
+    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
+    "sample_info_table_index_colname": "Patient",
+    "sample_info_table_sortLabels": "Local_Control",
     
     "output_directory": null,
     "DEBUG": true

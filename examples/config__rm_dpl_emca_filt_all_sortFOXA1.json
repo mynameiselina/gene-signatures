@@ -1,7 +1,7 @@
 {
-    "reportName": "rm_dpl_emca_tp53wt",
+    "reportName": "rm_dpl_emca_filt_all_sortFOXA1",
     "saveReport": true,
-    "txt_label": "remove duplicate gene profiles from TP53wt EMCA samples",
+    "txt_label": "remove duplicate gene profiles from all filtered EMCA samples (sortFOXA1)",
     "toPrint": true,
 
     "chr_col": "chr_int",
@@ -16,13 +16,13 @@
 
     "compute_pdist": false,
     
-    "select_samples_from": "TP53_mut5",
-    "select_samples_which": 0,
-    "select_samples_sort_by": "FOXA1_mut5",
-    "select_samples_title": "select_TP53wt",
+    "select_samples_from": null,
+    "select_samples_which": null,
+    "select_samples_sort_by": "FOXA1_mut5,TP53_mut5",
+    "select_samples_title": "select_all_sortFOXA1",
 
     
-    "input_directory": "output,endometrial,setup_endometrial",
+    "input_directory": "output,endometrial,setup_endometrial_filt",
     "input_fname": "data_processed.csv",
     "gene_info_directory": null,
     "gene_info_fname": "genes_info.csv",
