@@ -1,0 +1,42 @@
+{
+    "reportName": "rm_dpl_emca_tp53wt",
+    "saveReport": true,
+    "txt_label": "remove duplicate gene profiles from TP53wt EMCA samples",
+    "toPrint": true,
+
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
+        "highRes": false
+    },
+
+    "compute_pdist": false,
+    
+    "select_samples_from": "TP53_mut5",
+    "select_samples_which": 0,
+    "select_samples_sort_by": "FOXA1_mut5",
+    "select_samples_title": "select_TP53wt",
+
+    
+    "input_directory": "output,endometrial,set_up_endometrial",
+    "input_fname": "data_processed.csv",
+    "gene_info_directory": null,
+    "gene_info_fname": "genes_info.csv",
+    "gene_order_dict_fname": null,
+    "sample_info_directory": "input,endometrial",
+    "oncoscan_files": "DS_097_all_samples.txt,18044_all_samples.txt",
+
+    "sample_info_read_csv_kwargs":{
+        "na_values": " "
+    },
+    "sample_info_fname": "20180704_emca.csv",
+    "sample_info_table_index_colname": "Oncoscan_ID",
+    "sample_info_table_sortLabels": "TP53_mut5,FOXA1_mut5",
+    
+    "output_directory": null,
+    "DEBUG": true
+}

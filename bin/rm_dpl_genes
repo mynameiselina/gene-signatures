@@ -1,56 +1,23 @@
 #!/usr/bin/env python3
 """
-load info table of samples
-load files from each patient: samples in rows, genes in columns
-get size of each sample and plot it
-(i.e. abundance of genes with in each sample)
-
-concat all samples in one table and keep union of all genes,
-then fill NaNs with zero
-
-CLEAN THE data FROM ALL SAMPLES
-extract the start, end and chrom info from the table
-and keep only the functions values
-remove genes that exist in multiple chromosomes across samples
-
-ORDER THE GENES FROM ALL SAMPLES
-if the gene names are duplicated, through an exception
-
-CREATE dictionary of gene names and their order
-ORDER the table by gene position
-
-PLOT Abundance of gene data per sample:
-'oncoscan_events', 'oncoscan_events_filt',
-'genes_with_CNV', 'genes_with_CNV_merged'
-
-SAVE table w/ and w/o positions:
-'table_withPos.csv'
-'table.csv'
-
-PLOT heatmap before gene ordering
-
-CHECK if there are empty genes and remove them
-PLOT  heatmap after gene ordering and cleaning
-
-SAVE ordered table and gene pos info table:
-'table_ordered.csv'
-'genes_info.csv'
-
+# prepare for the following patient group comparisons:
+# all samples: TP53wt vs. TP53mut
+# all samples: FOXA1mut vs. FOXA1wt
+# TP53wt samples: FOXA1mut vs. FOXA1wt
+# TP53mut samples: FOXA1mut vs. FOXA1wt
 """
-
-from gene_signatures.set_up_data import (
-    set_up_data
-)
-from gene_signatures.core import (
-    custom_div_cmap
-)
 from omics_processing.io import (
     set_directory
     )
+from gene_signatures.core import (
+    custom_div_cmap
+)
+from gene_signatures.remove_duplicate_genes import (
+    remove_duplicate_genes
+)
 import os
 import sys
 import plac
-import json
 import logging
 import matplotlib
 import matplotlib.pyplot as plt
@@ -62,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 debug_config = os.path.join(
     script_path, '..', 'examples',
-    'config__setup_DEBUG.json')
+    'config__rm_dpl_genes_DEBUG.json')
 params = {
     'reportName': script_fname
 }
@@ -109,8 +76,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
         #  update default params with command line params
         params.update(set_up_kwargs)
 
-    # call set_up_data
-    set_up_data(**params)
+    remove_duplicate_genes(**params)
 
 
 if __name__ == '__main__':

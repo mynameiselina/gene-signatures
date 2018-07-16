@@ -680,7 +680,7 @@ def process_oncoscan(onesample, toPrint=False, **kwargs):
         if onesample_small.empty:
             logger.warning('after removing rows with no gene symbols, ' +
                            'there are no more CNVs for the patient')
-            return onesample_small
+            return onesample_small, dropped_rows
 
     # then reset the index
     onesample_small.reset_index(inplace=True, drop=True)
@@ -823,7 +823,7 @@ def _preprocessing(patient_id, onesample, info_table,
     if onesample.empty:
         logger.warning('EMPTY patient! there are no CNVs for patient ' +
                        str(patient_id))
-        return onesample, info_table, pd.DataFrame([]), pd.DataFrame([])
+        return onesample, info_table, pd.DataFrame([]), pd.DataFrame([]), pd.DataFrame([])
 
     if toPrint:
         logger.info(str(onesample.shape[0]) +
@@ -851,7 +851,7 @@ def _preprocessing(patient_id, onesample, info_table,
                            'there are no more CNVs for patient ' +
                            str(patient_id))
             return onesample, info_table, dropped_rows_filter_pat, \
-                pd.DataFrame([])
+                pd.DataFrame([]), pd.DataFrame([])
         else:
             if toPrint:
                 logger.info(str(onesample.shape[0]) +
@@ -874,7 +874,7 @@ def _preprocessing(patient_id, onesample, info_table,
                            'there are no more CNVs for patient ' +
                            str(patient_id))
             return onesample, info_table, dropped_rows_filter_pat, \
-                pd.DataFrame([])
+                dropped_rows_process_pat, pd.DataFrame([])
         else:
             if toPrint:
                 logger.info(str(onesample.shape[0]) +
@@ -1121,13 +1121,13 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
 
 def _map_cnvs_to_genes(
         onesample, dropped_rows, sample_name,
-        removeLOH, function_dict, mergeHow,
+        removeLOH, LOH_value, function_dict, mergeHow,
         toPrint
         ):
     # remove rows with LOH in FUNCTION !!!!!!!!!!!!!!!!!!
     if removeLOH:
         # keep the rows we will drop
-        s_isLOH = (onesample['function'] == 'LOH')
+        s_isLOH = (onesample['function'] == LOH_value)
         if s_isLOH.any():
             r2drop = s_isLOH.index[s_isLOH]
             reason2drop = 'LOH'
@@ -1162,24 +1162,18 @@ def _map_cnvs_to_genes(
         if toPrint:
             logger.info(str(len(genes_to_remove_dict.keys())) +
                         ' unique gene IDs removed:\n' +
-                        str(genes_to_remove_dict.keys()))
+                        str(natsorted(genes_to_remove_dict.keys())))
 
     # create a new column with ID and CHR together
     onesample['CHR_ID'] = onesample['chr']+':'+onesample['id']
 
     # define a dict of FUNCTION values
     # onesample.FUNCTION.unique()
-    if function_dict is None:
-        function_dict = {
-                            'Homozygous Copy Loss': -4,
-                            'CN Loss': -2,
-                            'CN Gain': 2,
-                            'High Copy Gain': 4,
-                            'LOH': -1
-                        }
-    # create a new column with these mapped values
-    onesample['FUNC_int'] = onesample['function'].map(function_dict)
-
+    if function_dict is not None:
+        # create a new column with these mapped values
+        onesample['FUNC_int'] = onesample['function'].map(function_dict)
+    else:
+        onesample['FUNC_int'] = onesample['function']
     # fist maybe check (and Print) how many chr_id dupl we have
     count_diff = onesample[onesample['CHR_ID'].duplicated(keep='first')
                            ].shape[0]
@@ -1190,7 +1184,7 @@ def _map_cnvs_to_genes(
                         str(onesample[onesample['CHR_ID'
                                                 ].duplicated(keep=False)
                                       ].shape[0]) +
-                        ' rows aggregated to' +
+                        ' rows aggregated to ' +
                         str(onesample[onesample['CHR_ID'
                                                 ].duplicated(keep='first')
                                       ].shape[0]) +
@@ -1219,7 +1213,7 @@ def _map_cnvs_to_genes(
         if toPrint:
             logger.info(str(len(CHR_ID2drop)) +
                         ' unique gene IDs removed:\n' +
-                        str(CHR_ID2drop))
+                        str(natsorted(CHR_ID2drop)))
 
         # RE-group by CHR_ID and sum over the FUNCTION
         # (to get all different functions for one gene)
@@ -1332,7 +1326,8 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
         kwargs.get('removeLOH', True),
         bool
     )
-    function_dict = kwargs.get('function_dict', {})
+    LOH_value = kwargs.get('LOH_value', None)
+    function_dict = kwargs.get('function_dict', None)
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
     mergeHow = kwargs.get('mergeHow', 'maxAll')
 
@@ -1367,7 +1362,7 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
 
     df, dropped_rows = _map_cnvs_to_genes(
         onesample, dropped_rows, sample_name,
-        removeLOH, function_dict, mergeHow,
+        removeLOH, LOH_value, function_dict, mergeHow,
         toPrint
         )
 
@@ -1379,7 +1374,8 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
         kwargs.get('removeLOH', True),
         bool
     )
-    function_dict = kwargs.get('function_dict', {})
+    LOH_value = kwargs.get('LOH_value', None)
+    function_dict = kwargs.get('function_dict', None)
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
     mergeHow = kwargs.get('mergeHow', 'maxAll')
 
@@ -1454,7 +1450,7 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
 
     df, dropped_rows = _map_cnvs_to_genes(
         onesample, dropped_rows, sample_name,
-        removeLOH, function_dict, mergeHow,
+        removeLOH, LOH_value, function_dict, mergeHow,
         toPrint
         )
 

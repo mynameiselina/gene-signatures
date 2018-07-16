@@ -66,7 +66,7 @@ def set_up_data(**set_up_kwargs):
     )
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
     remove_patients = set_up_kwargs.get('remove_patients', None)
-    if remove_patients is None:
+    if remove_patients is None or remove_patients == "":
         remove_patients_list = []
     else:
         remove_patients_list = remove_patients.rsplit(',')
@@ -338,7 +338,7 @@ def set_up_data(**set_up_kwargs):
         raise()
     else:
         if toPrint:
-            logger.info('genes are unique, continue..')
+            logger.info('gene names are unique, continue..')
 
     if toPrint:
         logger.info('Order genes according to genomic position')
@@ -454,7 +454,7 @@ def set_up_data(**set_up_kwargs):
         if toPrint:
             logger.info('remove the following genes because ' +
                         'they have no values in the table: ' +
-                        genes2remove)
+                        str(genes2remove))
 
     #########################################
     # PLOT  heatmap after gene ordering and cleaning

@@ -14,13 +14,7 @@
     "edit_kwargs": {
         "keep_columns": "Chromosome,Start,End,Call,ProbCall,Gene_Symbol",
         "new_columns": "chr,start,end,function,probcall,id",
-        "function_dict": {
-            "Homozygous Copy Loss": -4,
-            "CN Loss": -2,
-            "CN Gain": 2,
-            "High Copy Gain": 4,
-            "LOH": -1
-        },
+        "function_dict": null,
         "mergeHow": "maxAll",
         "removeLOH": false,
         "LOH_value": null
@@ -31,7 +25,7 @@
     "split_patID": "_",
     "chr_col": "chr_int",
     "gene_id_col": "gene",
-    "remove_patients": "",
+    "remove_patients": null,
 
     "plot_kwargs": {
         "cmap_custom": null,
