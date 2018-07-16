@@ -22,7 +22,8 @@
             "LOH": -1
         },
         "mergeHow":"maxAll",
-        "removeLOH":true
+        "removeLOH":true,
+        "LOH_value": "LOH"
     },
 
     "comment": "#",

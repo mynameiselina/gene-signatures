@@ -839,8 +839,8 @@ def _preprocessing(patient_id, onesample, info_table,
                 filter_oncoscan(onesample, toPrint=toPrint,
                                 **filt_kwargs)
         elif editWith == 'ExCavator2':
-            onesample, dropped_rows_process_pat = filter_excavator(
-                onesample, toPrint=toPrint, **preproc_kwargs)
+            onesample, dropped_rows_filter_pat = filter_excavator(
+                onesample, toPrint=toPrint, **filt_kwargs)
         else:
             logger.error('unsupported sample editor '+(editWith))
             raise
@@ -1074,7 +1074,8 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
                 data_or[patient_id] = onesample_or.copy()
 
                 dropped_rows_filter = pd.DataFrame()
-                dropped_rows_map = pd.DataFrame()
+                dropped_rows_process = pd.DataFrame()
+                dropped_rows_edit = pd.DataFrame()
 
                 onesample = data_or[patient_id].copy()
 
@@ -1357,7 +1358,7 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
     if df_isna.sum().sum() > 0:
         if toPrint:
             logger.info('Remove rows with any missing values in columns:\n' +
-                        check_cols)
+                        str(check_cols))
         # keep the rows we will drop
         r2drop = df_isna.index[df_isna.any(axis=1)]
         reason2drop = 'missing_field'
@@ -1397,9 +1398,18 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
                        srt(keep_columns))
     else:
         keep_columns = keep_columns.rsplit(',')
+    onesample = onesample[keep_columns].copy()
+
+    # rename those columns
+    new_columns = kwargs.get('new_columns', None)
+    if new_columns is not None:
+        new_columns = new_columns.rsplit(',')
+    else:
+        new_columns = ['chr', 'start', 'end', 'function', 'probcall', 'id']
+    onesample = onesample.rename(columns=dict(zip(keep_columns, new_columns)))
 
     # remove rows with NaNs in keep_columns
-    df_isna = onesample[keep_columns].isna()
+    df_isna = onesample.isna()
     if toPrint:
         logger.info('Missing values for each column:')
         df_isna_sum = df_isna.sum()
@@ -1409,7 +1419,7 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
     if df_isna.sum().sum() > 0:
         if toPrint:
             logger.info('Remove rows with any missing values in columns:\n' +
-                        keep_columns)
+                        str(onesample.columns))
         # keep the rows we will drop
         r2drop = df_isna.index[df_isna.any(axis=1)]
         reason2drop = 'missing_field'
@@ -1419,26 +1429,26 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
     # Remove rows with invalid Gene_Symbol - space
     c = " "
     c_name = 'Space'
-    isInvalid = onesample['Gene_Symbol'].str.contains(pat=c)
+    isInvalid = onesample['id'].str.contains(pat=c)
     if isInvalid.any():
         # keep the rows we will drop
         invalid_ids = onesample[isInvalid].index
 
         r2drop = onesample.index[isInvalid]
-        reason2drop = 'invalid_Gene_Symbol_with'+c_name
+        reason2drop = 'invalid_gene_id_with'+c_name
         onesample, dropped_rows = _drop_rows(
             onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # Remove rows with invalid Gene_Symbol - colon
     c = ":"
     c_name = 'Colon'
-    isInvalid = onesample['Gene_Symbol'].str.contains(pat=c)
+    isInvalid = onesample['id'].str.contains(pat=c)
     if isInvalid.any():
         # keep the rows we will drop
         invalid_ids = onesample[isInvalid].index
 
         r2drop = onesample.index[isInvalid]
-        reason2drop = 'invalid_Gene_Symbol_with'+c_name
+        reason2drop = 'invalid_gene_id_with'+c_name
         onesample, dropped_rows = _drop_rows(
             onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
@@ -1489,7 +1499,7 @@ def load_clinical(datadir, which_dataID=None, fname=None, **read_csv_kwargs):
         if missing_samples.any():
             logger.info(str(missing_samples.sum())+' missing ' +
                         which_dataID+' samples from patient(s): ' +
-                        patient_ids['patient'][missing_samples].unique())
+                        str(patient_ids['patient'][missing_samples].unique()))
             patient_ids.drop(patient_ids.index[missing_samples], axis=0,
                              inplace=True)
 
