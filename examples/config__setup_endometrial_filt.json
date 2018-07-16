@@ -8,7 +8,7 @@
 
     "editWith": "Oncoscan",
     "withFilter": true,
-    "withPreprocess": true,
+    "withProcess": true,
 
     "preproc_kwargs": {
         "keep_columns": "Chromosome Region,Event,Gene Symbols",

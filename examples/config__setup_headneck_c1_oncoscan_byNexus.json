@@ -9,7 +9,7 @@
 
     "editWith": "Oncoscan",
     "withFilter": false,
-    "withPreprocess": false,
+    "withProcess": false,
 
     "preproc_kwargs": {},
     "filt_kwargs": {},

@@ -60,67 +60,10 @@ script_fname = os.path.basename(__file__).rsplit('.')[0]
 logger = logging.getLogger(__name__)
 
 
+debug_config = os.path.join(
+    script_path, '..', 'examples', 'config__setup_DEBUG.json')
 params = {
-    # 'reportName': script_fname,
-    "reportName": "DEBUG_setup_headneck",
-
-    "reportName": "setup_c1_oncoscan_raw",
-    "saveReport": True,
-    "txt_label": "set up raw Oncoscan data",
-    "toPrint": True,
-
-    "load_files": True,
-    "fext": "_events.txt",
-
-    "editWith": "Oncoscan",
-    "withFilter": False,
-    "withPreprocess": True,
-
-    "preproc_kwargs": {
-        "keep_columns": "Chromosome Region,Event,Gene Symbols",
-        "new_columns": "chr,start,end,id,function"
-    },
-    "filt_kwargs": {},
-    "edit_kwargs": {
-        "function_dict": {
-            "Homozygous Copy Loss": -4,
-            "CN Loss": -2,
-            "CN Gain": 2,
-            "High Copy Gain": 4,
-            "LOH": -1
-        },
-        "mergeHow": "maxAll",
-        "removeLOH": True
-    },
-
-    "comment": "#",
-    "names": None,
-    "chr_col": "chr_int",
-    "gene_id_col": "gene",
-    "remove_patients": None,
-
-    "plot_kwargs": {
-        "cmap_custom": None,
-        "vmin": -4,
-        "vmax": 4,
-        "highRes": False
-    },
-
-    "input_directory": "input,headneck,cohort1",
-    "oncoscan_directory": "oncoscan,raw",
-    "oncoscan_files": "DS_101,DS_107",
-
-    "sample_info_fname": "sample_info.txt",
-    "sample_info_read_csv_kwargs": {
-        "sep": "\t",
-        "header": 0,
-        "index_col": 0
-    },
-    "sample_info_table_index_colname": "cnvID",
-    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
-
-    "output_directory": "output,headneck",
-    "DEBUG": True
+    'reportName': script_fname
 }
 
 
@@ -139,6 +82,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
 
     if DEBUG:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+        json_config = debug_config
 
     if json_config is not None:
         try:
@@ -159,6 +103,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
         except:
             logger.error('Config path does not exist:\n'+json_config)
     else:
+        logger.info('No config file found')
         #  update default params with command line params
         params.update(set_up_kwargs)
 

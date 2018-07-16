@@ -1,22 +1,22 @@
 {
-    "reportName": "setup_c2_excavator2_byNexus",
+    "reportName": "setup_c2_excavator2_byNexus_filt",
     "saveReport": true,
-    "txt_label": "set up raw Oncoscan data",
+    "txt_label": "set up ExCavator2 CNVs filtered",
     "toPrint": true,
 
     "load_files": true,
-    "fext": "_events.txt",
+    "fext": ".excavatorCNV.CNVannotated.txt",
 
-    "editWith": "Oncoscan",
-    "withFilter": false,
-    "withPreprocess": true,
+    "editWith": "ExCavator2",
+    "withFilter": true,
+    "withProcess": false,
 
-    "preproc_kwargs": {
-        "keep_columns": "Chromosome Region,Event,Gene Symbols",
-        "new_columns": "chr,start,end,id,function"
+    "filt_kwargs": {
+        "choose_col": "ProbCall",
+        "choose_thres": 0.95
     },
-    "filt_kwargs": {},
     "edit_kwargs": {
+        "keep_columns": "Chromosome,Start,End,Call,ProbCall,Gene_Symbol",
         "function_dict": {
             "Homozygous Copy Loss": -4,
             "CN Loss": -2,
@@ -30,14 +30,15 @@
 
     "comment": "#",
     "names": null,
+    "split_patID": "_",
     "chr_col": "chr_int",
     "gene_id_col": "gene",
-    "remove_patients": "DS-107_0001",
+    "remove_patients": "",
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -4,
-        "vmax": 4,
+        "vmin": -2,
+        "vmax": 2,
         "highRes": false
     },
     
@@ -50,9 +51,9 @@
         "header": 0,
         "index_col": 0
     },
-    "sample_info_fname": "sample_info.txt",
-    "sample_info_table_index_colname": "cnvID",
-    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
+    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
+    "sample_info_table_index_colname": "patient",
+    "sample_info_table_sortLabels": "hasRelapsed",
     
     "output_directory": "output,headneck",
     "DEBUG": true

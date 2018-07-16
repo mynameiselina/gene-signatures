@@ -1,15 +1,14 @@
 {
-    "reportName": "setup_c1_oncoscan_raw",
+    "reportName": "setup_DEBUG",
     "saveReport": true,
-    "txt_label": "set up raw Oncoscan data",
+    "txt_label": "set up Oncoscan data",
     "toPrint": true,
 
-    "load_files": true,
-    "fext": "_events.txt",
+    "load_files": false,
 
     "editWith": "Oncoscan",
     "withFilter": false,
-    "withPreprocess": true,
+    "withProcess": true,
 
     "preproc_kwargs": {
         "keep_columns": "Chromosome Region,Event,Gene Symbols",
@@ -32,7 +31,7 @@
     "names": null,
     "chr_col": "chr_int",
     "gene_id_col": "gene",
-    "remove_patients": "DS-107_0001",
+    "remove_patients": null,
 
     "plot_kwargs": {
         "cmap_custom": null,
@@ -41,19 +40,17 @@
         "highRes": false
     },
     
-    "input_directory": "input,headneck,cohort1",
-    "oncoscan_directory": "oncoscan,raw",
-    "oncoscan_files": "DS_101,DS_107",
+    "input_directory": "input,endometrial",
+    "oncoscan_directory": "fromNexusExpress",
+    "oncoscan_files": "DS_097_all_samples.txt,18044_all_samples.txt",
 
     "sample_info_read_csv_kwargs":{
-        "sep": "\t",
-        "header": 0,
-        "index_col": 0
+        "na_values": " "
     },
-    "sample_info_fname": "sample_info.txt",
-    "sample_info_table_index_colname": "cnvID",
-    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
+    "sample_info_fname": "20180704_emca.csv",
+    "sample_info_table_index_colname": "Oncoscan_ID",
+    "sample_info_table_sortLabels": "TP53_mut5,FOXA1_mut5",
     
-    "output_directory": "output,headneck",
+    "output_directory": "output,endometrial",
     "DEBUG": true
 }

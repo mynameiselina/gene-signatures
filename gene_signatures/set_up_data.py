@@ -60,8 +60,8 @@ def set_up_data(**set_up_kwargs):
         set_up_kwargs.get('withFilter', False),
         bool
     )
-    withPreprocess = parse_arg_type(
-        set_up_kwargs.get('withPreprocess', True),
+    withProcess = parse_arg_type(
+        set_up_kwargs.get('withProcess', True),
         bool
     )
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
@@ -74,6 +74,8 @@ def set_up_data(**set_up_kwargs):
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     sample_info_fname = set_up_kwargs.get('sample_info_fname',
                                           '20180704_emca.csv')
+    if ',' in sample_info_fname:
+        sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {}
     )
@@ -164,33 +166,40 @@ def set_up_data(**set_up_kwargs):
         if toPrint:
             logger.info(txt_label+': load files from all patients\n')
 
-        pat_data_list, pat_data_or_dict, dropped_rows_filt, \
-            dropped_rows_map, info_table = \
+        pat_data_list, pat_data_or_dict, dropped_rows_filter, \
+            dropped_rows_process, dropped_rows_edit, info_table = \
             load_and_process_files(fpaths, info_table,
                                    **set_up_kwargs)
     else:
         if toPrint:
             logger.info(txt_label+': load data from all patients\n')
 
-        pat_data_list, pat_data_or_dict, dropped_rows_filt, \
-            dropped_rows_map, info_table = \
+        pat_data_list, pat_data_or_dict, dropped_rows_filter, \
+            dropped_rows_process, dropped_rows_edit, info_table = \
             load_and_process_summary_file(fpaths, info_table,
                                           **set_up_kwargs)
 
-    if (dropped_rows_filt.shape[0] > 0) and (saveReport):
-        f_new = 'allsamples__dropped_rows_filt.txt'
+    if (dropped_rows_filter.shape[0] > 0) and (saveReport):
+        f_new = 'allsamples__dropped_rows_filter.txt'
         if toPrint:
-            logger.info('-save dropped rows from filtering in: '+f_new)
-        dropped_rows_filt.to_csv(os.path.join(output_directory, f_new),
+            logger.info('-save dropped rows from filtering in:\n'+f_new)
+        dropped_rows_filter.to_csv(os.path.join(output_directory, f_new),
                                  sep='\t', header=True, index=True)
 
-    if (dropped_rows_map.shape[0] > 0) and (saveReport):
-        f_new = 'allsamples__dropped_rows_map.txt'
+    if (dropped_rows_process.shape[0] > 0) and (saveReport):
+        f_new = 'allsamples__dropped_rows_process.txt'
         if toPrint:
-            logger.info('-save dropped rows from mapping ' +
-                        'oncoscan to genes in: ' +
+            logger.info('-save dropped rows from processing in:\n' +
                         f_new)
-        dropped_rows_map.to_csv(os.path.join(output_directory, f_new),
+        dropped_rows_process.to_csv(os.path.join(output_directory, f_new),
+                                sep='\t', header=True, index=True)
+
+    if (dropped_rows_edit.shape[0] > 0) and (saveReport):
+        f_new = 'allsamples__dropped_rows_edit.txt'
+        if toPrint:
+            logger.info('-save dropped rows from editing in:\n' +
+                        f_new)
+        dropped_rows_edit.to_csv(os.path.join(output_directory, f_new),
                                 sep='\t', header=True, index=True)
 
     # get size of each sample

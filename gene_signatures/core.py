@@ -616,15 +616,28 @@ def _format_position(position, toPrint):
     return position
 
 
-def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
+def _drop_rows(onesample, dropped_rows, r2drop, reason2drop, toPrint):
+    if toPrint:
+        logger.info('Dropping '+str(r2drop.shape[0]) +
+                    ' rows because: '+reason2drop)
+    df2drop = onesample.loc[r2drop, :]
+    dropped_rows = dropped_rows.append(df2drop, sort=False)
+    dropped_rows.loc[r2drop, 'reason2drop'] = reason2drop
+    # drop the rows
+    onesample = onesample.drop(r2drop, axis=0)
+
+    return onesample, dropped_rows
+
+
+def process_oncoscan(onesample, toPrint=False, **kwargs):
     # columns with info about:
     # Chromosome Region, Event, Gene Symbols (in this order!!!)
     keep_columns = kwargs.get('keep_columns', None)
     if keep_columns is None:
         keep_columns = ["Chromosome Region", "Event", "Gene Symbols"]
         logger.warning('keep_columns kwarg is missing, ' +
-                       'the following ar assumed:\n'+srt(keep_columns))
-        raise
+                       'the following columns are assumed:\n' +
+                       srt(keep_columns))
     else:
         keep_columns = keep_columns.rsplit(',')
         if len(keep_columns) > 3:
@@ -640,6 +653,10 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     else:
         new_columns = ['chr', 'start', 'end', 'id', 'function']
 
+    # for each sample
+    dropped_rows = pd.DataFrame([], columns=np.append(onesample.columns,
+                                'reason2drop'))
+
     # choose only the columns: 'Chromosome Region', 'Event', 'Gene Symbols'
     if toPrint:
         logger.info('keep columns: '+str(keep_columns))
@@ -653,14 +670,13 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     onesample_small['Gene Arrays'] = \
         onesample_small[keep_columns[2]].str.split(', ')
     # remove the row that has NaN in this column
-    if onesample_small['Gene Arrays'].isnull().any():
-        if toPrint:
-            logger.info('remove rows that have NaN gene symbols:')
-        temp = onesample_small.shape[0]
-        onesample_small.dropna(subset=['Gene Arrays'], inplace=True)
-        if toPrint:
-            logger.info(' - removed ' +
-                        str(temp - onesample_small.shape[0])+' rows')
+    #  it means that the CNV does not map to a know gene
+    null_genes = onesample_small['Gene Arrays'].isnull()
+    if null_genes.any():
+        r2drop = onesample_small.index[null_genes]
+        reason2drop = 'cannot_map_gene'
+        onesample_small, dropped_rows = _drop_rows(
+            onesample_small, dropped_rows, r2drop, reason2drop, toPrint)
         if onesample_small.empty:
             logger.warning('after removing rows with no gene symbols, ' +
                            'there are no more CNVs for the patient')
@@ -707,7 +723,7 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     if toPrint:
         logger.info('Finished processing successfully.')
 
-    return onesample_map2genes
+    return onesample_map2genes, dropped_rows
 
 
 def filter_oncoscan(onesample, toPrint=False, **kwargs):
@@ -736,55 +752,56 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     # keep the rows we will drop
     if remove_missing_pValues:
         r2drop = onesample.index[onesample[col_pValue].isnull()]
-        if toPrint:
-            logger.info('Filtering out '+str(r2drop.shape[0]) +
-                        ' events because the p-Value is missing')
-        dropped_rows = dropped_rows.append(onesample.loc[r2drop, :],
-                                           sort=False)
-        dropped_rows.loc[r2drop, 'reason2drop'] = \
-            'filter_'+col_pValue+'_missing'
-        # drop the rows
-        onesample = onesample.drop(r2drop, axis=0)
+        reason2drop = 'filter_'+col_pValue+'_missing'
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # keep the rows we will drop
     r2drop = onesample.index[onesample[col_pValue] >
                              kwargs['pValue_thres']]
-    if toPrint:
-        logger.info('Filtering out ' +
-                    str(r2drop.shape[0])+' events because p-Value > ' +
-                    str(kwargs['pValue_thres']))
-    dropped_rows = dropped_rows.append(onesample.loc[r2drop, :], sort=False)
-    dropped_rows.loc[r2drop, 'reason2drop'] = \
-        'filter_'+col_pValue+'_'+str(kwargs['pValue_thres'])
-    # drop the rows
-    onesample = onesample.drop(r2drop, axis=0)
+    reason2drop = 'filter_'+col_pValue+'_'+str(kwargs['pValue_thres'])
+    onesample, dropped_rows = _drop_rows(
+        onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # keep the rows we will drop
     r2drop = onesample.index[abs(onesample[kwargs['col_probeMedian']]) <
                              kwargs['probeMedian_thres']]
-    if toPrint:
-        logger.info('Filtering out '+str(r2drop.shape[0]) +
-                    ' events because probe median < +/-' +
-                    str(kwargs['probeMedian_thres']))
-    dropped_rows = dropped_rows.append(onesample.loc[r2drop, :], sort=False)
-    dropped_rows.loc[r2drop, 'reason2drop'] = \
-        'filter_'+kwargs['col_probeMedian']+'_' + \
+    reason2drop = 'filter_'+kwargs['col_probeMedian']+'_' + \
         str(kwargs['probeMedian_thres'])
-    # drop the rows
-    onesample = onesample.drop(r2drop, axis=0)
+    onesample, dropped_rows = _drop_rows(
+        onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # keep the rows we will drop
     r2drop = onesample.index[onesample[kwargs['col_probeCount']] <
                              kwargs['probeCount_thres']]
+    reason2drop = 'filter_'+kwargs['col_probeCount'] + \
+        '_'+str(kwargs['probeCount_thres'])
+    onesample, dropped_rows = _drop_rows(
+        onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    # reset index
+    onesample.reset_index(drop=True, inplace=True)
+    dropped_rows.reset_index(drop=True, inplace=True)
+
     if toPrint:
-        logger.info('Filtering out '+str(r2drop.shape[0]) +
-                    ' events because probe count < ' +
-                    str(kwargs['probeCount_thres']))
-    dropped_rows = dropped_rows.append(onesample.loc[r2drop, :], sort=False)
-    dropped_rows.loc[r2drop, 'reason2drop'] = \
-        'filter_'+kwargs['col_probeCount']+'_'+str(kwargs['probeCount_thres'])
-    # drop the rows
-    onesample = onesample.drop(r2drop, axis=0)
+        logger.info('Finished filtering successfully.')
+
+    return onesample, dropped_rows
+
+
+def filter_excavator(onesample, toPrint=False, **kwargs):
+
+    choose_col = kwargs.get('choose_col', 'ProbCall')
+    choose_thres = kwargs.get('choose_thres', 0.95)
+
+    dropped_rows = pd.DataFrame([], columns=np.append(onesample.columns,
+                                'reason2drop'))
+
+    # keep the rows we will drop
+    r2drop = onesample.index[onesample[choose_col] > choose_thres]
+    reason2drop = 'filter_'+choose_col+'_'+str(choose_thres)
+    onesample, dropped_rows = _drop_rows(
+        onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # reset index
     onesample.reset_index(drop=True, inplace=True)
@@ -798,7 +815,7 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
 
 def _preprocessing(patient_id, onesample, info_table,
                    withFilter, filt_kwargs,
-                   withPreprocess, preproc_kwargs,
+                   withProcess, preproc_kwargs,
                    editWith, edit_kwargs,
                    toPrint):
 
@@ -814,41 +831,58 @@ def _preprocessing(patient_id, onesample, info_table,
                     str(patient_id))
 
     if bool(filt_kwargs) and withFilter:
+        if toPrint:
+                logger.info('Filtering...')
         # - filter sample - #
-        onesample, dropped_rows_filt_pat = \
-            filter_oncoscan(onesample, toPrint=toPrint,
-                            **filt_kwargs)
+        if editWith == 'Oncoscan':
+            onesample, dropped_rows_filter_pat = \
+                filter_oncoscan(onesample, toPrint=toPrint,
+                                **filt_kwargs)
+        elif editWith == 'ExCavator2':
+            onesample, dropped_rows_process_pat = filter_excavator(
+                onesample, toPrint=toPrint, **preproc_kwargs)
+        else:
+            logger.error('unsupported sample editor '+(editWith))
+            raise
+
         info_table.loc[patient_id, 'rows_in_sample_filt'] = onesample.shape[0]
         if onesample.empty:
             logger.warning('after filtering ' +
                            'there are no more CNVs for patient ' +
                            str(patient_id))
-            return onesample, info_table, dropped_rows_filt_pat, pd.DataFrame([])
+            return onesample, info_table, dropped_rows_filter_pat, \
+                pd.DataFrame([])
         else:
             if toPrint:
                 logger.info(str(onesample.shape[0]) +
                             ' rows for patient ' +
                             str(patient_id)+' after filtering')
     else:
-        dropped_rows_filt_pat = pd.DataFrame([])
+        dropped_rows_filter_pat = pd.DataFrame([])
 
-    if bool(preproc_kwargs) and withPreprocess:
+    if bool(preproc_kwargs) and withProcess:
+        if toPrint:
+                logger.info('Processing...')
         # - pre-process sample - #
-        onesample = preprocess_oncoscan(onesample, toPrint=toPrint,
-                                        **preproc_kwargs)
+        onesample, dropped_rows_process_pat = process_oncoscan(
+            onesample, toPrint=toPrint, **preproc_kwargs)
+
         info_table.loc[
             patient_id, 'rows_in_sample_processed'] = onesample.shape[0]
         if onesample.empty:
             logger.warning('after processing ' +
                            'there are no more CNVs for patient ' +
                            str(patient_id))
-            return onesample, info_table, dropped_rows_filt_pat, pd.DataFrame([])
+            return onesample, info_table, dropped_rows_filter_pat, \
+                pd.DataFrame([])
         else:
             if toPrint:
                 logger.info(str(onesample.shape[0]) +
                             ' rows for patient ' +
                             str(patient_id) +
                             ' after processing')
+    else:
+        dropped_rows_process_pat = pd.DataFrame([])
 
     # np.append(onesample.columns, 'reason2drop')
     if editWith == 'Oncoscan':
@@ -874,23 +908,33 @@ def _preprocessing(patient_id, onesample, info_table,
             else:
                 logger.error('Columns not found: chr|chrom')
                 raise
+
         # - edit sample - #
-        onesample, dropped_rows_map_pat = edit_oncoscan(
+        onesample, dropped_rows_edit_pat = edit_oncoscan(
             onesample, patient_id, toPrint=toPrint,
             **edit_kwargs
         )
-        info_table.loc[
-            patient_id, 'rows_in_sample_editted'] = onesample.shape[0]
-        if toPrint:
-            logger.info(str(onesample.shape[0]) +
-                        ' rows for patient ' +
-                        str(patient_id) +
-                        ' after editting')
+
+    elif editWith == 'ExCavator2':
+        # - edit sample - #
+        onesample, dropped_rows_edit_pat = edit_excavator(
+            onesample, patient_id, toPrint=toPrint,
+            **edit_kwargs
+        )
     else:
         logger.error('unsupported sample editor '+(editWith))
         raise
 
-    return onesample, info_table, dropped_rows_filt_pat, dropped_rows_map_pat
+    info_table.loc[
+        patient_id, 'rows_in_sample_editted'] = onesample.shape[0]
+    if toPrint:
+        logger.info(str(onesample.shape[0]) +
+                    ' rows for patient ' +
+                    str(patient_id) +
+                    ' after editting')
+    
+    return onesample, info_table, dropped_rows_filter_pat, \
+        dropped_rows_process_pat, dropped_rows_edit_pat
 
 
 def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
@@ -899,8 +943,8 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
         kwargs.get('withFilter', False),
         bool
     )
-    withPreprocess = parse_arg_type(
-        kwargs.get('withPreprocess', True),
+    withProcess = parse_arg_type(
+        kwargs.get('withProcess', True),
         bool
     )
     comment = kwargs.get('comment', None)
@@ -918,7 +962,7 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
     info_table['rows_in_sample'] = 0
     if withFilter:
         info_table['rows_in_sample_filt'] = 0
-    if withPreprocess:
+    if withProcess:
         info_table['rows_in_sample_processed'] = 0
     info_table['rows_in_sample_editted'] = 0
     for fpath in fpaths:
@@ -927,8 +971,9 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
         samples_colname = kwargs.get('samples_colname',
                                      allsamples.columns.values[0])
 
-        dropped_rows_filt = pd.DataFrame()
-        dropped_rows_map = pd.DataFrame()
+        dropped_rows_filter = pd.DataFrame()
+        dropped_rows_process = pd.DataFrame()
+        dropped_rows_edit = pd.DataFrame()
 
         for patient_id in natsorted(allsamples[samples_colname].unique()):
             if toPrint:
@@ -940,21 +985,27 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
 
             # preprocess one sample
             onesample, info_table, \
-                dropped_rows_filt_pat, dropped_rows_map_pat = \
+                dropped_rows_filter_pat, \
+                dropped_rows_process_pat, \
+                dropped_rows_edit_pat = \
                 _preprocessing(
                     patient_id, onesample, info_table,
                     withFilter, filt_kwargs,
-                    withPreprocess, preproc_kwargs,
+                    withProcess, preproc_kwargs,
                     editWith, edit_kwargs,
                     toPrint
                 )
-            if dropped_rows_filt_pat.shape[0] > 0:
-                dropped_rows_filt = pd.concat(
-                    [dropped_rows_filt, dropped_rows_filt_pat],
+            if dropped_rows_filter_pat.shape[0] > 0:
+                dropped_rows_filter = pd.concat(
+                    [dropped_rows_filter, dropped_rows_filter_pat],
                     axis=0, sort=False)
-            if dropped_rows_map_pat.shape[0] > 0:
-                dropped_rows_map = pd.concat(
-                    [dropped_rows_map, dropped_rows_map_pat],
+            if dropped_rows_process_pat.shape[0] > 0:
+                dropped_rows_process = pd.concat(
+                    [dropped_rows_process, dropped_rows_process_pat],
+                    axis=0, sort=False)
+            if dropped_rows_edit_pat.shape[0] > 0:
+                dropped_rows_edit = pd.concat(
+                    [dropped_rows_edit, dropped_rows_edit_pat],
                     axis=0, sort=False)
             #######
             if not onesample.empty:
@@ -967,7 +1018,8 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                     logger.info('discarding EMPTY sample: ' +
                                 patient_id+'\n')
 
-    return data, data_or, dropped_rows_filt, dropped_rows_map, info_table
+    return data, data_or, dropped_rows_filter, \
+        dropped_rows_process, dropped_rows_edit, info_table
 
 
 def load_and_process_files(fpaths, info_table, editWith='choose_editor',
@@ -976,8 +1028,8 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
         kwargs.get('withFilter', False),
         bool
     )
-    withPreprocess = parse_arg_type(
-        kwargs.get('withPreprocess', True),
+    withProcess = parse_arg_type(
+        kwargs.get('withProcess', True),
         bool
     )
     comment = kwargs.get('comment', None)
@@ -998,7 +1050,7 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
     info_table['rows_in_sample'] = 0
     if withFilter:
         info_table['rows_in_sample_filt'] = 0
-    if withPreprocess:
+    if withProcess:
         info_table['rows_in_sample_processed'] = 0
     info_table['rows_in_sample_editted'] = 0
     for fpath in fpaths:
@@ -1021,105 +1073,65 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
 
                 data_or[patient_id] = onesample_or.copy()
 
-                dropped_rows_filt = pd.DataFrame()
+                dropped_rows_filter = pd.DataFrame()
                 dropped_rows_map = pd.DataFrame()
 
                 onesample = data_or[patient_id].copy()
 
                 # preprocess one sample
                 onesample, info_table, \
-                    dropped_rows_filt_pat, dropped_rows_map_pat = \
+                    dropped_rows_filter_pat, \
+                    dropped_rows_process_pat, \
+                    dropped_rows_edit_pat = \
                     _preprocessing(
                         patient_id, onesample, info_table,
                         withFilter, filt_kwargs,
-                        withPreprocess, preproc_kwargs,
+                        withProcess, preproc_kwargs,
                         editWith, edit_kwargs,
                         toPrint
                     )
 
-                if dropped_rows_filt_pat.shape[0] > 0:
-                    dropped_rows_filt = pd.concat(
-                        [dropped_rows_filt, dropped_rows_filt_pat],
+                if dropped_rows_filter_pat.shape[0] > 0:
+                    dropped_rows_filter = pd.concat(
+                        [dropped_rows_filter, dropped_rows_filter_pat],
                         axis=0, sort=False)
-                if dropped_rows_map_pat.shape[0] > 0:
-                    dropped_rows_map = pd.concat(
-                        [dropped_rows_map, dropped_rows_map_pat],
+                if dropped_rows_process_pat.shape[0] > 0:
+                    dropped_rows_process = pd.concat(
+                        [dropped_rows_process, dropped_rows_process_pat],
+                        axis=0, sort=False)
+                if dropped_rows_edit_pat.shape[0] > 0:
+                    dropped_rows_edit = pd.concat(
+                        [dropped_rows_edit, dropped_rows_edit_pat],
                         axis=0, sort=False)
                 #######
                 if not onesample.empty:
                     data.append(onesample)
                     if toPrint:
-                        logger.info('finished pre-proceessing sample: '+patient_id+'\n')
+                        logger.info('finished pre-proceessing sample: ' +
+                                    patient_id+'\n')
                 else:
                     if toPrint:
                         logger.info('discarding EMPTY sample: ' +
                                     patient_id+'\n')
 
-    return data, data_or, dropped_rows_filt, dropped_rows_map, info_table
+    return data, data_or, dropped_rows_filter, \
+        dropped_rows_process, dropped_rows_edit, info_table
 
 
-def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
-
-    removeLOH = parse_arg_type(
-        kwargs.get('removeLOH', True),
-        bool
-    )
-    function_dict = kwargs.get('function_dict', {})
-    # mergeHow: 'maxAll', 'maxOne', 'freqAll'
-    mergeHow = kwargs.get('mergeHow', 'maxAll')
-
-    # for each sample
-    dropped_rows = pd.DataFrame([], columns=np.append(onesample.columns,
-                                'reason2drop'))
-
-    if 'value' in onesample.columns:
-        check_cols = np.delete(onesample.columns.values,
-                               np.where(onesample.columns.values == 'value'))
-    else:
-        check_cols = onesample.columns
-    df_isna = onesample.isna()[check_cols]
-    if toPrint:
-        logger.info('Missing values for each column:')
-        df_isna_sum = df_isna.sum()
-        for _i in range(df_isna_sum.shape[0]):
-            logger.info(str(df_isna_sum.index[_i])+'\t' +
-                        str(df_isna_sum.iloc[_i]))
-    if df_isna.sum().sum() > 0:
-        if toPrint:
-            logger.info('Remove rows with any missing values in columns:\n' +
-                        check_cols)
-
-        # keep the rows we will drop
-        r2drop = df_isna[df_isna.any(axis=1)].index
-        dropped_rows = dropped_rows.append(onesample.loc[r2drop, :],
-                                           sort=False)
-        dropped_rows.loc[r2drop, 'reason2drop'] = 'missing_field'
-
-        # drop the rows
-        if toPrint:
-            logger.info(str(onesample.shape[0])+' rows before')
-        onesample.dropna(axis=0, subset=check_cols,  inplace=True)
-        if toPrint:
-            logger.info(str(onesample.shape[0])+' rows after')
-
+def _map_cnvs_to_genes(
+        onesample, dropped_rows, sample_name,
+        removeLOH, function_dict, mergeHow,
+        toPrint
+        ):
     # remove rows with LOH in FUNCTION !!!!!!!!!!!!!!!!!!
     if removeLOH:
         # keep the rows we will drop
         s_isLOH = (onesample['function'] == 'LOH')
         if s_isLOH.any():
-            r2drop = s_isLOH[s_isLOH].index
-            dropped_rows = dropped_rows.append(onesample.loc[r2drop, :],
-                                               sort=False)
-            dropped_rows.loc[r2drop, 'reason2drop'] = 'LOH'
-
-            # drop the rows
-            tmp_size = onesample.shape[0]
-            onesample.drop(onesample[s_isLOH].index, inplace=True)
-            if toPrint:
-                if onesample.shape[0] < tmp_size:
-                    logger.info('Remove rows with LOH in FUNCTION: ' +
-                                str(tmp_size - onesample.shape[0]) +
-                                ' rows removed')
+            r2drop = s_isLOH.index[s_isLOH]
+            reason2drop = 'LOH'
+            onesample, dropped_rows = _drop_rows(
+                onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # remove genes that exist in more than one chromosomes
     tmp_size = onesample.shape[0]
@@ -1128,6 +1140,7 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
     chrSum = onesample.groupby(['id'])['chr'].sum()
     # save a dict with only the genes to remove
     # and an array of the diff chroms these gene exist in
+    # (SLOW?)
     genes_to_remove_dict = \
         {
             chrSum.index[idx]:
@@ -1139,22 +1152,16 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
             if len(item.rsplit('chr')) > 2   # 1) in more than one positions
         }
     # keep the rows we will drop
-    todrop = onesample['id'].isin(genes_to_remove_dict.keys())
-    if len(todrop) > 0:
-        df2drop = onesample[todrop].copy()
-        dropped_rows = dropped_rows.append(df2drop, sort=False)
-        dropped_rows.loc[df2drop.index, 'reason2drop'] = 'multiple_chrom'
-
-        # remove those genes
-        onesample.drop(onesample[todrop].index, inplace=True)
+    drop_bool = onesample['id'].isin(genes_to_remove_dict.keys())
+    if drop_bool.any():
+        r2drop = onesample.index[drop_bool]
+        reason2drop = 'multiple_chrom'
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
         if toPrint:
-            if onesample.shape[0] < tmp_size:
-                logger.info('Remove genes that exist ' +
-                            'in multiple chromosomes: ' +
-                            str(tmp_size - onesample.shape[0]) +
-                            ' rows and ' +
-                            str(len(genes_to_remove_dict.keys())) +
-                            ' unique gene IDs removed')
+            logger.info(str(len(genes_to_remove_dict.keys())) +
+                        ' unique gene IDs removed:\n' +
+                        str(genes_to_remove_dict.keys()))
 
     # create a new column with ID and CHR together
     onesample['CHR_ID'] = onesample['chr']+':'+onesample['id']
@@ -1202,24 +1209,18 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
                    for i, item in enumerate(functionArray)
                    if len(np.unique(np.sign(item))) != 1]
 
-    if len(CHR_ID2drop) > 0:
-        todrop = onesample['CHR_ID'].isin(CHR_ID2drop)
-        df2drop = onesample[todrop].copy()
-        dropped_rows = dropped_rows.append(df2drop, sort=False)
-        dropped_rows.loc[df2drop.index, 'reason2drop'] = 'ampl_AND_del'
-
-        # remove those genes
-        tmp_size = onesample.shape[0]
-        onesample.drop(onesample[todrop].index, inplace=True)
+    drop_bool = onesample['CHR_ID'].isin(CHR_ID2drop)
+    if drop_bool.any():
+        r2drop = onesample.index[drop_bool]
+        reason2drop = 'ampl_AND_del'
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
         if toPrint:
-            if onesample.shape[0] < tmp_size:
-                logger.info('Remove genes with amplification AND ' +
-                            'deletion values in the same chromosome: ' +
-                            str(tmp_size - onesample.shape[0]) +
-                            ' rows and '+str(len(CHR_ID2drop)) +
-                            ' unique gene IDs removed')
+            logger.info(str(len(CHR_ID2drop)) +
+                        ' unique gene IDs removed:\n' +
+                        str(CHR_ID2drop))
 
-        # group by CHR_ID and sum over the FUNCTION
+        # RE-group by CHR_ID and sum over the FUNCTION
         # (to get all different functions for one gene)
         functionArray = \
             onesample.groupby(['CHR_ID'])['FUNC_int'].apply(
@@ -1323,6 +1324,131 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
 
     return df, dropped_rows
 
+
+def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
+
+    removeLOH = parse_arg_type(
+        kwargs.get('removeLOH', True),
+        bool
+    )
+    function_dict = kwargs.get('function_dict', {})
+    # mergeHow: 'maxAll', 'maxOne', 'freqAll'
+    mergeHow = kwargs.get('mergeHow', 'maxAll')
+
+    # for each sample
+    dropped_rows = pd.DataFrame([], columns=np.append(onesample.columns,
+                                'reason2drop'))
+
+    # (check_columns: chr,start,end,id,function)
+    if 'value' in onesample.columns:
+        check_cols = np.delete(onesample.columns.values,
+                               np.where(onesample.columns.values == 'value'))
+    else:
+        check_cols = onesample.columns
+
+    # remove rows with NaNs in check_columns
+    df_isna = onesample[check_cols].isna()
+    if toPrint:
+        logger.info('Missing values for each column:')
+        df_isna_sum = df_isna.sum()
+        for _i in range(df_isna_sum.shape[0]):
+            logger.info(str(df_isna_sum.index[_i])+'\t' +
+                        str(df_isna_sum.iloc[_i]))
+    if df_isna.sum().sum() > 0:
+        if toPrint:
+            logger.info('Remove rows with any missing values in columns:\n' +
+                        check_cols)
+        # keep the rows we will drop
+        r2drop = df_isna.index[df_isna.any(axis=1)]
+        reason2drop = 'missing_field'
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    df, dropped_rows = _map_cnvs_to_genes(
+        onesample, dropped_rows, sample_name,
+        removeLOH, function_dict, mergeHow,
+        toPrint
+        )
+
+    return df, dropped_rows
+
+
+def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
+    removeLOH = parse_arg_type(
+        kwargs.get('removeLOH', True),
+        bool
+    )
+    function_dict = kwargs.get('function_dict', {})
+    # mergeHow: 'maxAll', 'maxOne', 'freqAll'
+    mergeHow = kwargs.get('mergeHow', 'maxAll')
+
+    # for each sample
+    dropped_rows = pd.DataFrame([], columns=np.append(onesample.columns,
+                                'reason2drop'))
+
+    # keep_columns (here instead of process_oncoscan)
+    keep_columns = kwargs.get('keep_columns', None)
+    if keep_columns is None:
+        keep_columns = [
+            'Chromosome', 'Start', 'End', 'Call',
+            'ProbCall', 'Gene_Symbol']
+        logger.warning('keep_columns kwarg is missing, ' +
+                       'the following columns are assumed:\n' +
+                       srt(keep_columns))
+    else:
+        keep_columns = keep_columns.rsplit(',')
+
+    # remove rows with NaNs in keep_columns
+    df_isna = onesample[keep_columns].isna()
+    if toPrint:
+        logger.info('Missing values for each column:')
+        df_isna_sum = df_isna.sum()
+        for _i in range(df_isna_sum.shape[0]):
+            logger.info(str(df_isna_sum.index[_i])+'\t' +
+                        str(df_isna_sum.iloc[_i]))
+    if df_isna.sum().sum() > 0:
+        if toPrint:
+            logger.info('Remove rows with any missing values in columns:\n' +
+                        keep_columns)
+        # keep the rows we will drop
+        r2drop = df_isna.index[df_isna.any(axis=1)]
+        reason2drop = 'missing_field'
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    # Remove rows with invalid Gene_Symbol - space
+    c = " "
+    c_name = 'Space'
+    isInvalid = onesample['Gene_Symbol'].str.contains(pat=c)
+    if isInvalid.any():
+        # keep the rows we will drop
+        invalid_ids = onesample[isInvalid].index
+
+        r2drop = onesample.index[isInvalid]
+        reason2drop = 'invalid_Gene_Symbol_with'+c_name
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    # Remove rows with invalid Gene_Symbol - colon
+    c = ":"
+    c_name = 'Colon'
+    isInvalid = onesample['Gene_Symbol'].str.contains(pat=c)
+    if isInvalid.any():
+        # keep the rows we will drop
+        invalid_ids = onesample[isInvalid].index
+
+        r2drop = onesample.index[isInvalid]
+        reason2drop = 'invalid_Gene_Symbol_with'+c_name
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    df, dropped_rows = _map_cnvs_to_genes(
+        onesample, dropped_rows, sample_name,
+        removeLOH, function_dict, mergeHow,
+        toPrint
+        )
+    
+    return df, dropped_rows
 
 # choose patient IDs and their order
 def choose_samples(ids, dataID, choose_from=None, choose_what=None,
