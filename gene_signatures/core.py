@@ -621,7 +621,9 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     # Chromosome Region, Event, Gene Symbols (in this order!!!)
     keep_columns = kwargs.get('keep_columns', None)
     if keep_columns is None:
-        logger.error('keep_columns kwarg is missing!')
+        keep_columns = ["Chromosome Region", "Event", "Gene Symbols"]
+        logger.warning('keep_columns kwarg is missing, ' +
+                       'the following ar assumed:\n'+srt(keep_columns))
         raise
     else:
         keep_columns = keep_columns.rsplit(',')
@@ -703,7 +705,7 @@ def preprocess_oncoscan(onesample, toPrint=False, **kwargs):
     onesample_map2genes.reset_index(drop=True, inplace=True)
 
     if toPrint:
-        logger.info('Finished pre-processing successfully.')
+        logger.info('Finished processing successfully.')
 
     return onesample_map2genes
 
@@ -789,7 +791,7 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
     dropped_rows.reset_index(drop=True, inplace=True)
 
     if toPrint:
-        logger.info('Finished filtering successfully.\n')
+        logger.info('Finished filtering successfully.')
 
     return onesample, dropped_rows
 
@@ -837,7 +839,7 @@ def _preprocessing(patient_id, onesample, info_table,
         info_table.loc[
             patient_id, 'rows_in_sample_processed'] = onesample.shape[0]
         if onesample.empty:
-            logger.warning('after pre-processing ' +
+            logger.warning('after processing ' +
                            'there are no more CNVs for patient ' +
                            str(patient_id))
             return onesample, info_table, dropped_rows_filt_pat, pd.DataFrame([])
@@ -846,7 +848,7 @@ def _preprocessing(patient_id, onesample, info_table,
                 logger.info(str(onesample.shape[0]) +
                             ' rows for patient ' +
                             str(patient_id) +
-                            ' after pre-processing')
+                            ' after processing')
 
     # np.append(onesample.columns, 'reason2drop')
     if editWith == 'Oncoscan':
@@ -930,7 +932,7 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
 
         for patient_id in natsorted(allsamples[samples_colname].unique()):
             if toPrint:
-                logger.info(patient_id)
+                logger.info('sample: '+patient_id)
 
             data_or[patient_id] = allsamples[allsamples[samples_colname] ==
                                              patient_id].copy()
@@ -955,7 +957,15 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                     [dropped_rows_map, dropped_rows_map_pat],
                     axis=0, sort=False)
             #######
-            data.append(onesample)
+            if not onesample.empty:
+                data.append(onesample)
+                if toPrint:
+                    logger.info('finished pre-proceessing sample: ' +
+                                patient_id+'\n')
+            else:
+                if toPrint:
+                    logger.info('discarding EMPTY sample: ' +
+                                patient_id+'\n')
 
     return data, data_or, dropped_rows_filt, dropped_rows_map, info_table
 
@@ -1038,6 +1048,12 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
                 #######
                 if not onesample.empty:
                     data.append(onesample)
+                    if toPrint:
+                        logger.info('finished pre-proceessing sample: '+patient_id+'\n')
+                else:
+                    if toPrint:
+                        logger.info('discarding EMPTY sample: ' +
+                                    patient_id+'\n')
 
     return data, data_or, dropped_rows_filt, dropped_rows_map, info_table
 

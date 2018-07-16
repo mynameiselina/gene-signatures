@@ -36,8 +36,6 @@ SAVE ordered table and gene pos info table:
 'table_ordered.csv'
 'genes_info.csv'
 
-# set_up_headneck withFilter=False reportName=set_up_headneck >> ./data/output/set_up_headneck.log
-# set_up_headneck withFilter=True reportName=set_up_headneck >> ./data/output/set_up_headneck_FILT.log
 """
 
 from gene_signatures.set_up_data import (
@@ -63,7 +61,8 @@ logger = logging.getLogger(__name__)
 
 
 params = {
-    'reportName': script_fname,
+    # 'reportName': script_fname,
+    "reportName": "DEBUG_setup_headneck",
 
     "reportName": "setup_c1_oncoscan_raw",
     "saveReport": True,
@@ -143,7 +142,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
 
     if json_config is not None:
         try:
-            logger.error('Reading params from config file:\n'+json_config)
+            logger.info('Reading params from config file:\n'+json_config)
             with open(json_config, 'r') as fp:
                 set_up_kwargs_config = json.load(fp)
 

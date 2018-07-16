@@ -1,0 +1,56 @@
+{
+    "reportName": "setup_endometrial",
+    "saveReport": true,
+    "txt_label": "set up Oncoscan data",
+    "toPrint": true,
+
+    "load_files": false,
+
+    "editWith": "Oncoscan",
+    "withFilter": false,
+    "withPreprocess": true,
+
+    "preproc_kwargs": {
+        "keep_columns": "Chromosome Region,Event,Gene Symbols",
+        "new_columns": "chr,start,end,id,function"
+    },
+    "filt_kwargs": {},
+    "edit_kwargs": {
+        "function_dict": {
+            "Homozygous Copy Loss": -4,
+            "CN Loss": -2,
+            "CN Gain": 2,
+            "High Copy Gain": 4,
+            "LOH": -1
+        },
+        "mergeHow":"maxAll",
+        "removeLOH":true
+    },
+
+    "comment": "#",
+    "names": null,
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+    "remove_patients": null,
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
+        "highRes": false
+    },
+    
+    "input_directory": "input,endometrial",
+    "oncoscan_directory": "fromNexusExpress",
+    "oncoscan_files": "DS_097_all_samples.txt,18044_all_samples.txt",
+
+    "sample_info_read_csv_kwargs":{
+        "na_values": " "
+    },
+    "sample_info_fname": "20180704_emca.csv",
+    "sample_info_table_index_colname": "Oncoscan_ID",
+    "sample_info_table_sortLabels": "TP53_mut5,FOXA1_mut5",
+    
+    "output_directory": "output,endometrial",
+    "DEBUG": true
+}

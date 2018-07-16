@@ -137,8 +137,11 @@ def set_up_data(**set_up_kwargs):
             oncoscan_directory = os.path.join(*oncoscan_directory.rsplit(','))
     oncoscan_files = set_up_kwargs.get('oncoscan_files', '')
     oncoscan_files_list = oncoscan_files.rsplit(',')
-    fpaths = [os.path.join(input_directory, oncoscan_directory, aFile)
-              for aFile in oncoscan_files_list]
+    if len(oncoscan_files_list) > 0:
+        fpaths = [os.path.join(input_directory, oncoscan_directory, aFile)
+                  for aFile in oncoscan_files_list]
+    else:
+        fpaths = os.path.join(input_directory, oncoscan_directory)
 
     # load info table of samples
     if toPrint:
@@ -242,7 +245,7 @@ def set_up_data(**set_up_kwargs):
     chr_table.index = [index_name.rsplit(':')[0]
                        for index_name in chr_table.index]
 
-    # remove genes that exist in multiple chromosomes across samples
+    # remove genes that exist in multiple chromosomes across samples (SLOW?)
     ll = [list(chr_table[col].dropna().unique()) for col in chr_table.columns]
     n, m = max(map(len, ll)), len(ll)
     uniq_chr_per_gene = pd.DataFrame([[_uniq_chr_per_gene(j, i)
@@ -284,14 +287,14 @@ def set_up_data(**set_up_kwargs):
         chr_table.drop(genes2drop, axis=1, inplace=True)
         table.drop(genes2drop, axis=1, inplace=True)
         uniq_chr_per_gene.drop(genes2drop, axis=1, inplace=True)
-        uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :]
+        uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :].copy()
         if toPrint:
             logger.info('Dimensions of table (samples,genes):' +
                         str(table.shape))
     else:
-        uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :]
+        uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :].copy()
 
-    # ORDER THE GENES FROM ALL SAMPLES
+    # ORDER THE GENES FROM ALL SAMPLES (SLOW?)
     if toPrint:
         logger.info('Create a Dataframe with the genes ' +
                     'and their genomic positions')
@@ -486,6 +489,12 @@ def set_up_data(**set_up_kwargs):
         if toPrint:
             logger.info('-save ordered data: '+f)
         data.to_csv(f, sep='\t', header=True, index=True)
+
+        fname = 'sample_info.csv'
+        f = os.path.join(output_directory, fname)
+        if toPrint:
+            logger.info('-save ordered data: '+f)
+        info_table.to_csv(f, sep='\t', header=True, index=True)
 
         fname = 'genes_info.csv'
         f = os.path.join(output_directory, fname)
