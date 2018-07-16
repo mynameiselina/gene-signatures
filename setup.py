@@ -122,7 +122,7 @@ class develop(_develop):
 
 scripts = [
     'bin/set_up_data',
-    'bin/remove_dupl_genes_endometrial',
+    'bin/rm_dpl_genes',
     'bin/nexus_express_endometrial',
     'bin/classification_endometrial',
 ]
