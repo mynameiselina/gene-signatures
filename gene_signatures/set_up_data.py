@@ -184,7 +184,7 @@ def set_up_data(**set_up_kwargs):
         if toPrint:
             logger.info('-save dropped rows from filtering in:\n'+f_new)
         dropped_rows_filter.to_csv(os.path.join(output_directory, f_new),
-                                 sep='\t', header=True, index=True)
+                                   sep='\t', header=True, index=True)
 
     if (dropped_rows_process.shape[0] > 0) and (saveReport):
         f_new = 'allsamples__dropped_rows_process.txt'
@@ -192,7 +192,7 @@ def set_up_data(**set_up_kwargs):
             logger.info('-save dropped rows from processing in:\n' +
                         f_new)
         dropped_rows_process.to_csv(os.path.join(output_directory, f_new),
-                                sep='\t', header=True, index=True)
+                                    sep='\t', header=True, index=True)
 
     if (dropped_rows_edit.shape[0] > 0) and (saveReport):
         f_new = 'allsamples__dropped_rows_edit.txt'
@@ -200,7 +200,7 @@ def set_up_data(**set_up_kwargs):
             logger.info('-save dropped rows from editing in:\n' +
                         f_new)
         dropped_rows_edit.to_csv(os.path.join(output_directory, f_new),
-                                sep='\t', header=True, index=True)
+                                 sep='\t', header=True, index=True)
 
     # get size of each sample
     # (i.e. abundance of genes with in each sample)

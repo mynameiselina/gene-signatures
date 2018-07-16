@@ -932,7 +932,7 @@ def _preprocessing(patient_id, onesample, info_table,
                     ' rows for patient ' +
                     str(patient_id) +
                     ' after editting')
-    
+
     return onesample, info_table, dropped_rows_filter_pat, \
         dropped_rows_process_pat, dropped_rows_edit_pat
 
@@ -1447,8 +1447,9 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
         removeLOH, function_dict, mergeHow,
         toPrint
         )
-    
+
     return df, dropped_rows
+
 
 # choose patient IDs and their order
 def choose_samples(ids, dataID, choose_from=None, choose_what=None,
