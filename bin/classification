@@ -92,7 +92,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
         #  update default params with command line params
         params.update(set_up_kwargs)
 
-    remove_duplicate_genes(**params)
+    classification(**params)
 
 
 if __name__ == '__main__':
