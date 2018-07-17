@@ -432,6 +432,9 @@ def set_up_data(**set_up_kwargs):
                      yticklabels=yticklabels, cmap=cmap_custom, cbar=False)
     cbar = ax.figure.colorbar(ax.collections[0])
     if 'VCF' in editWith:
+        functionImpact_dict_r = dict(
+            (v, k) for k, v in functionImpact_dict.items()
+            )
         myTicks = [0, 1, 2, 3, 4, 5]
         cbar.set_ticks(myTicks)
         cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
@@ -477,6 +480,9 @@ def set_up_data(**set_up_kwargs):
     myTicks = np.arange(vmin, vmax+2, 1)
     cbar.set_ticks(myTicks)
     if 'VCF' in editWith:
+        functionImpact_dict_r = dict(
+            (v, k) for k, v in functionImpact_dict.items()
+            )
         cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
     if saveReport:
         if toPrint:

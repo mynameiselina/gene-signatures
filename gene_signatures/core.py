@@ -758,24 +758,24 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
 
     # keep the rows we will drop
     r2drop = onesample.index[onesample[col_pValue] >
-                             kwargs['pValue_thres']]
-    reason2drop = 'filter_'+col_pValue+'_'+str(kwargs['pValue_thres'])
+                             pValue_thres]
+    reason2drop = 'filter_'+col_pValue+'_'+str(pValue_thres)
     onesample, dropped_rows = _drop_rows(
         onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # keep the rows we will drop
-    r2drop = onesample.index[abs(onesample[kwargs['col_probeMedian']]) <
-                             kwargs['probeMedian_thres']]
-    reason2drop = 'filter_'+kwargs['col_probeMedian']+'_' + \
-        str(kwargs['probeMedian_thres'])
+    r2drop = onesample.index[abs(onesample[col_probeMedian]) <
+                             probeMedian_thres]
+    reason2drop = 'filter_'+col_probeMedian+'_' + \
+        str(probeMedian_thres)
     onesample, dropped_rows = _drop_rows(
         onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # keep the rows we will drop
-    r2drop = onesample.index[onesample[kwargs['col_probeCount']] <
-                             kwargs['probeCount_thres']]
-    reason2drop = 'filter_'+kwargs['col_probeCount'] + \
-        '_'+str(kwargs['probeCount_thres'])
+    r2drop = onesample.index[onesample[col_probeCount] <
+                             probeCount_thres]
+    reason2drop = 'filter_'+col_probeCount + \
+        '_'+str(probeCount_thres)
     onesample, dropped_rows = _drop_rows(
         onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
@@ -1456,6 +1456,89 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
         )
 
     return df, dropped_rows
+
+
+def edit_vcf(onesample, sample_name, toPrint=True, **kwargs):
+    removeLOW = parse_arg_type(
+        kwargs.get('removeLOW', True),
+        bool
+    )
+    LOW_value = kwargs.get('LOW_value', None)
+    function_dict = kwargs.get('function_dict', None)
+    # mergeHow: 'maxAll', 'maxOne', 'freqAll'
+    mergeHow = kwargs.get('mergeHow', 'maxAll')
+
+    # for each sample
+    dropped_rows = pd.DataFrame([], columns=np.append(onesample.columns,
+                                'reason2drop'))
+
+    # separate INFO column in sub-columns
+    expand_info = onesample['info'].apply(
+        lambda x: pd.Series(str(x).split('|')))
+    # drop rows with INFO NaN
+    # keep the rows we will drop
+    drop_bool = (expand_info[1].isna()) | (expand_info[3].isna())
+    if drop_bool.any():
+        r2drop = onesample.index[drop_bool]
+        reason2drop = 'missing_field'
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    # extranct gene name info from column INFO, sub-column 3
+    onesample['id'] = expand_info[3]
+
+    # extranct mutation function info from column INFO, sub-column 1
+    onesample['function'] = -1
+    onesample.loc[expand_info.index[expand_info[1].str.startswith(
+        'missense')], 'function'] = function_dict['missense']
+    onesample.loc[expand_info.index[expand_info[1].str.startswith(
+        'disruptive')], 'function'] = function_dict['nonframeshiftIndel']
+    onesample.loc[expand_info.index[expand_info[1].str.startswith(
+        'stop')], 'function'] = function_dict['nonsense']
+    onesample.loc[expand_info.index[expand_info[1].str.startswith(
+        'frameshift')], 'function'] = function_dict['frameshiftIndel']
+    onesample.loc[expand_info.index[expand_info[1].str.startswith(
+        'protein')], 'function'] = function_dict['frameshiftIndel']
+    onesample.loc[expand_info.index[expand_info[1].str.startswith(
+        'start')], 'function'] = function_dict['frameshiftIndel']
+    onesample.loc[expand_info.index[expand_info[1].str.startswith(
+        'splice')], 'function'] = function_dict['frameshiftIndel']
+
+    # Remove rows with invalid Gene_Symbol - space
+    c = " "
+    c_name = 'Space'
+    isInvalid = onesample['id'].str.contains(pat=c)
+    if isInvalid.any():
+        # keep the rows we will drop
+        invalid_ids = onesample[isInvalid].index
+
+        r2drop = onesample.index[isInvalid]
+        reason2drop = 'invalid_gene_id_with'+c_name
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    # Remove rows with invalid Gene_Symbol - colon
+    c = ":"
+    c_name = 'Colon'
+    isInvalid = onesample['id'].str.contains(pat=c)
+    if isInvalid.any():
+        # keep the rows we will drop
+        invalid_ids = onesample[isInvalid].index
+
+        r2drop = onesample.index[isInvalid]
+        reason2drop = 'invalid_gene_id_with'+c_name
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    # drom rows with LOW and MODIFIER functions
+    if removeLOW:
+        # keep the rows we will drop
+        s_isLOW = (onesample['function'] == LOW_value)
+        if s_isLOW.any():
+            r2drop = s_isLOW.index[s_isLOW]
+            reason2drop = 'LOW'
+            onesample, dropped_rows = _drop_rows(
+                onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
 
 # choose patient IDs and their order

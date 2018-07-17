@@ -73,7 +73,6 @@ set_up_kwargs_default = {
 
     # script set up params
     'saveReport': True,
-    'compute_pdist': False,
     'txt_label': 'Nexus Express for feature selection',
     'toPrint': True,
     'reportName': script_fname,

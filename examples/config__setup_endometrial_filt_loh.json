@@ -1,6 +1,6 @@
 {
-    "reportName": "DEBUG_setup_endometrial_filt",
-    "saveReport": false,
+    "reportName": "setup_endometrial_filt_loh",
+    "saveReport": true,
     "txt_label": "set up Oncoscan data",
     "toPrint": true,
 
@@ -18,7 +18,7 @@
         "col_pValue": "Call PValue",
         "col_probeMedian": "Probe Median",
         "col_probeCount": "Probes",
-        "pValue_thres": 0.01,
+        "pValue_thres": 0.05,
         "probeMedian_thres": 0.3,
         "probeCount_thres": 20,
         "remove_missing_pValues": false
@@ -32,7 +32,7 @@
             "LOH": -1
         },
         "mergeHow":"maxAll",
-        "removeLOH":true,
+        "removeLOH":false,
         "LOH_value": "LOH"
     },
 

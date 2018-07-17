@@ -123,7 +123,7 @@ class develop(_develop):
 scripts = [
     'bin/set_up_data',
     'bin/rm_dpl_genes',
-    'bin/nexus_express_endometrial',
+    'bin/nexus_express',
     'bin/classification_endometrial',
 ]
 

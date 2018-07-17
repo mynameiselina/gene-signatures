@@ -237,14 +237,14 @@ def classification(**set_up_kwargs):
     # load selected genes
     fname = 'diff_genes_selected_'+select_samples_title+'.csv'
     fpath = os.path.join(selected_genes_directory, fname)
-    diff_genes = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
+    diff_genes_selected = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
 
     title = select_samples_title
-    select_genes = diff_genes.index.values
+    select_genes = diff_genes_selected.index.values
     data = data.reindex(select_genes, axis=1)
 
     if rename_genes is not None:
-        gene_newNames = diff_genes[rename_genes]
+        gene_newNames = diff_genes_selected[rename_genes]
 
         # get the selected genes from the data
         data = data.T
@@ -268,11 +268,33 @@ def classification(**set_up_kwargs):
     logger.info(printed_results)
     logger.info("Finished classification!")
 
-    sum_thres = abs(all_coefs).mean()*all_coefs.shape[0]
-    n_names = (abs(all_coefs).sum(axis=0) > sum_thres).sum()
-    logger.info('figures: printing the names from the first ' +
-                str(n_names)+' features with the highest absolute ' +
-                'coefficients across all classification runs')
+    # get the genes with the nnz coefficients in classification
+    diff_genes_selected['classification'] = 0
+    nnz_coef_genes = data.columns.values[(abs(all_coefs).max(axis=0) > 0)]
+    diff_genes_selected.loc[nnz_coef_genes, 'classification'] = 1
+    n_names = nnz_coef_genes.shape[0]
+
+    logger.info('printing the names of the '+str(n_names) +
+                ' features with non-zero coefficient in at least ' +
+                'one classification run:\n'+str(nnz_coef_genes))
+
+    # save as tab-delimited csv file
+    fname = 'diff_genes_selected_'+select_samples_title+'.csv'
+    fpath = os.path.join(output_directory, fname)
+    logger.info("-save selected diff genes for " +
+                mytitle+" in :\n"+fpath)
+    diff_genes_selected.to_csv(
+        fpath, sep='\t', header=True, index=True)
+
+    # save also as excel file
+    fname = 'diff_genes_selected_'+select_samples_title+'.xlsx'
+    fpath = os.path.join(output_directory, fname)
+    logger.info('-save csv file as excel too')
+    writer = pd.ExcelWriter(fpath)
+    diff_genes_selected.to_excel(
+        writer, sheet_name=select_samples_title)
+    writer.save()
+
     # boxplot
     boxplot(all_coefs, data.shape[1], data.columns.values,
             title=title, txtbox=printed_results, sidespace=3,
@@ -336,7 +358,7 @@ def classification(**set_up_kwargs):
     else:
         plt.show()
 
-    # heatmap some selected genes (according to the sum_thres)
+    # heatmap of genes with nnz coefs in classification
     _, xlabels = which_x_toPrint(
         all_coefs, data.columns.values, n_names=n_names)
     if data.shape[1] < 6:
@@ -352,7 +374,7 @@ def classification(**set_up_kwargs):
     ax = sns.heatmap(data.loc[:, xlabels], vmin=vmin, vmax=vmax,
                      yticklabels=ticklabels, xticklabels=True,
                      cmap=cmap_custom, cbar=True)
-    plt.title(title+' diff mutated genes - first '+str(n_names) +
+    plt.title(title+' diff mutated genes - '+str(n_names) +
               ' selected from classification coefficients')
 
     if saveReport:

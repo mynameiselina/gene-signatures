@@ -81,7 +81,7 @@ set_up_kwargs_default = {
     'sample_info_table_index_colname': 'Oncoscan_ID',
     'plot_kwargs': plot_kwargs,
     'toRemoveDupl': True,
-    'rename_genes': 'newGeneName',
+    'rename_genes': 'null,
 
     # set directories
     'input_directory': 'output,set_up_endometrial,remove_dupl_genes',
