@@ -124,7 +124,7 @@ scripts = [
     'bin/set_up_data',
     'bin/rm_dpl_genes',
     'bin/nexus_express',
-    'bin/classification_endometrial',
+    'bin/classification',
 ]
 
 setup(
