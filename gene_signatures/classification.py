@@ -176,7 +176,7 @@ def classification(**set_up_kwargs):
     output_directory = set_up_kwargs.get('output_directory')
     if output_directory is None:
         output_directory = set_directory(
-            os.path.join(input_directory, reportName)
+            os.path.join(selected_genes_directory, reportName)
         )
     else:
         if ',' in output_directory:

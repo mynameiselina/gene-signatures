@@ -28,6 +28,8 @@
     "sample_info_fname": "20180704_emca.csv",
     "sample_info_table_index_colname": "Oncoscan_ID",
     
-    "output_directory": "output,endometrial,setup_endometrial,rm_dpl_emca_all,nexus_express",
+    "selected_genes_directory": "output,endometrial,set_up_endometrial,rm_dpl_emca_all,nexus_express",
+
+    "output_directory": null,
     "DEBUG": true
 }
