@@ -79,8 +79,15 @@ def classification(**set_up_kwargs):
     select_samples_title = set_up_kwargs.get('select_samples_title',
                                              'select_all')
     clinical_label = select_samples_sort_by_list[0]
-    class_labels = [clinical_label+'WT', clinical_label+'MUT']
-    class_values = [0, 1]  # WT:0, MUT:1
+    class_labels = set_up_kwargs.get('class_labels', None)
+    if class_labels is not None:
+        if ',' in class_labels:
+            class_labels = class_labels.rsplit(',')
+    class_values = set_up_kwargs.get('class_values', None)
+    if class_values is not None:
+        if ',' in class_values:
+            class_values = class_values.rsplit(',')
+            class_values = np.array(class_values).astype(int)
 
     # initialize script params
     saveReport = parse_arg_type(

@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 """
-assuming set_up_oncoscan has run:
-load processed data
+load data
 select the samples for the chosen comparison (e.g. all, only TP53wt, etc)
 
-[optional]
-assuming remove_duplicate_genes has run:
-load the duplicate genes dictionary for this comparison
-load the data w/o the duplicate genes
+load selected genes for classification (e.g. from nexus express)
 
-plot CNV frequencies:
-- for all samples in comparison
-(only comparison between 2 groups are supported at the moment)
-- for each group in comparison
-[if with remove_duplicate_genes, produce plot w/ and w/o duplicates]
+Run Classification:
+linear_model.LogisticRegression
+run n times: n = number of samples
+each time run on n-1 samples and predict on 1 sample
+do a binom_test on the predictions
 
-run Nexus Express method to select differentially mutated genes
+figures: highlight the names from the first genes with the
+highest absolute coefficients across all classification runs
 
-plot CNV frequencies OF SELECTED GENES for each group in comparison
-plot heatmap of CNVs OF SELECTED GENES (sorted by group)
-[if with remove_duplicate_genes, produce plot w/ and w/o duplicates]
+plot:
+-boxplot
+-swarmplot
+-heatmap of all selected genes
+-heatmap of highlighted selected genes
 
 """
 from omics_processing.io import (
@@ -28,8 +27,8 @@ from omics_processing.io import (
 from gene_signatures.core import (
     custom_div_cmap
 )
-from gene_signatures.nexus_express import (
-    nexus_express
+from gene_signatures.classification import (
+    classification
 )
 import os
 import sys
@@ -93,7 +92,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
         #  update default params with command line params
         params.update(set_up_kwargs)
 
-    nexus_express(**params)
+    remove_duplicate_genes(**params)
 
 
 if __name__ == '__main__':

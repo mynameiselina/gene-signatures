@@ -1,0 +1,33 @@
+{
+    "reportName": "classification",
+    "saveReport": true,
+    "txt_label": "Classification",
+    "toPrint": true,
+
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+
+    "select_samples_from": null,
+    "select_samples_which": null,
+    "select_samples_sort_by": "TP53_mut5,FOXA1_mut5",
+    "select_samples_title": "select_all",
+    "class_labels": "TP53wt,TP53mut",
+    "class_values": "0,1",
+
+    "input_directory": "output,endometrial,setup_endometrial,rm_dpl_emca_all",
+    "input_fname": "data_processed__select_TP53mut__uniq.txt",
+    
+    "gene_info_directory": "output,endometrial,set_up_endometrial",
+    "gene_info_fname": "genes_info.csv",
+    "gene_order_dict_fname": null,
+    
+    "sample_info_directory": "input,endometrial",
+    "sample_info_read_csv_kwargs":{
+        "na_values": " "
+    },
+    "sample_info_fname": "20180704_emca.csv",
+    "sample_info_table_index_colname": "Oncoscan_ID",
+    
+    "output_directory": "output,endometrial,setup_endometrial,rm_dpl_emca_all,nexus_express",
+    "DEBUG": true
+}
