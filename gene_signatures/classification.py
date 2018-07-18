@@ -277,7 +277,8 @@ def classification(**set_up_kwargs):
 
     # get the genes with the nnz coefficients in classification
     diff_genes_selected['classification'] = 0
-    diff_genes_selected['classification_mean_coef'] = abs(all_coefs).mean(axis=0)
+    diff_genes_selected['classification_mean_coef'] = \
+        abs(all_coefs).mean(axis=0)
     diff_genes_selected['classification_std_coef'] = abs(all_coefs).std(axis=0)
     nnz_coef_genes = data.columns.values[(abs(all_coefs).max(axis=0) > 0)]
     diff_genes_selected.loc[nnz_coef_genes, 'classification'] = 1
