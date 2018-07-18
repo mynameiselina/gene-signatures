@@ -588,12 +588,13 @@ def order_cytoband(cytoband):
 
 def which_x_toPrint(df, names, n_names=15):
     if df.shape[1] > 30:
-        xmeans = abs(df.mean(axis=0))
-        mthres = 0.05
-        while (xmeans > mthres).sum() > n_names:
+        xmax = abs(df).max(axis=0)
+        mthres = 0
+        while (xmax > mthres).sum() > n_names:
             mthres += 0.01
-        xpos = np.arange(df.shape[1])[(xmeans > mthres)]
-        xlabels = names[(xmeans > mthres)]
+            xmax = abs(df.max(axis=0))
+        xpos = np.arange(df.shape[1])[(xmax > mthres)]
+        xlabels = names[(xmax > mthres)]
     else:
         xpos = np.arange(df.shape[1])
         xlabels = names

@@ -277,6 +277,8 @@ def classification(**set_up_kwargs):
 
     # get the genes with the nnz coefficients in classification
     diff_genes_selected['classification'] = 0
+    diff_genes_selected['classification_mean_coef'] = abs(all_coefs).mean(axis=0)
+    diff_genes_selected['classification_std_coef'] = abs(all_coefs).std(axis=0)
     nnz_coef_genes = data.columns.values[(abs(all_coefs).max(axis=0) > 0)]
     diff_genes_selected.loc[nnz_coef_genes, 'classification'] = 1
     n_names = nnz_coef_genes.shape[0]
@@ -288,8 +290,8 @@ def classification(**set_up_kwargs):
     # save as tab-delimited csv file
     fname = 'diff_genes_selected_'+select_samples_title+'.csv'
     fpath = os.path.join(output_directory, fname)
-    logger.info("-save selected diff genes for " +
-                mytitle+" in :\n"+fpath)
+    logger.info("-save selected diff genes for classification of" +
+                select_samples_title+" in :\n"+fpath)
     diff_genes_selected.to_csv(
         fpath, sep='\t', header=True, index=True)
 
@@ -301,6 +303,14 @@ def classification(**set_up_kwargs):
     diff_genes_selected.to_excel(
         writer, sheet_name=select_samples_title)
     writer.save()
+
+    # save only the data from those samples
+    # and the classification selected genes
+    fname = 'data_'+select_samples_title+'_classification_genes.csv'
+    fpath = os.path.join(output_directory, fname)
+    logger.info('-save classification selected genes from ' +
+                select_samples_title)
+    data.reindex(nnz_coef_genes, axis=1).to_csv(fpath, sep='\t')
 
     # boxplot
     boxplot(all_coefs, data.shape[1], data.columns.values,

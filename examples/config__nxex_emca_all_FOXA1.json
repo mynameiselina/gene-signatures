@@ -1,5 +1,5 @@
 {
-    "reportName": "debug_nexus_express",
+    "reportName": "nexus_express",
     "saveReport": true,
     "txt_label": "Nexus Express for feature selection",
     "toPrint": true,
@@ -11,13 +11,13 @@
         "cmap_custom": null,
         "vmin": -2,
         "vmax": 2,
-        "highRes": false
+        "highRes": true
     },
 
     "select_samples_from": null,
     "select_samples_which": null,
     "select_samples_sort_by": "FOXA1_mut5,TP53_mut5",
-    "select_samples_title": "select_all",
+    "select_samples_title": "select_all_sortFOXA1",
     "class_labels": "FOXA1wt,FOXA1mut",
     "class_values": "0,1",
 

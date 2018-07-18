@@ -454,7 +454,7 @@ def nexus_express(**set_up_kwargs):
     # from the above table: select only the selected genes
     # according to the Nexus Express diff analysis
     diff_genes_selected = diff_genes[
-        (diff_genes['gained'] > 0) | (diff_genes['deleted'] > 0)]
+        (diff_genes['gained'] > 0) | (diff_genes['deleted'] > 0)].copy()
     if toRemoveDupl:
         group0_ampl_new_wDupl = group0_ampl_wDupl.copy()
         group0_ampl_new_wDupl[:] = 0
