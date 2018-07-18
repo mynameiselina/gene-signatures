@@ -108,6 +108,8 @@ def classification(**set_up_kwargs):
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     sample_info_fname = set_up_kwargs.get('sample_info_fname',
                                           '20180704_emca.csv')
+    if ',' in sample_info_fname:
+        sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
     sample_info_table_index_colname = \
         set_up_kwargs.get('sample_info_table_index_colname',
                           'Oncoscan_ID')
