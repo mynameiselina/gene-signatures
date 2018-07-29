@@ -56,6 +56,9 @@ def set_up_data(**set_up_kwargs):
         bool
     )
     editWith = set_up_kwargs.get('editWith', 'Oncoscan')
+    if 'VCF' in editWith:
+        _edit_kwargs = set_up_kwargs.get('edit_kwargs', {})
+        function_dict = _edit_kwargs.get('function_dict', None)
     withFilter = parse_arg_type(
         set_up_kwargs.get('withFilter', False),
         bool
@@ -103,7 +106,19 @@ def set_up_data(**set_up_kwargs):
         custom_div_cmap_arg = abs(vmin)+abs(vmax)
         if (vmin < 0) or (vmax < 0):
             custom_div_cmap_arg = custom_div_cmap_arg + 1
-        cmap_custom = custom_div_cmap(custom_div_cmap_arg)
+        mincol = plot_kwargs.get('mincol', None)
+        midcol = plot_kwargs.get('midcol', None)
+        maxcol = plot_kwargs.get('maxcol', None)
+        if (
+                (mincol is not None) and
+                (midcol is not None) and
+                (maxcol is not None)
+                ):
+            cmap_custom = custom_div_cmap(
+                numcolors=custom_div_cmap_arg,
+                mincol=mincol, midcol=midcol, maxcol=maxcol)
+        else:
+            cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
     highRes = parse_arg_type(
         plot_kwargs.get('highRes', False),
         bool
@@ -433,7 +448,7 @@ def set_up_data(**set_up_kwargs):
     cbar = ax.figure.colorbar(ax.collections[0])
     if 'VCF' in editWith:
         functionImpact_dict_r = dict(
-            (v, k) for k, v in functionImpact_dict.items()
+            (v, k) for k, v in function_dict.items()
             )
         myTicks = [0, 1, 2, 3, 4, 5]
         cbar.set_ticks(myTicks)
@@ -481,7 +496,7 @@ def set_up_data(**set_up_kwargs):
     cbar.set_ticks(myTicks)
     if 'VCF' in editWith:
         functionImpact_dict_r = dict(
-            (v, k) for k, v in functionImpact_dict.items()
+            (v, k) for k, v in function_dict.items()
             )
         cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
     if saveReport:

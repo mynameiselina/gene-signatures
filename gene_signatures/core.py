@@ -923,6 +923,14 @@ def _preprocessing(patient_id, onesample, info_table,
             onesample, patient_id, toPrint=toPrint,
             **edit_kwargs
         )
+
+    elif editWith == 'VCF':
+        # - edit sample - #
+        onesample, dropped_rows_edit_pat = edit_vcf(
+            onesample, patient_id, toPrint=toPrint,
+            **edit_kwargs
+        )
+
     else:
         logger.error('unsupported sample editor '+(editWith))
         raise
@@ -1121,6 +1129,70 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
         dropped_rows_process, dropped_rows_edit, info_table
 
 
+def _merge_gene_values(mergeHow, functionArray, genes_startPositions,
+                       genes_endPositions, toPrint):
+    # mergeHow: 'maxAll', 'maxOne', 'freqAll'
+    if mergeHow == 'maxAll':
+        if toPrint:
+            logger.info(' -Keep the abs max function value per gene ' +
+                        'and merge all positions, ' +
+                        'with the min start and the max end')
+        # Keep the abs max function value per gene
+        genes_functions = \
+            {functionArray.index[idx]: np.abs(pd.Series(list(item)).unique()
+                                              ).argmax()
+             for idx, item in enumerate(functionArray)
+             if pd.Series(list(item)).unique().size != 0}
+        # merge all Pos and take min start and max end
+        # and assign the abs max funtion value
+        final_dict = dict((':'.join(
+                                    [key, str(genes_startPositions[key]),
+                                     str(genes_endPositions[key])]),
+                           functionArray[key][fidx])
+                          for (key, fidx) in genes_functions.items())
+    elif mergeHow == 'maxOne':
+        if toPrint:
+            logger.info(' -Keep the abs max function value per gene ' +
+                        'and its position, discard the rest')
+        # Keep the abs max function value per gene
+        genes_functions = \
+            {functionArray.index[idx]: np.abs(pd.Series(list(item)).unique()
+                                              ).argmax()
+             for idx, item in enumerate(functionArray)
+             if pd.Series(list(item)).unique().size != 0}
+        # pick the Pos only from abs max funtion value
+        final_dict = dict((':'.join(
+                                    [key, str(startPosArray[key][fidx]),
+                                     str(startPosArray[key][fidx])]),
+                           functionArray[key][fidx])
+                          for (key, fidx) in genes_functions.items())
+
+    elif mergeHow == 'freqAll':
+        if toPrint:
+            logger.info(' -Keep the the value with the higher frequency ' +
+                        'per gene and merge all positions, ' +
+                        'with the min start and the max end')
+        # choose the value with the higher frequency
+        genes_functions = \
+            {functionArray.index[idx]:
+             pd.Series(list(item)).value_counts().values.argmax()
+             for idx, item in enumerate(functionArray)
+             if pd.Series(list(item)).value_counts().size != 0}
+        # merge all Pos and take min start and max end
+        # and assign the abs max funtion value
+        final_dict = dict((':'.join(
+                                    [key, str(genes_startPositions[key]),
+                                     str(genes_endPositions[key])]),
+                           functionArray[key][fidx])
+                          for (key, fidx) in genes_functions.items())
+    else:
+        logger.error('invalid merge option for genes that exist ' +
+                     'in the same chromosome multiple times!')
+        raise
+
+    return final_dict
+
+
 def _map_cnvs_to_genes(
         onesample, dropped_rows, sample_name,
         removeLOH, LOH_value, function_dict, mergeHow,
@@ -1241,63 +1313,9 @@ def _map_cnvs_to_genes(
          for idx, item in enumerate(endPosArray)}
 
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
-    if mergeHow == 'maxAll':
-        if toPrint:
-            logger.info(' -Keep the abs max function value per gene ' +
-                        'and merge all positions, ' +
-                        'with the min start and the max end')
-        # Keep the abs max function value per gene
-        genes_functions = \
-            {functionArray.index[idx]: np.abs(pd.Series(list(item)).unique()
-                                              ).argmax()
-             for idx, item in enumerate(functionArray)
-             if pd.Series(list(item)).unique().size != 0}
-        # merge all Pos and take min start and max end
-        # and assign the abs max funtion value
-        final_dict = dict((':'.join(
-                                    [key, str(genes_startPositions[key]),
-                                     str(genes_endPositions[key])]),
-                           functionArray[key][fidx])
-                          for (key, fidx) in genes_functions.items())
-    elif mergeHow == 'maxOne':
-        if toPrint:
-            logger.info(' -Keep the abs max function value per gene ' +
-                        'and its position, discard the rest')
-        # Keep the abs max function value per gene
-        genes_functions = \
-            {functionArray.index[idx]: np.abs(pd.Series(list(item)).unique()
-                                              ).argmax()
-             for idx, item in enumerate(functionArray)
-             if pd.Series(list(item)).unique().size != 0}
-        # pick the Pos only from abs max funtion value
-        final_dict = dict((':'.join(
-                                    [key, str(startPosArray[key][fidx]),
-                                     str(startPosArray[key][fidx])]),
-                           functionArray[key][fidx])
-                          for (key, fidx) in genes_functions.items())
-
-    elif mergeHow == 'freqAll':
-        if toPrint:
-            logger.info(' -Keep the the value with the higher frequency ' +
-                        'per gene and merge all positions, ' +
-                        'with the min start and the max end')
-        # choose the value with the higher frequency
-        genes_functions = \
-            {functionArray.index[idx]:
-             pd.Series(list(item)).value_counts().values.argmax()
-             for idx, item in enumerate(functionArray)
-             if pd.Series(list(item)).value_counts().size != 0}
-        # merge all Pos and take min start and max end
-        # and assign the abs max funtion value
-        final_dict = dict((':'.join(
-                                    [key, str(genes_startPositions[key]),
-                                     str(genes_endPositions[key])]),
-                           functionArray[key][fidx])
-                          for (key, fidx) in genes_functions.items())
-    else:
-        logger.error('invalid merge option for genes that exist ' +
-                     'in the same chromosome multiple times!')
-        raise
+    final_dict = _merge_gene_values(
+        mergeHow, functionArray, genes_startPositions,
+        genes_endPositions, toPrint)
 
     # create a pandas Dataframe for one sample
     # with the function integer column and the index broken down in rows
@@ -1481,6 +1499,7 @@ def edit_vcf(onesample, sample_name, toPrint=True, **kwargs):
     drop_bool = (expand_info[1].isna()) | (expand_info[3].isna())
     if drop_bool.any():
         r2drop = onesample.index[drop_bool]
+        expand_info.drop(r2drop, inplace=True)
         reason2drop = 'missing_field'
         onesample, dropped_rows = _drop_rows(
             onesample, dropped_rows, r2drop, reason2drop, toPrint)
@@ -1540,6 +1559,106 @@ def edit_vcf(onesample, sample_name, toPrint=True, **kwargs):
             reason2drop = 'LOW'
             onesample, dropped_rows = _drop_rows(
                 onesample, dropped_rows, r2drop, reason2drop, toPrint)
+
+    # remove genes that exist in more than one chromosomes
+    tmp_size = onesample.shape[0]
+    # group by ID and sum over the CHROM
+    # (to get all different chrom for one gene)
+    chrSum = onesample.groupby(['id'])['chr'].sum()
+    # save a dict with only the genes to remove
+    # and an array of the diff chroms these gene exist in
+    genes_to_remove_dict = {
+        chrSum.index[idx]: np.unique(
+            np.array(list(filter(None, item.rsplit('chr')))),
+            return_counts=False)
+        for idx, item in enumerate(chrSum)
+        if len(pd.Series(
+                list(filter(None, item.rsplit('chr')))
+            ).value_counts().values) > 1  # 2) more than one chroms
+        if len(item.rsplit('chr')) > 2  # 1) in more than one positions
+    }
+    # keep the rows we will drop
+    # keep the rows we will drop
+    drop_bool = onesample['id'].isin(genes_to_remove_dict.keys())
+    if drop_bool.any():
+        r2drop = onesample.index[drop_bool]
+        reason2drop = 'multiple_chrom'
+        onesample, dropped_rows = _drop_rows(
+            onesample, dropped_rows, r2drop, reason2drop, toPrint)
+        if toPrint:
+            logger.info(str(len(genes_to_remove_dict.keys())) +
+                        ' unique gene IDs removed:\n' +
+                        str(natsorted(genes_to_remove_dict.keys())))
+
+    # create a new column with ID and CHR together
+    onesample['CHR_ID'] = onesample['chr']+':'+onesample['id']
+
+    # fist maybe check (and Print) how many chr_id dupl we have
+    count_diff = onesample[onesample['CHR_ID'].duplicated(keep='first')
+                           ].shape[0]
+    if count_diff > 0:
+        if toPrint:
+            logger.info('Aggregate genes that exist in the same ' +
+                        'chromosome multiple times: ' +
+                        str(onesample[onesample['CHR_ID'
+                                                ].duplicated(keep=False)
+                                      ].shape[0]) +
+                        ' rows aggregated to ' +
+                        str(onesample[onesample['CHR_ID'
+                                                ].duplicated(keep='first')
+                                      ].shape[0]) +
+                        ' unique rows')
+            # these will be aggregated into one row:
+            # with function with the highest frequency
+            # and overall positional region
+
+    # group by CHR_ID and sum over the FUNCTION
+    # (to get all different functions for one gene)
+    functionArray = onesample.groupby(['CHR_ID'])['function'].apply(
+        lambda x: np.append([], x))
+
+    # group by CHR_ID and concat all the positions
+    PosArray = onesample.groupby(['CHR_ID'])['pos'].apply(
+        lambda x: np.append([], x))
+
+    # choose the min start pos
+    genes_startPositions = {
+        PosArray.index[idx]: int(pd.Series(item).min())
+        for idx, item in enumerate(PosArray)
+    }
+
+    # choose the max end pos
+    genes_endPositions = {
+        PosArray.index[idx]: int(pd.Series(item).max())
+        for idx, item in enumerate(PosArray)
+    }
+
+    # mergeHow: 'maxAll', 'maxOne', 'freqAll'
+    final_dict = _merge_gene_values(
+        mergeHow, functionArray, genes_startPositions,
+        genes_endPositions, toPrint)
+
+    # create a pandas Dataframe for one sample
+    # with the function integer column and the index broken down in rows
+    # one part to merge in one big table of sample (chrid)
+    # and the other to define the position
+    # (we would need to edit that when merging)
+    df = pd.DataFrame.from_dict(final_dict, orient='index')
+    df.columns = ['function']
+    df.reset_index(inplace=True)  # index to column
+    df['chr'], df['id'], df['start'], df['end'] = \
+        df['index'].str.split(':', 3).str  # brake the column
+
+    df.drop(['index'], inplace=True, axis=1)  # keep only what we want
+    df.set_index(['id'], drop=True, inplace=True)  # re-set the index now
+    # put the file/sample name in the column names (because later we merge)
+    df.columns = [':'.join([sample_name, name]) for name in df.columns]
+
+    # reset index
+    dropped_rows.reset_index(drop=True, inplace=True)
+    dropped_rows['sample_name'] = sample_name
+
+    return df, dropped_rows
 
 
 # choose patient IDs and their order

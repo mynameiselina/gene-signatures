@@ -35,9 +35,12 @@
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -4,
+        "vmin": 0,
         "vmax": 4,
-        "highRes": false
+        "highRes": false,
+        "mincol": "white",
+        "midcol": "orange",
+        "maxcol": "red"
     },
     
     "input_directory": "input,headneck,cohort2",

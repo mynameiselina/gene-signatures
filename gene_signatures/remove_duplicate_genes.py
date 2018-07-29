@@ -83,6 +83,7 @@ def remove_duplicate_genes(**set_up_kwargs):
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
+    function_dict = plot_kwargs.get('function_dict', None)
     cmap_custom = plot_kwargs.get('cmap_custom', None)
     vmin = parse_arg_type(
         plot_kwargs.get('vmin', None),
@@ -96,7 +97,19 @@ def remove_duplicate_genes(**set_up_kwargs):
         custom_div_cmap_arg = abs(vmin)+abs(vmax)
         if (vmin < 0) or (vmax < 0):
             custom_div_cmap_arg = custom_div_cmap_arg + 1
-        cmap_custom = custom_div_cmap(custom_div_cmap_arg)
+        mincol = plot_kwargs.get('mincol', None)
+        midcol = plot_kwargs.get('midcol', None)
+        maxcol = plot_kwargs.get('maxcol', None)
+        if (
+                (mincol is not None) and
+                (midcol is not None) and
+                (maxcol is not None)
+                ):
+            cmap_custom = custom_div_cmap(
+                numcolors=custom_div_cmap_arg,
+                mincol=mincol, midcol=midcol, maxcol=maxcol)
+        else:
+            cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
     highRes = parse_arg_type(
         plot_kwargs.get('highRes', False),
         bool
@@ -262,15 +275,30 @@ def remove_duplicate_genes(**set_up_kwargs):
 
         # Plot heatmap
         plt.figure(figsize=(20, 8))
-        sns.heatmap(choose_data, vmin=vmin, vmax=vmax,
-                    yticklabels=pat_labels_txt, xticklabels=False,
-                    cmap=cmap_custom, cbar_kws={'ticks': np.arange(-5, 5)})
+        ax = sns.heatmap(choose_data, vmin=vmin, vmax=vmax,
+                         yticklabels=pat_labels_txt, xticklabels=False,
+                         cmap=cmap_custom, cbar=False)
         plt.xticks(xpos_choose[i_data], xlabels_choose[i_data], rotation=0)
         plt.xlabel('chromosomes (the number is aligned at the end ' +
                    'of the chr region)')
         plt.ylabel('samples '+select_samples_title)
-        plt.title(txt_label+' heatmap of '+select_samples_title +
-                  ' samples (blue:amplification, red:deletion)')
+        cbar = ax.figure.colorbar(ax.collections[0])
+        if function_dict is not None:
+            functionImpact_dict_r = dict(
+                (v, k) for k, v in function_dict.items()
+                )
+            myTicks = [0, 1, 2, 3, 4, 5]
+            cbar.set_ticks(myTicks)
+            cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
+        else:
+            if custom_div_cmap_arg is not None:
+                cbar.set_ticks(np.arange(-custom_div_cmap_arg,
+                                         custom_div_cmap_arg))
+
+        plt.title(
+            txt_label+'\nheatmap of ' +
+            select_samples_title+' samples')
+
         if saveReport:
             logger.info('Save heatmap')
             plt.savefig(os.path.join(
