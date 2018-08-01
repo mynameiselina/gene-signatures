@@ -7,6 +7,14 @@
     "load_files": true,
     "fext": "_events.txt",
 
+    "load_data_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0,
+        "comment": "#",
+        "names": null
+    },
+
     "editWith": "Oncoscan",
     "withFilter": false,
     "withProcess": true,
@@ -29,8 +37,6 @@
         "LOH_value": "LOH"
     },
 
-    "comment": "#",
-    "names": null,
     "chr_col": "chr_int",
     "gene_id_col": "gene",
     "remove_patients": "DS-107_0001",

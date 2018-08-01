@@ -7,6 +7,14 @@
     "load_files": true,
     "fext": "_events_cnvAll.txt",
 
+    "load_data_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0,
+        "comment": "#",
+        "names": "chr,id,value,function,pos"
+    },
+
     "editWith": "Oncoscan",
     "withFilter": false,
     "withProcess": false,
@@ -26,8 +34,6 @@
         "LOH_value": "LOH"
     },
 
-    "comment": "#",
-    "names": "chr,id,value,function,pos",
     "chr_col": "chr_int",
     "gene_id_col": "gene",
     "remove_patients": null,

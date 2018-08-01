@@ -7,6 +7,14 @@
     "load_files": true,
     "fext": ".excavatorCNV.CNVannotated.txt",
 
+    "load_data_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0,
+        "comment": "#",
+        "names": null
+    },
+
     "editWith": "ExCavator2",
     "withFilter": false,
     "withProcess": false,
@@ -20,8 +28,6 @@
         "LOH_value": null
     },
 
-    "comment": "#",
-    "names": null,
     "split_patID": "_",
     "chr_col": "chr_int",
     "gene_id_col": "gene",

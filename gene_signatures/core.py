@@ -949,6 +949,15 @@ def _preprocessing(patient_id, onesample, info_table,
 
 def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
                                   toPrint=False, **kwargs):
+    load_data_csv_kwargs = kwargs.get(
+        'load_data_csv_kwargs', {}
+    )
+    names = load_data_csv_kwargs.pop('names', None)
+    if names is not None:
+        if ',' in names:
+            names = names.rsplit(',')
+        load_data_csv_kwargs['names'] = names
+
     withFilter = parse_arg_type(
         kwargs.get('withFilter', False),
         bool
@@ -957,11 +966,7 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
         kwargs.get('withProcess', True),
         bool
     )
-    comment = kwargs.get('comment', None)
-    names = kwargs.get('names', None)
-    if names is not None:
-        if ',' in names:
-            names = names.rsplit(',')
+
     filt_kwargs = kwargs.get('filt_kwargs', {})
     preproc_kwargs = kwargs.get('preproc_kwargs', {})
     edit_kwargs = kwargs.get('edit_kwargs', {})
@@ -976,8 +981,7 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
         info_table['rows_in_sample_processed'] = 0
     info_table['rows_in_sample_editted'] = 0
     for fpath in fpaths:
-        allsamples = pd.read_csv(fpath, sep='\t', header=0,
-                                 comment=comment, names=names)
+        allsamples = pd.read_csv(fpath, **load_data_csv_kwargs)
         samples_colname = kwargs.get('samples_colname',
                                      allsamples.columns.values[0])
 
@@ -1034,6 +1038,15 @@ def load_and_process_summary_file(fpaths, info_table, editWith='choose_editor',
 
 def load_and_process_files(fpaths, info_table, editWith='choose_editor',
                            toPrint=False, **kwargs):
+    load_data_csv_kwargs = kwargs.get(
+        'load_data_csv_kwargs', {}
+    )
+    names = load_data_csv_kwargs.pop('names', None)
+    if names is not None:
+        if ',' in names:
+            names = names.rsplit(',')
+        load_data_csv_kwargs['names'] = names
+
     withFilter = parse_arg_type(
         kwargs.get('withFilter', False),
         bool
@@ -1042,11 +1055,6 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
         kwargs.get('withProcess', True),
         bool
     )
-    comment = kwargs.get('comment', None)
-    names = kwargs.get('names', None)
-    if names is not None:
-        if ',' in names:
-            names = names.rsplit(',')
     filt_kwargs = kwargs.get('filt_kwargs', {})
     preproc_kwargs = kwargs.get('preproc_kwargs', {})
     edit_kwargs = kwargs.get('edit_kwargs', {})
@@ -1078,8 +1086,7 @@ def load_and_process_files(fpaths, info_table, editWith='choose_editor',
 
                 sample_fpath = os.path.join(fpath, filename)
                 onesample_or = pd.read_csv(
-                    sample_fpath, sep='\t', header=0,
-                    comment=comment, names=names)
+                    sample_fpath, **load_data_csv_kwargs)
 
                 data_or[patient_id] = onesample_or.copy()
 

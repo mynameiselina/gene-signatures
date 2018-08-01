@@ -1,5 +1,5 @@
 {
-    "reportName": "setup_c2_vcf",
+    "reportName": "setup_c2_vcf_test",
     "saveReport": true,
     "txt_label": "set up VCF (combined variants) data",
     "toPrint": true,

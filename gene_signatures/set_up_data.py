@@ -52,22 +52,12 @@ def set_up_data(**set_up_kwargs):
         bool
     )
     reportName = set_up_kwargs.get('reportName', script_fname)
-    load_files = parse_arg_type(
-        set_up_kwargs.get('load_files', False),
-        bool
-    )
+
     editWith = set_up_kwargs.get('editWith', 'Oncoscan')
     if 'VCF' in editWith:
         _edit_kwargs = set_up_kwargs.get('edit_kwargs', {})
         function_dict = _edit_kwargs.get('function_dict', None)
-    withFilter = parse_arg_type(
-        set_up_kwargs.get('withFilter', False),
-        bool
-    )
-    withProcess = parse_arg_type(
-        set_up_kwargs.get('withProcess', True),
-        bool
-    )
+
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
     remove_patients = set_up_kwargs.get('remove_patients', None)
     if remove_patients is None or remove_patients == "":
@@ -177,261 +167,288 @@ def set_up_data(**set_up_kwargs):
                         str(info_table_isna_sum.iloc[_i]))
 
     #########################################
-    # load data/files from each patient
-    if load_files:
-        if toPrint:
-            logger.info(txt_label+': load files from all patients\n')
-
-        pat_data_list, pat_data_or_dict, dropped_rows_filter, \
-            dropped_rows_process, dropped_rows_edit, info_table = \
-            load_and_process_files(fpaths, info_table,
-                                   **set_up_kwargs)
+    if 'genepanel' in editWith:
+        print('ERROR: undefined scenario!')
+        raise
     else:
-        if toPrint:
-            logger.info(txt_label+': load data from all patients\n')
-
-        pat_data_list, pat_data_or_dict, dropped_rows_filter, \
-            dropped_rows_process, dropped_rows_edit, info_table = \
-            load_and_process_summary_file(fpaths, info_table,
-                                          **set_up_kwargs)
-
-    if (dropped_rows_filter.shape[0] > 0) and (saveReport):
-        f_new = 'allsamples__dropped_rows_filter.txt'
-        if toPrint:
-            logger.info('-save dropped rows from filtering in:\n'+f_new)
-        dropped_rows_filter.to_csv(os.path.join(output_directory, f_new),
-                                   sep='\t', header=True, index=True)
-
-    if (dropped_rows_process.shape[0] > 0) and (saveReport):
-        f_new = 'allsamples__dropped_rows_process.txt'
-        if toPrint:
-            logger.info('-save dropped rows from processing in:\n' +
-                        f_new)
-        dropped_rows_process.to_csv(os.path.join(output_directory, f_new),
-                                    sep='\t', header=True, index=True)
-
-    if (dropped_rows_edit.shape[0] > 0) and (saveReport):
-        f_new = 'allsamples__dropped_rows_edit.txt'
-        if toPrint:
-            logger.info('-save dropped rows from editing in:\n' +
-                        f_new)
-        dropped_rows_edit.to_csv(os.path.join(output_directory, f_new),
-                                 sep='\t', header=True, index=True)
-
-    # get size of each sample
-    # (i.e. abundance of genes with in each sample)
-    # and plot it
-    counts = []
-    sample_labels = []
-    for df in pat_data_list:
-        counts.append(df.shape[0])
-        sample_labels.append(df.columns[0].rsplit(':')[0])
-
-    ##################################################
-
-    # concat all samples in one table and keep union of all genes,
-    # then fill NaNs with zero
-    if toPrint:
-        logger.info('Concantanate all '+editWith +
-                    ' samples in 2 tables (with position, only values)\n')
-    # samples in rows, genes in columns
-    table_withPos = pd.concat(pat_data_list, join='outer',
-                              axis=1, sort=False).T
-    if len(remove_patients_list) > 0:
-        if toPrint:
-            logger.info('Removing '+str(len(remove_patients_list)) +
-                        ' patients from the analysis,' +
-                        ' according to user preferances:' +
-                        remove_patients)
-        for patient in remove_patients_list:
-            rows2remove = table_withPos.index.values[
-                table_withPos.index.str.contains(remove_patients_list[0])]
-            table_withPos.drop(rows2remove, axis=0, inplace=True)
-
-    # CLEAN THE data FROM ALL SAMPLES
-    # extract the start, end and chrom info from the table
-    # and keep only the functions values
-    start_table = \
-        table_withPos[table_withPos.index.str.contains('start')].copy()
-    end_table = table_withPos[table_withPos.index.str.contains('end')].copy()
-    chr_table = table_withPos[table_withPos.index.str.contains('chr')].copy()
-    table = table_withPos.drop(np.concatenate([start_table.index,
-                                               end_table.index,
-                                               chr_table.index],
-                                              axis=0), axis=0)
-    if toPrint:
-        logger.info('Dimensions of table (samples,genes): '+str(table.shape))
-    table.index = [index_name.rsplit(':')[0]
-                   for index_name in table.index]
-    start_table.index = [index_name.rsplit(':')[0]
-                         for index_name in start_table.index]
-    end_table.index = [index_name.rsplit(':')[0]
-                       for index_name in end_table.index]
-    chr_table.index = [index_name.rsplit(':')[0]
-                       for index_name in chr_table.index]
-
-    # remove genes that exist in multiple chromosomes across samples (SLOW?)
-    ll = [list(chr_table[col].dropna().unique()) for col in chr_table.columns]
-    n, m = max(map(len, ll)), len(ll)
-    uniq_chr_per_gene = pd.DataFrame([[_uniq_chr_per_gene(j, i)
-                                       for j in ll] for i in range(n)],
-                                     columns=chr_table.columns)
-    genes2drop = uniq_chr_per_gene.columns[(~uniq_chr_per_gene.isnull()
-                                            ).sum() > 1].values
-    if toPrint:
-        logger.info('Remove '+str(genes2drop.shape[0]) +
-                    ' genes that exist in multiple chromosomes ' +
-                    'across samples:\n' +
-                    str(genes2drop))
-
-    if (genes2drop.shape[0] > 0):
-        # if saveReport:
-        #     fname = 'chr_table.csv'
-        #     f = os.path.join(output_directory, fname)
-        #     if toPrint:
-        #         logger.info('-save chromosomes in: '+f)
-        #     chr_table.to_csv(f, sep='\t', header=True, index=True)
-
-        #     fname = 'chr_table_uniq.csv'
-        #     f = os.path.join(output_directory, fname)
-        #     if toPrint:
-        #         logger.info('-save unique chromosomes in: '+f)
-        #     uniq_chr_per_gene.to_csv(f, sep='\t', header=True, index=True)
-
-        #     fname = 'chr_table_uniq_genes2drop.csv'
-        #     f = os.path.join(output_directory, fname)
-        #     if toPrint:
-        #         logger.info('-save unique chromosomes ' +
-        #                     'from genes to drop in: '+f)
-        #     uniq_chr_per_gene.loc[:, genes2drop].to_csv(f, sep='\t',
-        #                                                 header=True,
-        #                                                 index=True)
-
-        start_table.drop(genes2drop, axis=1, inplace=True)
-        end_table.drop(genes2drop, axis=1, inplace=True)
-        chr_table.drop(genes2drop, axis=1, inplace=True)
-        table.drop(genes2drop, axis=1, inplace=True)
-        uniq_chr_per_gene.drop(genes2drop, axis=1, inplace=True)
-        uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :].copy()
-        if toPrint:
-            logger.info('Dimensions of table (samples,genes):' +
-                        str(table.shape))
-    else:
-        uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :].copy()
-
-    # ORDER THE GENES FROM ALL SAMPLES (SLOW?)
-    if toPrint:
-        logger.info('Create a Dataframe with the genes ' +
-                    'and their genomic positions')
-    gene_pos = pd.concat([
-        start_table.apply(
-            lambda x: pd.to_numeric(x, errors='ignore', downcast='integer')
-            ).min().astype(int),
-        end_table.apply(
-            lambda x: pd.to_numeric(x, errors='ignore', downcast='integer')
-            ).max().astype(int),
-        uniq_chr_per_gene],
-        axis=1, sort=False)
-    gene_pos.columns = ['start', 'end', 'chr']
-    gene_pos.index.name = gene_id_col
-    gene_pos.reset_index(inplace=True)
-    gene_pos['chr_gene'] = gene_pos['chr']+':' + gene_pos[gene_id_col]
-    gene_pos[chr_col] = gene_pos['chr'].str.split('chr', 2).str[1]
-    gene_pos['toNatSort'] = [':'.join([str(gene_pos[chr_col][row]),
-                                       str(gene_pos['start'][row]),
-                                       str(gene_pos['end'][row])])
-                             for row in range(gene_pos.shape[0])]
-    if toPrint:
-        logger.info('Dataframes agree (?): ' +
-                    str(gene_pos.shape[0] == table.shape[1]))
-
-    # are the genes duplicated ?
-    dupl_genes = gene_pos[gene_id_col].duplicated()
-    if dupl_genes.any():
-        logger.error('genes are duplicated, check your data first!')
-        logger.info('duplicated genes:' +
-                    gene_pos[gene_id_col][dupl_genes].values)
-        raise()
-    else:
-        if toPrint:
-            logger.info('gene names are unique, continue..')
-
-    if toPrint:
-        logger.info('Order genes according to genomic position')
-    gene_order = index_natsorted(gene_pos['toNatSort'])
-    gene_pos = gene_pos.iloc[gene_order, :]
-    gene_pos.reset_index(drop=True, inplace=True)
-    gene_pos.index.name = 'order'
-    gene_pos.reset_index(inplace=True)
-
-    #########################################
-    # CREATE dictionary of gene names and their order
-    gene_order_dict = dict((gene_pos[gene_id_col][i],
-                            int(gene_pos['order'][i]))
-                           for i in range(gene_pos.shape[0]))
-    #########################################
-    # ORDER the table
-    if toPrint:
-        logger.info('Order data according to genomic position')
-    data = pd.DataFrame(table, columns=sorted(gene_order_dict,
-                                              key=gene_order_dict.get))
-
-    #########################################
-    for label in ['rows_in_sample', 'rows_in_sample_filt',
-                  'rows_in_sample_processed', 'rows_in_sample_editted']:
-        if label in info_table.columns:
-            # PLOT Abundance of gene data per sample
+        load_files = parse_arg_type(
+            set_up_kwargs.get('load_files', False),
+            bool
+        )
+        # load data/files from each patient
+        if load_files:
             if toPrint:
-                logger.info('Plot '+label+' for each sample')
-            mutCount = info_table[[label]].copy()
-            patient_new_order = info_table.loc[mutCount.index].sort_values(
-                by=sample_info_table_sortLabels_list)
-            xticklabels = list(zip(patient_new_order.index.values,
-                                   info_table.loc[
-                                       patient_new_order.index,
-                                       sample_info_table_sortLabels_list
-                                                  ].values))
-            mutCount = mutCount.loc[patient_new_order.index]
-            rank = mutCount[label].argsort().argsort().values
-            pal = sns.cubehelix_palette(mutCount.shape[0],
-                                        reverse=True, dark=.40, light=.95)
-            plt.figure(figsize=(10, 5))
-            g = sns.barplot(np.arange(mutCount.shape[0]), mutCount[label],
-                            palette=np.array(pal[::-1])[rank])
-            g.set_xticklabels(xticklabels, rotation=90)
-            g.set(xlabel='samples', ylabel='count')
-            g.set_title('Abundance of '+label+' per sample: ' +
-                        str((mutCount[label] <= 0).sum())+' empty samples')
-            if saveReport:
-                logger.info('Save figure')
-                plt.savefig(os.path.join(output_directory, 'Fig_samples_' +
-                            label+img_ext),
-                            transparent=True, bbox_inches='tight',
-                            pad_inches=0.1, frameon=False)
-                plt.close("all")
-            else:
-                plt.show()
+                logger.info(txt_label+': load files from all patients\n')
 
-    #########################################
-    # # SAVE table w/ and w/o positions
-    # if saveReport:
-    #     # save table
-    #     fname = 'table_withPos.csv'
-    #     f = os.path.join(output_directory, fname)
-    #     if toPrint:
-    #         logger.info('-save table in: '+f)
-    #     table_withPos.to_csv(f, sep='\t', header=True, index=True)
+            pat_data_list, pat_data_or_dict, dropped_rows_filter, \
+                dropped_rows_process, dropped_rows_edit, info_table = \
+                load_and_process_files(
+                    fpaths, info_table, **set_up_kwargs)
+        else:
+            if toPrint:
+                logger.info(txt_label+': load data from all patients\n')
 
-    # if saveReport:
-    #     # save table
-    #     fname = 'table.csv'
-    #     f = os.path.join(output_directory, fname)
-    #     if toPrint:
-    #         logger.info('-save table in: '+f)
-    #     table.to_csv(f, sep='\t', header=True, index=True)
+            pat_data_list, pat_data_or_dict, dropped_rows_filter, \
+                dropped_rows_process, dropped_rows_edit, info_table = \
+                load_and_process_summary_file(
+                    fpaths, info_table, **set_up_kwargs)
 
-    # if toPrint:
-    #     logger.info('Dimensions of table (samples,genes):'+str(table.shape))
+        if (dropped_rows_filter.shape[0] > 0) and (saveReport):
+            f_new = 'allsamples__dropped_rows_filter.txt'
+            if toPrint:
+                logger.info('-save dropped rows from filtering in:\n'+f_new)
+            dropped_rows_filter.to_csv(
+                os.path.join(output_directory, f_new),
+                sep='\t', header=True, index=True)
+
+        if (dropped_rows_process.shape[0] > 0) and (saveReport):
+            f_new = 'allsamples__dropped_rows_process.txt'
+            if toPrint:
+                logger.info('-save dropped rows from processing in:\n' +
+                            f_new)
+            dropped_rows_process.to_csv(os.path.join(output_directory, f_new),
+                                        sep='\t', header=True, index=True)
+
+        if (dropped_rows_edit.shape[0] > 0) and (saveReport):
+            f_new = 'allsamples__dropped_rows_edit.txt'
+            if toPrint:
+                logger.info('-save dropped rows from editing in:\n' +
+                            f_new)
+            dropped_rows_edit.to_csv(
+                os.path.join(output_directory, f_new),
+                sep='\t', header=True, index=True)
+
+        # get size of each sample
+        # (i.e. abundance of genes with in each sample)
+        # and plot it
+        counts = []
+        sample_labels = []
+        for df in pat_data_list:
+            counts.append(df.shape[0])
+            sample_labels.append(df.columns[0].rsplit(':')[0])
+
+        ##################################################
+
+        # concat all samples in one table and keep union of all genes,
+        # then fill NaNs with zero
+        if toPrint:
+            logger.info('Concantanate all '+editWith +
+                        ' samples in 2 tables (with position, only values)\n')
+        # samples in rows, genes in columns
+        table_withPos = pd.concat(
+            pat_data_list, join='outer', axis=1, sort=False).T
+        if len(remove_patients_list) > 0:
+            if toPrint:
+                logger.info('Removing '+str(len(remove_patients_list)) +
+                            ' patients from the analysis,' +
+                            ' according to user preferances:' +
+                            remove_patients)
+            for patient in remove_patients_list:
+                rows2remove = table_withPos.index.values[
+                    table_withPos.index.str.contains(remove_patients_list[0])]
+                table_withPos.drop(rows2remove, axis=0, inplace=True)
+
+        # CLEAN THE data FROM ALL SAMPLES
+        # extract the start, end and chrom info from the table
+        # and keep only the functions values
+        start_table = \
+            table_withPos[table_withPos.index.str.contains('start')].copy()
+        end_table = table_withPos[
+            table_withPos.index.str.contains('end')].copy()
+        chr_table = table_withPos[
+            table_withPos.index.str.contains('chr')].copy()
+        table = table_withPos.drop(
+            np.concatenate([start_table.index,
+                            end_table.index,
+                            chr_table.index],
+                           axis=0), axis=0)
+        if toPrint:
+            logger.info('Dimensions of table (samples,genes): ' +
+                        str(table.shape))
+        table.index = [
+            index_name.rsplit(':')[0]
+            for index_name in table.index]
+        start_table.index = [
+            index_name.rsplit(':')[0]
+            for index_name in start_table.index]
+        end_table.index = [
+            index_name.rsplit(':')[0]
+            for index_name in end_table.index]
+        chr_table.index = [
+            index_name.rsplit(':')[0]
+            for index_name in chr_table.index]
+
+        # remove genes that exist in multiple chromosomes across samples
+        ll = [list(chr_table[col].dropna().unique())
+              for col in chr_table.columns]
+        n, m = max(map(len, ll)), len(ll)
+        uniq_chr_per_gene = pd.DataFrame(
+            [[
+                _uniq_chr_per_gene(j, i)
+                for j in ll] for i in range(n)],
+            columns=chr_table.columns)
+        genes2drop = uniq_chr_per_gene.columns[(~uniq_chr_per_gene.isnull()
+                                                ).sum() > 1].values
+        if toPrint:
+            logger.info('Remove '+str(genes2drop.shape[0]) +
+                        ' genes that exist in multiple chromosomes ' +
+                        'across samples:\n' +
+                        str(genes2drop))
+
+        if (genes2drop.shape[0] > 0):
+            # if saveReport:
+            #     fname = 'chr_table.csv'
+            #     f = os.path.join(output_directory, fname)
+            #     if toPrint:
+            #         logger.info('-save chromosomes in: '+f)
+            #     chr_table.to_csv(f, sep='\t', header=True, index=True)
+
+            #     fname = 'chr_table_uniq.csv'
+            #     f = os.path.join(output_directory, fname)
+            #     if toPrint:
+            #         logger.info('-save unique chromosomes in: '+f)
+            #     uniq_chr_per_gene.to_csv(
+            #           f, sep='\t', header=True, index=True)
+
+            #     fname = 'chr_table_uniq_genes2drop.csv'
+            #     f = os.path.join(output_directory, fname)
+            #     if toPrint:
+            #         logger.info('-save unique chromosomes ' +
+            #                     'from genes to drop in: '+f)
+            #     uniq_chr_per_gene.loc[:, genes2drop].to_csv(f, sep='\t',
+            #                                                 header=True,
+            #                                                 index=True)
+
+            start_table.drop(genes2drop, axis=1, inplace=True)
+            end_table.drop(genes2drop, axis=1, inplace=True)
+            chr_table.drop(genes2drop, axis=1, inplace=True)
+            table.drop(genes2drop, axis=1, inplace=True)
+            uniq_chr_per_gene.drop(genes2drop, axis=1, inplace=True)
+            uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :].copy()
+            if toPrint:
+                logger.info('Dimensions of table (samples,genes):' +
+                            str(table.shape))
+        else:
+            uniq_chr_per_gene = uniq_chr_per_gene.iloc[0, :].copy()
+
+        # ORDER THE GENES FROM ALL SAMPLES (SLOW?)
+        if toPrint:
+            logger.info('Create a Dataframe with the genes ' +
+                        'and their genomic positions')
+        gene_pos = pd.concat([
+            start_table.apply(
+                lambda x: pd.to_numeric(x, errors='ignore', downcast='integer')
+                ).min().astype(int),
+            end_table.apply(
+                lambda x: pd.to_numeric(x, errors='ignore', downcast='integer')
+                ).max().astype(int),
+            uniq_chr_per_gene],
+            axis=1, sort=False)
+        gene_pos.columns = ['start', 'end', 'chr']
+        gene_pos.index.name = gene_id_col
+        gene_pos.reset_index(inplace=True)
+        gene_pos['chr_gene'] = gene_pos['chr']+':' + gene_pos[gene_id_col]
+        gene_pos[chr_col] = gene_pos['chr'].str.split('chr', 2).str[1]
+        gene_pos['toNatSort'] = [
+            ':'.join([
+                str(gene_pos[chr_col][row]),
+                str(gene_pos['start'][row]),
+                str(gene_pos['end'][row])])
+            for row in range(gene_pos.shape[0])]
+        if toPrint:
+            logger.info('Dataframes agree (?): ' +
+                        str(gene_pos.shape[0] == table.shape[1]))
+
+        # are the genes duplicated ?
+        dupl_genes = gene_pos[gene_id_col].duplicated()
+        if dupl_genes.any():
+            logger.error('genes are duplicated, check your data first!')
+            logger.info('duplicated genes:' +
+                        gene_pos[gene_id_col][dupl_genes].values)
+            raise()
+        else:
+            if toPrint:
+                logger.info('gene names are unique, continue..')
+
+        if toPrint:
+            logger.info('Order genes according to genomic position')
+        gene_order = index_natsorted(gene_pos['toNatSort'])
+        gene_pos = gene_pos.iloc[gene_order, :]
+        gene_pos.reset_index(drop=True, inplace=True)
+        gene_pos.index.name = 'order'
+        gene_pos.reset_index(inplace=True)
+
+        #########################################
+        # CREATE dictionary of gene names and their order
+        gene_order_dict = dict(
+            (gene_pos[gene_id_col][i], int(gene_pos['order'][i]))
+            for i in range(gene_pos.shape[0]))
+        #########################################
+        # ORDER the table
+        if toPrint:
+            logger.info('Order data according to genomic position')
+        data = pd.DataFrame(table, columns=sorted(
+            gene_order_dict, key=gene_order_dict.get))
+
+        #########################################
+        for label in [
+                'rows_in_sample', 'rows_in_sample_filt',
+                'rows_in_sample_processed', 'rows_in_sample_editted']:
+            if label in info_table.columns:
+                # PLOT Abundance of gene data per sample
+                if toPrint:
+                    logger.info('Plot '+label+' for each sample')
+                mutCount = info_table[[label]].copy()
+                patient_new_order = info_table.loc[mutCount.index].sort_values(
+                    by=sample_info_table_sortLabels_list)
+                xticklabels = list(zip(
+                    patient_new_order.index.values,
+                    info_table.loc[
+                        patient_new_order.index,
+                        sample_info_table_sortLabels_list
+                        ].values))
+                mutCount = mutCount.loc[patient_new_order.index]
+                rank = mutCount[label].argsort().argsort().values
+                pal = sns.cubehelix_palette(mutCount.shape[0],
+                                            reverse=True, dark=.40, light=.95)
+                plt.figure(figsize=(10, 5))
+                g = sns.barplot(np.arange(mutCount.shape[0]), mutCount[label],
+                                palette=np.array(pal[::-1])[rank])
+                g.set_xticklabels(xticklabels, rotation=90)
+                g.set(xlabel='samples', ylabel='count')
+                g.set_title('Abundance of '+label+' per sample: ' +
+                            str((mutCount[label] <= 0).sum())+' empty samples')
+                if saveReport:
+                    logger.info('Save figure')
+                    plt.savefig(os.path.join(output_directory, 'Fig_samples_' +
+                                label+img_ext),
+                                transparent=True, bbox_inches='tight',
+                                pad_inches=0.1, frameon=False)
+                    plt.close("all")
+                else:
+                    plt.show()
+
+        #########################################
+        # # SAVE table w/ and w/o positions
+        # if saveReport:
+        #     # save table
+        #     fname = 'table_withPos.csv'
+        #     f = os.path.join(output_directory, fname)
+        #     if toPrint:
+        #         logger.info('-save table in: '+f)
+        #     table_withPos.to_csv(f, sep='\t', header=True, index=True)
+
+        # if saveReport:
+        #     # save table
+        #     fname = 'table.csv'
+        #     f = os.path.join(output_directory, fname)
+        #     if toPrint:
+        #         logger.info('-save table in: '+f)
+        #     table.to_csv(f, sep='\t', header=True, index=True)
+
+        # if toPrint:
+        #     logger.info(
+        #       'Dimensions of table (samples,genes):'+str(table.shape))
 
     #########################################
     # choose samples to plot heatmap and pairwise correlation
