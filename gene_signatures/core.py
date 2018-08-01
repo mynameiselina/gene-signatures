@@ -1346,7 +1346,10 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
         kwargs.get('removeLOH', True),
         bool
     )
-    LOH_value = kwargs.get('LOH_value', None)
+    LOH_value = parse_arg_type(
+        kwargs.get('LOH_value', None),
+        int
+    )
     function_dict = kwargs.get('function_dict', None)
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
     mergeHow = kwargs.get('mergeHow', 'maxAll')
@@ -1394,7 +1397,10 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
         kwargs.get('removeLOH', True),
         bool
     )
-    LOH_value = kwargs.get('LOH_value', None)
+    LOH_value = parse_arg_type(
+        kwargs.get('LOH_value', None),
+        int
+    )
     function_dict = kwargs.get('function_dict', None)
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
     mergeHow = kwargs.get('mergeHow', 'maxAll')
@@ -1479,10 +1485,13 @@ def edit_excavator(onesample, sample_name, toPrint=True, **kwargs):
 
 def edit_vcf(onesample, sample_name, toPrint=True, **kwargs):
     removeLOW = parse_arg_type(
-        kwargs.get('removeLOW', True),
+        kwargs.get('removeLOW', False),
         bool
     )
-    LOW_value = kwargs.get('LOW_value', None)
+    LOW_value = parse_arg_type(
+        kwargs.get('LOW_value', None),
+        int
+    )
     function_dict = kwargs.get('function_dict', None)
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
     mergeHow = kwargs.get('mergeHow', 'maxAll')
@@ -1664,6 +1673,8 @@ def edit_vcf(onesample, sample_name, toPrint=True, **kwargs):
 # choose patient IDs and their order
 def choose_samples(ids, dataID, choose_from=None, choose_what=None,
                    sortby=None, **sort_kwargs):
+    # first order ids according to index
+    ids = ids.sort_values(by=dataID, **sort_kwargs)
     # choose patients ID
     bool1 = ids[dataID].notnull()
     # choose a condition to filter patients

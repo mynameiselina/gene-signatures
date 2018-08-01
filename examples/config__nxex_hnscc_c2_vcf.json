@@ -1,5 +1,5 @@
 {
-    "reportName": "nexus_express_10perc",
+    "reportName": "nexus_express",
     "saveReport": true,
     "txt_label": "Nexus Express for feature selection",
     "toPrint": true,
@@ -35,7 +35,7 @@
     "class_labels": "Relapsed,notRelapsed",
     "class_values": "1,0",
 
-    "min_diff_thres": 0.1,
+    "min_diff_thres": 0.25,
     "multtest_method": "fdr_bh",
     "multtest_alpha": 0.05,
     "with_perc": 100,

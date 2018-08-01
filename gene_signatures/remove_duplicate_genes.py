@@ -95,7 +95,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     )
     if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
         custom_div_cmap_arg = abs(vmin)+abs(vmax)
-        if (vmin < 0) or (vmax < 0):
+        if (vmin <= 0) and (vmax >= 0):
             custom_div_cmap_arg = custom_div_cmap_arg + 1
         mincol = plot_kwargs.get('mincol', None)
         midcol = plot_kwargs.get('midcol', None)
@@ -183,6 +183,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     if empty_pat.any():
         logger.info('Patients with missing values in all genes: ' +
                     str(input_data.index[empty_pat]))
+    input_data = input_data.fillna(0)
 
     # keep only info_table with input_data
     ids_tmp = set(info_table.index.values
@@ -220,7 +221,7 @@ def remove_duplicate_genes(**set_up_kwargs):
 
     # REMOVE DUPLICATES!!!!
     uniqdata, dupldict, _, _ = remove_andSave_duplicates(
-        data.fillna(0), to_compute_euclidean_distances=compute_pdist,
+        data, to_compute_euclidean_distances=compute_pdist,
         to_save_euclidean_distances=saveReport, to_save_output=saveReport,
         output_filename=input_fname.rsplit('.')[0]+'__'+select_samples_title,
         output_directory=output_directory)
@@ -234,7 +235,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     for i_data, choose_data in enumerate([data, uniqdata]):
         if select_samples_which is None:
             # distplot DO NOT break Y-axis
-            sns.distplot(choose_data.fillna(0).values.flatten(),
+            sns.distplot(choose_data.values.flatten(),
                          hist=True, kde=False, color='b')
             plt.title("Copy number abundance in "+txt_label+" (uniq genes)")
             if saveReport:
@@ -249,7 +250,7 @@ def remove_duplicate_genes(**set_up_kwargs):
                 plt.show()
 
             # distplot break Y-axis
-            _, uniq_count = np.unique(choose_data.fillna(0).values.flatten(),
+            _, uniq_count = np.unique(choose_data.values.flatten(),
                                       return_counts=True)
             ymax_bottom = int(math.ceil(
                 np.sort(uniq_count)[-2] / 1000.0)
@@ -257,7 +258,7 @@ def remove_duplicate_genes(**set_up_kwargs):
             ymax_top = int(math.ceil(
                 np.sort(uniq_count)[-1] / 10000.0)
                 ) * 10000
-            distplot_breakYaxis(choose_data.fillna(0).values, ymax_bottom,
+            distplot_breakYaxis(choose_data.values, ymax_bottom,
                                 ymax_top, color='b', d=0.005,
                                 pad=1.5, figsize=(10, 6),
                                 mytitle='Copy number abundance in '+txt_label +
@@ -311,7 +312,7 @@ def remove_duplicate_genes(**set_up_kwargs):
             plt.show()
 
         # Plot pairwise sample correlations
-        data_cor = 1-squareform(pdist(choose_data.fillna(0), 'correlation'))
+        data_cor = 1-squareform(pdist(choose_data, 'correlation'))
         plt.figure(figsize=(15, 10))
         sns.heatmap(data_cor, vmin=-1, vmax=1, yticklabels=pat_labels_txt,
                     xticklabels=pat_labels_txt, cmap='PiYG', square=True)

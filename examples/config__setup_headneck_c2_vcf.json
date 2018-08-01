@@ -12,6 +12,8 @@
     "withProcess": false,
 
     "edit_kwargs": {
+        "removeLOW": true,
+        "LOW_value": -1,
         "function_dict": {
             "no mutation": 0,
             "missense": 1,

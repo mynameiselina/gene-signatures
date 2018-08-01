@@ -159,9 +159,21 @@ def nexus_express(**set_up_kwargs):
     )
     if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
         custom_div_cmap_arg = abs(vmin)+abs(vmax)
-        if (vmin < 0) or (vmax < 0):
+        if (vmin <= 0) and (vmax >= 0):
             custom_div_cmap_arg = custom_div_cmap_arg + 1
-        cmap_custom = custom_div_cmap(custom_div_cmap_arg)
+        mincol = plot_kwargs.get('mincol', None)
+        midcol = plot_kwargs.get('midcol', None)
+        maxcol = plot_kwargs.get('maxcol', None)
+        if (
+                (mincol is not None) and
+                (midcol is not None) and
+                (maxcol is not None)
+                ):
+            cmap_custom = custom_div_cmap(
+                numcolors=custom_div_cmap_arg,
+                mincol=mincol, midcol=midcol, maxcol=maxcol)
+        else:
+            cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
 
     highRes = parse_arg_type(
         plot_kwargs.get('highRes', False),
@@ -231,6 +243,7 @@ def nexus_express(**set_up_kwargs):
     if empty_pat.any():
         logger.info('Patients with missing values in all genes: ' +
                     str(data.index[empty_pat]))
+    data = data.fillna(0)
 
     # keep only info_table with data
     ids_tmp = set(info_table.index.values

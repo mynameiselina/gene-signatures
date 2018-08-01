@@ -7,7 +7,8 @@ from gene_signatures.core import (
     load_and_process_files,
     custom_div_cmap,
     get_chr_ticks,
-    parse_arg_type
+    parse_arg_type,
+    choose_samples
 )
 
 # basic imports
@@ -104,7 +105,7 @@ def set_up_data(**set_up_kwargs):
     )
     if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
         custom_div_cmap_arg = abs(vmin)+abs(vmax)
-        if (vmin < 0) or (vmax < 0):
+        if (vmin <= 0) and (vmax >= 0):
             custom_div_cmap_arg = custom_div_cmap_arg + 1
         mincol = plot_kwargs.get('mincol', None)
         midcol = plot_kwargs.get('midcol', None)
@@ -433,18 +434,31 @@ def set_up_data(**set_up_kwargs):
     #     logger.info('Dimensions of table (samples,genes):'+str(table.shape))
 
     #########################################
+    # choose samples to plot heatmap and pairwise correlation
+    ids_tmp = choose_samples(info_table.reset_index(),
+                             sample_info_table_index_colname,
+                             choose_from=None,
+                             choose_what=None,
+                             sortby=sample_info_table_sortLabels_list,
+                             ascending=False)
+    pat_labels = info_table.loc[ids_tmp][
+            sample_info_table_sortLabels_list].copy()
+    pat_labels_txt = pat_labels.astype(int).reset_index().values
+
     # PLOT heatmap before gene ordering
     if toPrint:
         logger.info('Plot heatmap before gene ordering')
     plt.figure(figsize=(20, 8))
-    patient_new_order = info_table.loc[table.index].sort_values(
-        by=sample_info_table_sortLabels_list)
-    yticklabels = list(zip(patient_new_order.index.values, info_table.loc[
-        patient_new_order.index, sample_info_table_sortLabels_list
-        ].values))
-    ax = sns.heatmap(table.fillna(0).loc[patient_new_order.index],
+
+    # patient_new_order = info_table.loc[table.index].sort_values(
+    #     by=sample_info_table_sortLabels_list)
+    # yticklabels = list(zip(patient_new_order.index.values, info_table.loc[
+    #     patient_new_order.index, sample_info_table_sortLabels_list
+    #     ].values))
+
+    ax = sns.heatmap(table.fillna(0).loc[pat_labels.index],
                      vmin=vmin, vmax=vmax, xticklabels=False,
-                     yticklabels=yticklabels, cmap=cmap_custom, cbar=False)
+                     yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
     cbar = ax.figure.colorbar(ax.collections[0])
     if 'VCF' in editWith:
         functionImpact_dict_r = dict(
@@ -481,14 +495,16 @@ def set_up_data(**set_up_kwargs):
     xlabels, xpos = get_chr_ticks(gene_pos, data, id_col=gene_id_col,
                                   chr_col=chr_col)
     plt.figure(figsize=(20, 8))
-    patient_new_order = info_table.loc[data.index].sort_values(
-        by=sample_info_table_sortLabels_list)
-    yticklabels = list(zip(patient_new_order.index.values, info_table.loc[
-        patient_new_order.index, sample_info_table_sortLabels_list
-        ].values))
-    ax = sns.heatmap(data.fillna(0).loc[patient_new_order.index],
+
+    # patient_new_order = info_table.loc[data.index].sort_values(
+    #     by=sample_info_table_sortLabels_list)
+    # yticklabels = list(zip(patient_new_order.index.values, info_table.loc[
+    #     patient_new_order.index, sample_info_table_sortLabels_list
+    #     ].values))
+
+    ax = sns.heatmap(data.fillna(0).loc[pat_labels.index],
                      vmin=vmin, vmax=vmax, xticklabels=False,
-                     yticklabels=yticklabels, cmap=cmap_custom, cbar=False)
+                     yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
     ax.set_xticks(xpos)
     ax.set_xticklabels(xlabels, rotation=0)
     cbar = ax.figure.colorbar(ax.collections[0])
