@@ -1,22 +1,23 @@
 {
-    "reportName": "setup_c2_genepanel",
+    "reportName": "setup_c1_genepanel",
     "saveReport": true,
-    "txt_label": "set up genepanel variants table",
+    "txt_label": "set up genepanel data from cohort 1",
     "toPrint": true,
 
     "load_data_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
-        "comment": "#",
-        "names": "chr,pos,id_header,ref,alt,qual,filter,info,format,sample_blood,sample_ffpe"
+        "index_col": 0
     },
 
     "editWith": "VCF_genepanel",
 
     "edit_kwargs": {
-        "removeLOW": true,
-        "LOW_value": -1,
+        "gene_col": "gene",
+        "func_col_txt": "function",
+        "func_col_code": "functionImpact",
+        "cols2drop":"# locus,type,protein",
+
         "function_dict": {
             "no mutation": 0,
             "missense": 1,
@@ -31,9 +32,6 @@
         "mergeHow":"maxAll"
     },
 
-    "split_patID": "_",
-    "chr_col": "chr_int",
-    "gene_id_col": "gene",
     "remove_patients": null,
 
     "plot_kwargs": {
@@ -46,18 +44,18 @@
         "maxcol": "red"
     },
     
-    "input_directory": "input,headneck,cohort2",
-    "oncoscan_directory": "variants_byNexus,combined",
-    "oncoscan_files": "",
+    "input_directory": "input,headneck,cohort1",
+    "oncoscan_directory": "genepanel",
+    "oncoscan_files": "variants.txt",
 
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0
     },
-    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_info_table_index_colname": "Patient",
-    "sample_info_table_sortLabels": "Local_Control",
+    "sample_info_fname": "sample_info.txt",
+    "sample_info_table_index_colname": "varID",
+    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
     
     "output_directory": "output,headneck",
     "DEBUG": true

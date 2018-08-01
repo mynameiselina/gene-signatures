@@ -1,20 +1,23 @@
 {
-    "reportName": "nexus_express_10perc",
+    "reportName": "setup_c1_genepanel",
     "saveReport": true,
-    "txt_label": "Nexus Express for feature selection",
+    "txt_label": "set up genepanel data from cohort 1",
     "toPrint": true,
 
-    "chr_col": "chr_int",
-    "gene_id_col": "gene",
+    "load_data_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0
+    },
 
-    "plot_kwargs": {
-        "cmap_custom": null,
-        "vmin": 0,
-        "vmax": 4,
-        "highRes": true,
-        "mincol": "white",
-        "midcol": "orange",
-        "maxcol": "red",
+    "editWith": "VCF_genepanel",
+
+    "edit_kwargs": {
+        "gene_col": "gene",
+        "func_col_txt": "function",
+        "func_col_code": "functionImpact",
+        "cols2drop":"# locus,type,protein",
+
         "function_dict": {
             "no mutation": 0,
             "missense": 1,
@@ -25,40 +28,35 @@
             "frameshiftDeletion": 4,
             "frameshiftInsertion": 4,
             "frameshiftIndel": 4
-        }
+        },
+        "mergeHow":"maxAll"
     },
 
-    "select_samples_from": null,
-    "select_samples_which": null,
-    "select_samples_sort_by": "Local_Control",
-    "select_samples_title": "select_all",
-    "class_labels": "Relapsed,notRelapsed",
-    "class_values": "1,0",
+    "remove_patients": null,
 
-    "min_diff_thres": 0.1,
-    "multtest_method": "fdr_bh",
-    "multtest_alpha": 0.05,
-    "with_perc": 100,
-
-    "input_directory": "output,headneck,setup_c2_vcf",
-    "input_fname": "data_processed.csv",
-    "gene_info_directory": null,
-    "gene_info_fname": "genes_info.csv",
-    "gene_order_dict_fname": null,
-    "sample_info_directory": "input,headneck,cohort2",
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": 0,
+        "vmax": 4,
+        "highRes": false,
+        "mincol": "white",
+        "midcol": "orange",
+        "maxcol": "red"
+    },
+    
+    "input_directory": "input,headneck,cohort1",
+    "oncoscan_directory": "genepanel",
+    "oncoscan_files": "variants.txt",
 
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0
     },
-    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_info_table_index_colname": "Patient",
-    "sample_info_table_sortLabels": "Local_Control",
+    "sample_info_fname": "sample_info.txt",
+    "sample_info_table_index_colname": "varID",
+    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
     
-    "toRemoveDupl": true,
-    "dupl_genes_directory": "rm_dpl",
-
-    "output_directory": "output,headneck,setup_c2_vcf,rm_dpl",
+    "output_directory": "output,headneck",
     "DEBUG": true
 }

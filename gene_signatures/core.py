@@ -1677,6 +1677,98 @@ def edit_vcf(onesample, sample_name, toPrint=True, **kwargs):
     return df, dropped_rows
 
 
+def edit_genepanel(variants, **kwargs):
+    # EDIT:
+    #   - map function impact to value with function_dict
+    #   - substitute allele frequencies with impact values
+    #   - aggregate rows to unique genes, choose how to merge
+    #   - remove some patients (optional)
+
+    function_dict = kwargs.get('function_dict', None)
+
+    # mergeHow: 'maxAll', 'maxOne', 'freqAll'
+    mergeHow = kwargs.get('mergeHow', 'maxAll')
+
+    gene_col = kwargs.get('gene_col', None)
+    func_col_txt = kwargs.get('func_col_txt', 'function')
+    func_col_code = kwargs.get('func_col_code', 'functionImpact')
+
+    cols2drop = kwargs.get('cols2drop', None)
+    if cols2drop is not None:
+        if ',' in cols2drop:
+            cols2drop = cols2drop.rsplit(',')
+    else:
+        cols2drop = []
+
+    cols2drop.extend([func_col_txt, func_col_code])
+
+    remove_patients_list = kwargs.get('remove_patients_list', [])
+
+    # --which genes are mutated accross all patients
+    logger.info(
+        str(variants[gene_col].unique().shape[0]) +
+        "genes are mutated accross all patients:" +
+        str(variants[gene_col].unique()))
+
+    # --type of mutations accross all patients
+    logger.info(
+        "counts of" +
+        str(variants[func_col_txt].unique().shape[0]) +
+        "mutation types accross all patients:\n" +
+        str(variants[func_col_txt].value_counts()))
+
+    # --ONLY genes with missense mutations
+    logger.info(
+        str(variants[variants[func_col_txt] == 'missense'
+                     ][gene_col].unique().shape[0]) +
+        "genes with a missense mutation:" +
+        str(variants[variants[func_col_txt] == 'missense'][gene_col].unique()))
+
+    # --define a dict of FUNCTION values
+    logger.info(
+        "define a dict of FUNCTION values:\n" +
+        str(function_dict))
+
+    # MAP function impact to value with function_dict
+    variants[func_col_code] = variants[func_col_txt].map(function_dict)
+
+    # SUBSTITUTE allele frequencies with impact values
+    # drop columns and keep only patients variants
+    logger.info("drop the"+str(cols2drop)+"columns")
+    functionImpact = variants[func_col_code].copy()
+    variants.drop(cols2drop, axis=1, inplace=True)
+
+    # map the functionImpact to the non-zero variant allele frequencies
+    logger.info(
+        "map the function Impact " +
+        "to the non-zero variant allele frequencies")
+    variants_new = variants.set_index(gene_col)
+    # for each row in table
+    for row in range(variants.shape[0]):
+        # substitute the non-zero values with the function Impact
+        variants_new.iloc[row][variants_new.iloc[row, :] > 0] = \
+            int(functionImpact[row])
+    variants_new = variants_new.reset_index()
+
+    # aggregate same genes
+    if mergeHow == 'maxAll':
+        logger.info("group by gene and keep the max function Impact for each gene")
+        variants_merged = variants_new.groupby(gene_col).max().T
+    else:
+        logger.error(
+            "the merge option for the function Impact is not supported!\n" +
+            mergeHow)
+
+    # keep only some patients ids
+    if len(remove_patients_list) > 0:
+        variants_merged.drop(remove_patients_list, axis=0, inplace=True)
+
+    logger.info(
+        "\nDimensions of variants table (samples,genes):" +
+        str(variants_merged.shape)+"\n")
+
+    return variants_merged
+
 # choose patient IDs and their order
 def choose_samples(ids, dataID, choose_from=None, choose_what=None,
                    sortby=None, **sort_kwargs):
