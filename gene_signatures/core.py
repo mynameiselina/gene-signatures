@@ -1752,7 +1752,9 @@ def edit_genepanel(variants, **kwargs):
 
     # aggregate same genes
     if mergeHow == 'maxAll':
-        logger.info("group by gene and keep the max function Impact for each gene")
+        logger.info(
+            "group by gene and keep " +
+            "the max function Impact for each gene")
         variants_merged = variants_new.groupby(gene_col).max().T
     else:
         logger.error(
@@ -1768,6 +1770,7 @@ def edit_genepanel(variants, **kwargs):
         str(variants_merged.shape)+"\n")
 
     return variants_merged
+
 
 # choose patient IDs and their order
 def choose_samples(ids, dataID, choose_from=None, choose_what=None,

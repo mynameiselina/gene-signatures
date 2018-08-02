@@ -411,7 +411,7 @@ def set_up_data(**set_up_kwargs):
         gene_order_dict = dict(
             (gene_pos[gene_id_col][i], int(gene_pos['order'][i]))
             for i in range(gene_pos.shape[0]))
-        
+
         xlabels, xpos = get_chr_ticks(
             gene_pos, data, id_col=gene_id_col, chr_col=chr_col)
         #########################################
@@ -595,5 +595,3 @@ def set_up_data(**set_up_kwargs):
         if toPrint:
             logger.info('-save sample_info: '+f)
         info_table.to_csv(f, sep='\t', header=True, index=True)
-
-        
