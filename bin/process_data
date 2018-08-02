@@ -1,33 +1,20 @@
 #!/usr/bin/env python3
 """
 load info table of samples
-load files from each patient: samples in rows, genes in columns
-get size of each sample and plot it
-(i.e. abundance of genes with in each sample)
+PLOT heatmap without gene ordering
 
-concat all samples in one table and keep union of all genes,
-then fill NaNs with zero
+CHECK if there are empty genes and remove them
+CHECK if there are empty patients BUT don't remove them
+SELECT specific genes (optional)
+SELECT sample groups (optional)
 
-CLEAN THE data FROM ALL SAMPLES
-extract the start, end and chrom info from the table
-and keep only the functions values
-remove genes that exist in multiple chromosomes across samples
+PLOT  heatmap after gene ordering (if available)
 
-ORDER THE GENES FROM ALL SAMPLES
-if the gene names are duplicated, through an exception
-
-CREATE dictionary of gene names and their order
-ORDER the table by gene position
-
-PLOT Abundance of gene data per sample:
-'oncoscan_events', 'oncoscan_events_filt',
-'genes_with_CNV', 'genes_with_CNV_merged'
-
-SAVE data and sample_info
+SAVE processed data
 """
 
 from gene_signatures.set_up_data import (
-    set_up_data
+    process_data
 )
 from gene_signatures.core import (
     custom_div_cmap
@@ -98,7 +85,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
         params.update(set_up_kwargs)
 
     # call set_up_data
-    set_up_data(**params)
+    process_data(**params)
 
 
 if __name__ == '__main__':

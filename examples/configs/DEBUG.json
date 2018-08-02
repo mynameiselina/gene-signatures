@@ -1,7 +1,7 @@
 {
-    "reportName": "setup_c2_vcf",
+    "reportName": "setup_c2_vcf_keepPanel_DEBUG",
     "saveReport": true,
-    "txt_label": "set up VCF (combined variants) data",
+    "txt_label": "set up VCF (combined variants) data and keep only the genes from panel",
     "toPrint": true,
 
     "load_files": true,
@@ -39,6 +39,7 @@
     "split_patID": "_",
     "chr_col": "chr_int",
     "gene_id_col": "gene",
+    "select_genes":"BRAF,CASP8,CDKN2A,FAT1,FBXW7,HRAS,KIT,KMT2D,MED1,NOTCH3,NRAS,PIK3CA,SYNE1,SYNE2,TP53,TP63",
     "remove_patients": null,
 
     "plot_kwargs": {

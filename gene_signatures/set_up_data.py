@@ -64,11 +64,13 @@ def set_up_data(**set_up_kwargs):
         function_dict = _edit_kwargs.get('function_dict', None)
 
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
-    remove_patients = set_up_kwargs.get('remove_patients', None)
-    if remove_patients is None or remove_patients == "":
-        remove_patients_list = []
+
+    select_genes = set_up_kwargs.get('select_genes', None)
+    if select_genes is None or select_genes == "":
+        select_genes_list = []
     else:
-        remove_patients_list = remove_patients.rsplit(',')
+        select_genes_list = select_genes.rsplit(',')
+
     chr_col = set_up_kwargs.get('chr_col', 'chr_int')
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     sample_info_fname = set_up_kwargs.get('sample_info_fname',
@@ -86,43 +88,6 @@ def set_up_data(**set_up_kwargs):
                           'TP53_mut5,FOXA1_mut5')
     sample_info_table_sortLabels_list = \
         sample_info_table_sortLabels.rsplit(',')
-
-    # plotting params
-    plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
-    cmap_custom = plot_kwargs.get('cmap_custom', None)
-    vmin = parse_arg_type(
-        plot_kwargs.get('vmin', None),
-        int
-    )
-    vmax = parse_arg_type(
-        plot_kwargs.get('vmax', None),
-        int
-    )
-    if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
-        custom_div_cmap_arg = abs(vmin)+abs(vmax)
-        if (vmin <= 0) and (vmax >= 0):
-            custom_div_cmap_arg = custom_div_cmap_arg + 1
-        mincol = plot_kwargs.get('mincol', None)
-        midcol = plot_kwargs.get('midcol', None)
-        maxcol = plot_kwargs.get('maxcol', None)
-        if (
-                (mincol is not None) and
-                (midcol is not None) and
-                (maxcol is not None)
-                ):
-            cmap_custom = custom_div_cmap(
-                numcolors=custom_div_cmap_arg,
-                mincol=mincol, midcol=midcol, maxcol=maxcol)
-        else:
-            cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
-    highRes = parse_arg_type(
-        plot_kwargs.get('highRes', False),
-        bool
-    )
-    if highRes:
-        img_ext = '.pdf'
-    else:
-        img_ext = '.png'
 
     # initialize directories
     MainDataDir = os.path.join(script_path, '..', 'data')
@@ -176,7 +141,6 @@ def set_up_data(**set_up_kwargs):
         # print('ERROR: undefined scenario!')
         # raise
         edit_kwargs = set_up_kwargs.get('edit_kwargs', {})
-        edit_kwargs['remove_patients_list'] = remove_patients_list
 
         # load data table
         if len(fpaths) > 0:
@@ -265,16 +229,6 @@ def set_up_data(**set_up_kwargs):
         # samples in rows, genes in columns
         table_withPos = pd.concat(
             pat_data_list, join='outer', axis=1, sort=False).T
-        if len(remove_patients_list) > 0:
-            if toPrint:
-                logger.info('Removing '+str(len(remove_patients_list)) +
-                            ' patients from the analysis,' +
-                            ' according to user preferances:' +
-                            remove_patients)
-            for patient in remove_patients_list:
-                rows2remove = table_withPos.index.values[
-                    table_withPos.index.str.contains(remove_patients_list[0])]
-                table_withPos.drop(rows2remove, axis=0, inplace=True)
 
         # CLEAN THE data FROM ALL SAMPLES
         # extract the start, end and chrom info from the table
@@ -414,6 +368,21 @@ def set_up_data(**set_up_kwargs):
 
         xlabels, xpos = get_chr_ticks(
             gene_pos, data, id_col=gene_id_col, chr_col=chr_col)
+
+        # SAVE ordered table and gene pos info table
+        if saveReport:
+            fname = 'genes_info.csv'
+            f = os.path.join(output_directory, fname)
+            if toPrint:
+                logger.info('-save genes info: '+f)
+            gene_pos.to_csv(f, sep='\t', header=True, index=True)
+
+            fname = 'gene_order_dict.json'
+            f = os.path.join(output_directory, fname)
+            if toPrint:
+                logger.info('-save genes order dictionary: '+f)
+            with open(f, 'w') as fp:
+                json.dump(gene_order_dict, fp, indent=4)
         #########################################
         for label in [
                 'rows_in_sample', 'rows_in_sample_filt',
@@ -476,115 +445,10 @@ def set_up_data(**set_up_kwargs):
 
     #  -- END IF -- #
     #########################################
-    # choose samples to plot heatmap and pairwise correlation
-    ids_tmp = choose_samples(info_table.reset_index(),
-                             sample_info_table_index_colname,
-                             choose_from=None,
-                             choose_what=None,
-                             sortby=sample_info_table_sortLabels_list,
-                             ascending=False)
-    pat_labels = info_table.loc[ids_tmp][
-            sample_info_table_sortLabels_list].copy()
-    pat_labels_txt = pat_labels.astype(int).reset_index().values
-
-    # PLOT heatmap before gene ordering
-    _show_gene_names = False
-    _figure_x_size = 20
-    if data.shape[1] < 50:
-        _show_gene_names = True
-        _figure_x_size = 10
-    if toPrint:
-        logger.info('Plot heatmap before gene ordering')
-    plt.figure(figsize=(_figure_x_size, 8))
-    ax = sns.heatmap(data.fillna(0).loc[pat_labels.index],
-                     vmin=vmin, vmax=vmax, xticklabels=_show_gene_names,
-                     yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
-    cbar = ax.figure.colorbar(ax.collections[0])
-    if 'VCF' in editWith:
-        functionImpact_dict_r = dict(
-            (v, k) for k, v in function_dict.items()
-            )
-        myTicks = [0, 1, 2, 3, 4, 5]
-        cbar.set_ticks(myTicks)
-        cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-    if saveReport:
-        if toPrint:
-            logger.info('Save heatmap')
-        plt.savefig(os.path.join(output_directory, 'Fig_heatmap'+img_ext),
-                    transparent=True, bbox_inches='tight',
-                    pad_inches=0.1, frameon=False)
-        plt.close("all")
-    else:
-        plt.show()
-
-    #########################################
-    # CHECK if there are empty genes and remove them
-    is_empty = (data.isnull()).all(axis=0)
-    if is_empty.any():
-        genes2remove = data.columns[is_empty]
-        data.drop(genes2remove, axis=1, inplace=True)
-        if toPrint:
-            logger.info('remove the following genes because ' +
-                        'they have no values in the table: ' +
-                        str(genes2remove))
-
-    #########################################
-    if (xlabels is not None) and (xpos is not None):
-        # ORDER the table
-        if toPrint:
-            logger.info('Order data according to genomic position')
-        data = pd.DataFrame(data, columns=sorted(
-            gene_order_dict, key=gene_order_dict.get))
-
-        # PLOT heatmap after gene ordering and cleaning
-        if toPrint:
-            logger.info('Plot heatmap after gene ordering')
-
-        plt.figure(figsize=(20, 8))
-        ax = sns.heatmap(
-            data.fillna(0).loc[pat_labels.index],
-            vmin=vmin, vmax=vmax, xticklabels=False,
-            yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
-        ax.set_xticks(xpos)
-        ax.set_xticklabels(xlabels, rotation=0)
-        cbar = ax.figure.colorbar(ax.collections[0])
-        myTicks = np.arange(vmin, vmax+2, 1)
-        cbar.set_ticks(myTicks)
-        if 'VCF' in editWith:
-            functionImpact_dict_r = dict(
-                (v, k) for k, v in function_dict.items()
-                )
-            cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-        if saveReport:
-            if toPrint:
-                logger.info('Save heatmap')
-            plt.savefig(
-                os.path.join(output_directory, 'Fig_heatmap_ordered'+img_ext),
-                transparent=True, bbox_inches='tight',
-                pad_inches=0.1, frameon=False)
-            plt.close("all")
-        else:
-            plt.show()
-
-        # SAVE ordered table and gene pos info table
-        if saveReport:
-            fname = 'genes_info.csv'
-            f = os.path.join(output_directory, fname)
-            if toPrint:
-                logger.info('-save genes info: '+f)
-            gene_pos.to_csv(f, sep='\t', header=True, index=True)
-
-            fname = 'gene_order_dict.json'
-            f = os.path.join(output_directory, fname)
-            if toPrint:
-                logger.info('-save genes order dictionary: '+f)
-            with open(f, 'w') as fp:
-                json.dump(gene_order_dict, fp, indent=4)
-    #########################################
     # SAVE data and sample_info
     if saveReport:
         # save files
-        fname = 'data_processed.csv'
+        fname = 'data.csv'
         f = os.path.join(output_directory, fname)
         if toPrint:
             logger.info('-save ordered data: '+f)

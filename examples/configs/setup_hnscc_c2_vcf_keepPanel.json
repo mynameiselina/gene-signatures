@@ -1,7 +1,7 @@
 {
-    "reportName": "setup_c2_vcf_test",
+    "reportName": "setup_c2_vcf_keepPanel",
     "saveReport": true,
-    "txt_label": "set up VCF (combined variants) data",
+    "txt_label": "set up VCF (combined variants) data and keep only the genes from panel",
     "toPrint": true,
 
     "load_files": true,
@@ -10,7 +10,7 @@
     "load_data_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
+        "index_col": null,
         "comment": "#",
         "names": "chr,pos,id_header,ref,alt,qual,filter,info,format,sample_blood,sample_ffpe"
     },
@@ -39,6 +39,7 @@
     "split_patID": "_",
     "chr_col": "chr_int",
     "gene_id_col": "gene",
+    "select_genes":"BRAF,CASP8,CDKN2A,FAT1,FBXW7,HRAS,KIT,KMT2D,MED1,NOTCH3,NRAS,PIK3CA,SYNE1,SYNE2,TP53,TP63",
     "remove_patients": null,
 
     "plot_kwargs": {

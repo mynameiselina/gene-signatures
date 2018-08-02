@@ -66,8 +66,7 @@ def _run_classification(dat, dat_target):
 
 
 def classification(**set_up_kwargs):
-    # chose sample set from data
-    # function: choose_samples()
+    # initialize script params
     select_samples_from = set_up_kwargs.get('select_samples_from', None)
     select_samples_which = parse_arg_type(
         set_up_kwargs.get('select_samples_which', None),
@@ -89,7 +88,6 @@ def classification(**set_up_kwargs):
             class_values = class_values.rsplit(',')
             class_values = np.array(class_values).astype(int)
 
-    # initialize script params
     saveReport = parse_arg_type(
         set_up_kwargs.get('saveReport', False),
         bool
