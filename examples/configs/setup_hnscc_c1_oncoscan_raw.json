@@ -10,7 +10,7 @@
     "load_data_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
+        "index_col": null,
         "comment": "#",
         "names": null
     },
@@ -37,20 +37,16 @@
         "LOH_value": "LOH"
     },
 
-    "chr_col": "chr_int",
-    "gene_id_col": "gene",
-    "remove_patients": "DS-107_0001",
-
     "plot_kwargs": {
-        "cmap_custom": null,
-        "vmin": -4,
-        "vmax": 4,
         "highRes": false
     },
+
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
     
     "input_directory": "input,headneck,cohort1",
-    "oncoscan_directory": "oncoscan,raw",
-    "oncoscan_files": "DS_101,DS_107",
+    "data_directory": "oncoscan,raw",
+    "data_files": "DS_101,DS_107",
 
     "sample_info_read_csv_kwargs":{
         "sep": "\t",

@@ -1353,10 +1353,8 @@ def edit_oncoscan(onesample, sample_name, toPrint=True, **kwargs):
         kwargs.get('removeLOH', True),
         bool
     )
-    LOH_value = parse_arg_type(
-        kwargs.get('LOH_value', None),
-        int
-    )
+    LOH_value = kwargs.get('LOH_value', None)
+    
     function_dict = kwargs.get('function_dict', None)
     # mergeHow: 'maxAll', 'maxOne', 'freqAll'
     mergeHow = kwargs.get('mergeHow', 'maxAll')

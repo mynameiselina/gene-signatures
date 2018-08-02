@@ -1,5 +1,5 @@
 {
-    "reportName": "setup_endometrial_filt",
+    "reportName": "setup_filt",
     "saveReport": true,
     "txt_label": "set up Oncoscan data",
     "toPrint": true,
@@ -49,15 +49,12 @@
     "remove_patients": null,
 
     "plot_kwargs": {
-        "cmap_custom": null,
-        "vmin": -4,
-        "vmax": 4,
         "highRes": false
     },
     
     "input_directory": "input,endometrial",
-    "oncoscan_directory": "fromNexusExpress",
-    "oncoscan_files": "DS_097_all_samples.txt,18044_all_samples.txt",
+    "data_directory": "fromNexusExpress",
+    "data_files": "DS_097_all_samples.txt,18044_all_samples.txt",
 
     "sample_info_read_csv_kwargs":{
         "na_values": " "

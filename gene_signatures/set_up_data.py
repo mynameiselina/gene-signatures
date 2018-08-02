@@ -89,6 +89,17 @@ def set_up_data(**set_up_kwargs):
     sample_info_table_sortLabels_list = \
         sample_info_table_sortLabels.rsplit(',')
 
+    # plotting params
+    plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
+    highRes = parse_arg_type(
+        plot_kwargs.get('highRes', False),
+        bool
+    )
+    if highRes:
+        img_ext = '.pdf'
+    else:
+        img_ext = '.png'
+
     # initialize directories
     MainDataDir = os.path.join(script_path, '..', 'data')
     input_directory = set_up_kwargs.get('input_directory')
@@ -107,19 +118,19 @@ def set_up_data(**set_up_kwargs):
             os.path.join(MainDataDir, output_directory, reportName)
         )
 
-    oncoscan_directory = set_up_kwargs.get('oncoscan_directory', None)
-    if oncoscan_directory is None:
-        oncoscan_directory = input_directory
+    data_directory = set_up_kwargs.get('data_directory', None)
+    if data_directory is None:
+        data_directory = input_directory
     else:
-        if ',' in oncoscan_directory:
-            oncoscan_directory = os.path.join(*oncoscan_directory.rsplit(','))
-    oncoscan_files = set_up_kwargs.get('oncoscan_files', '')
-    oncoscan_files_list = oncoscan_files.rsplit(',')
-    if len(oncoscan_files_list) > 0:
-        fpaths = [os.path.join(input_directory, oncoscan_directory, aFile)
-                  for aFile in oncoscan_files_list]
+        if ',' in data_directory:
+            data_directory = os.path.join(*data_directory.rsplit(','))
+    data_files = set_up_kwargs.get('data_files', '')
+    data_files_list = data_files.rsplit(',')
+    if len(data_files_list) > 0:
+        fpaths = [os.path.join(input_directory, data_directory, aFile)
+                  for aFile in data_files_list]
     else:
-        fpaths = os.path.join(input_directory, oncoscan_directory)
+        fpaths = os.path.join(input_directory, data_directory)
 
     # load info table of samples
     if toPrint:

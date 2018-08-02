@@ -1,69 +1,57 @@
 {
-    "reportName": "setup_c2_vcf_keepPanel_DEBUG",
+    "reportName": "setup_c1_oncoscan_raw",
     "saveReport": true,
-    "txt_label": "set up VCF (combined variants) data and keep only the genes from panel",
+    "txt_label": "set up raw Oncoscan data",
     "toPrint": true,
 
     "load_files": true,
-    "fext": ".pass.combined.vcf",
+    "fext": "_events.txt",
 
     "load_data_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
+        "index_col": null,
         "comment": "#",
-        "names": "chr,pos,id_header,ref,alt,qual,filter,info,format,sample_blood,sample_ffpe"
+        "names": null
     },
 
-    "editWith": "VCF",
+    "editWith": "Oncoscan",
     "withFilter": false,
-    "withProcess": false,
+    "withProcess": true,
 
+    "preproc_kwargs": {
+        "keep_columns": "Chromosome Region,Event,Gene Symbols",
+        "new_columns": "chr,start,end,id,function"
+    },
+    "filt_kwargs": {},
     "edit_kwargs": {
-        "removeLOW": true,
-        "LOW_value": -1,
         "function_dict": {
-            "no mutation": 0,
-            "missense": 1,
-            "nonframeshiftInsertion": 2,
-            "nonframeshiftDeletion": 2,
-            "nonframeshiftIndel": 2,
-            "nonsense": 3,
-            "frameshiftDeletion": 4,
-            "frameshiftInsertion": 4,
-            "frameshiftIndel": 4
+            "Homozygous Copy Loss": -4,
+            "CN Loss": -2,
+            "CN Gain": 2,
+            "High Copy Gain": 4,
+            "LOH": -1
         },
-        "mergeHow":"maxAll"
+        "mergeHow":"maxAll",
+        "removeLOH":true,
+        "LOH_value": "LOH"
     },
 
-    "split_patID": "_",
     "chr_col": "chr_int",
     "gene_id_col": "gene",
-    "select_genes":"BRAF,CASP8,CDKN2A,FAT1,FBXW7,HRAS,KIT,KMT2D,MED1,NOTCH3,NRAS,PIK3CA,SYNE1,SYNE2,TP53,TP63",
-    "remove_patients": null,
-
-    "plot_kwargs": {
-        "cmap_custom": null,
-        "vmin": 0,
-        "vmax": 4,
-        "highRes": false,
-        "mincol": "white",
-        "midcol": "orange",
-        "maxcol": "red"
-    },
     
-    "input_directory": "input,headneck,cohort2",
-    "oncoscan_directory": "variants_byNexus,combined",
-    "oncoscan_files": "",
+    "input_directory": "input,headneck,cohort1",
+    "data_directory": "oncoscan,raw",
+    "data_files": "DS_101,DS_107",
 
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0
     },
-    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_info_table_index_colname": "Patient",
-    "sample_info_table_sortLabels": "Local_Control",
+    "sample_info_fname": "sample_info.txt",
+    "sample_info_table_index_colname": "cnvID",
+    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
     
     "output_directory": "output,headneck",
     "DEBUG": true

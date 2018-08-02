@@ -1,8 +1,8 @@
 {
     "reportName": "process",
-    "txt_label": "process VCF (combined variants) data",
+    "txt_label": "process genepanel data from cohort 1",
     "input_fname": "data_processed.csv",
-    "input_directory": "output,headneck,setup_c2_vcf",
+    "input_directory": "output,headneck,setup_c1_genepanel",
     "output_directory": null,
     
     "saveReport": true,
@@ -21,19 +21,19 @@
         "midcol": "orange",
         "maxcol": "red"
     },
-
+    
     "gene_info_directory": null,
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
-    
+
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0
     },
-    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_info_table_index_colname": "Patient",
-    "sample_info_table_sortLabels": "Local_Control",
+    "sample_info_fname": "sample_info.txt",
+    "sample_info_table_index_colname": "varID",
+    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
     
     "DEBUG": true
 }

@@ -32,21 +32,13 @@
         "mergeHow":"maxAll"
     },
 
-    "remove_patients": null,
-
     "plot_kwargs": {
-        "cmap_custom": null,
-        "vmin": 0,
-        "vmax": 4,
-        "highRes": false,
-        "mincol": "white",
-        "midcol": "orange",
-        "maxcol": "red"
+        "highRes": false
     },
     
     "input_directory": "input,headneck,cohort1",
-    "oncoscan_directory": "genepanel",
-    "oncoscan_files": "variants.txt",
+    "data_directory": "genepanel",
+    "data_files": "variants.txt",
 
     "sample_info_read_csv_kwargs":{
         "sep": "\t",

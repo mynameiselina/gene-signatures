@@ -1,10 +1,10 @@
 {
     "reportName": "process",
-    "txt_label": "process VCF (combined variants) data",
+    "txt_label": "process ExCavator2 CNVs filtered",
     "input_fname": "data_processed.csv",
-    "input_directory": "output,headneck,setup_c2_vcf",
+    "input_directory": "output,headneck,setup_c2_excavator2_byNexus_filt",
     "output_directory": null,
-    
+
     "saveReport": true,
     "toPrint": true,
 
@@ -14,14 +14,11 @@
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": 0,
-        "vmax": 4,
-        "highRes": false,
-        "mincol": "white",
-        "midcol": "orange",
-        "maxcol": "red"
+        "vmin": -2,
+        "vmax": 2,
+        "highRes": false
     },
-
+    
     "gene_info_directory": null,
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,

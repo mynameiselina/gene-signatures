@@ -36,6 +36,10 @@
         "mergeHow":"maxAll"
     },
 
+    "plot_kwargs": {
+        "highRes": false
+    },
+
     "split_patID": "_",
     "chr_col": "chr_int",
     "gene_id_col": "gene",

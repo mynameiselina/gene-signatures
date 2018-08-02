@@ -1,10 +1,10 @@
 {
     "reportName": "process",
-    "txt_label": "process VCF (combined variants) data",
+    "txt_label": "process Oncoscan data",
     "input_fname": "data_processed.csv",
-    "input_directory": "output,headneck,setup_c2_vcf",
+    "input_directory": "output,setup",
     "output_directory": null,
-    
+
     "saveReport": true,
     "toPrint": true,
 
@@ -14,26 +14,21 @@
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": 0,
+        "vmin": -4,
         "vmax": 4,
-        "highRes": false,
-        "mincol": "white",
-        "midcol": "orange",
-        "maxcol": "red"
+        "highRes": false
     },
-
+    
     "gene_info_directory": null,
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     
     "sample_info_read_csv_kwargs":{
-        "sep": "\t",
-        "header": 0,
-        "index_col": 0
+        "na_values": " "
     },
-    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_info_table_index_colname": "Patient",
-    "sample_info_table_sortLabels": "Local_Control",
+    "sample_info_fname": "20180704_emca.csv",
+    "sample_info_table_index_colname": "Oncoscan_ID",
+    "sample_info_table_sortLabels": "TP53_mut5,FOXA1_mut5",
     
     "DEBUG": true
 }

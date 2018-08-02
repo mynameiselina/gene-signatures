@@ -33,21 +33,17 @@
         "removeLOH":true,
         "LOH_value": "LOH"
     },
-
-    "chr_col": "chr_int",
-    "gene_id_col": "gene",
-    "remove_patients": null,
-
+    
     "plot_kwargs": {
-        "cmap_custom": null,
-        "vmin": -4,
-        "vmax": 4,
         "highRes": false
     },
     
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+    
     "input_directory": "input,headneck,cohort1",
-    "oncoscan_directory": "oncoscan,processed_byNexus",
-    "oncoscan_files": "DS_101,DS_107",
+    "data_directory": "oncoscan,processed_byNexus",
+    "data_files": "DS_101,DS_107",
 
     "sample_info_read_csv_kwargs":{
         "sep": "\t",

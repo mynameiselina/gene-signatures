@@ -10,7 +10,7 @@
     "load_data_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
+        "index_col": null,
         "comment": "#",
         "names": null
     },
@@ -28,21 +28,17 @@
         "LOH_value": null
     },
 
+    "plot_kwargs": {
+        "highRes": false
+    },
+
     "split_patID": "_",
     "chr_col": "chr_int",
     "gene_id_col": "gene",
-    "remove_patients": null,
-
-    "plot_kwargs": {
-        "cmap_custom": null,
-        "vmin": -2,
-        "vmax": 2,
-        "highRes": false
-    },
     
     "input_directory": "input,headneck,cohort2",
-    "oncoscan_directory": "excavator2_byNexus",
-    "oncoscan_files": "",
+    "data_directory": "excavator2_byNexus",
+    "data_files": "",
 
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
