@@ -21,9 +21,9 @@
     "select_samples_sort_by": "Ccode",
     "select_samples_title": "select_primary",
     
-    "input_directory": "output,headneck,setup_c1_oncoscan_raw",
+    "input_directory": "output,headneck,setup_c1_oncoscan_raw,process",
     "input_fname": "data_processed.csv",
-    "gene_info_directory": null,
+    "gene_info_directory": "output,headneck,setup_c1_oncoscan_raw",
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     "sample_info_directory": "input,headneck,cohort1",

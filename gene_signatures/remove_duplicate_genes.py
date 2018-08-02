@@ -68,7 +68,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     input_fname = set_up_kwargs.get('input_fname',
                                     'data_processed.csv')
     gene_info_fname = set_up_kwargs.get('gene_info_fname',
-                                        'gene_info_fname.csv')
+                                        'gene_info.csv')
     chr_col = set_up_kwargs.get('chr_col', 'chr_int')
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     sample_info_fname = set_up_kwargs.get('sample_info_fname',

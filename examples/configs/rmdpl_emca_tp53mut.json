@@ -1,5 +1,5 @@
 {
-    "reportName": "rm_dpl_emca_tp53mut",
+    "reportName": "rmdpl_tp53mut",
     "saveReport": true,
     "txt_label": "remove duplicate gene profiles from TP53mut EMCA samples",
     "toPrint": true,
@@ -22,9 +22,9 @@
     "select_samples_title": "select_TP53mut",
 
     
-    "input_directory": "output,endometrial,setup_endometrial",
+    "input_directory": "output,endometrial,setup,process",
     "input_fname": "data_processed.csv",
-    "gene_info_directory": null,
+    "gene_info_directory": "output,endometrial,setup",
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     "sample_info_directory": "input,endometrial",
