@@ -209,9 +209,13 @@ def process_data(**set_up_kwargs):
     if len(select_genes_list) > 0:
         # first take intersection of with data
         select_genes_list = set(
-            data.index.values).intersection(set(select_genes_list))
+            data.columns.values).intersection(set(select_genes_list))
         # then keep only these genes from in the data
         data = data.loc[:, select_genes_list].copy()
+        if genes_positions_table is not None:
+            xlabels, xpos = get_chr_ticks(
+                genes_positions_table, data,
+                id_col='gene', chr_col=chr_col)
 
     # SELECT sample groups (optional)
     ids_tmp = choose_samples(info_table.reset_index(),
@@ -283,13 +287,19 @@ def process_data(**set_up_kwargs):
         #     gene_order_dict, key=gene_order_dict.get))
 
         # PLOT heatmap after gene ordering
+        _show_gene_names = False
+        _figure_x_size = 20
+        if data.shape[1] < 50:
+            _show_gene_names = True
+            _figure_x_size = 10
+
         if toPrint:
             logger.info('Plot heatmap after gene ordering')
 
-        plt.figure(figsize=(20, 8))
+        plt.figure(figsize=(_figure_x_size, 8))
         ax = sns.heatmap(
             data.loc[pat_labels.index],
-            vmin=vmin, vmax=vmax, xticklabels=False,
+            vmin=vmin, vmax=vmax, xticklabels=_show_gene_names,
             yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
         ax.set_xticks(xpos)
         ax.set_xticklabels(xlabels, rotation=0)

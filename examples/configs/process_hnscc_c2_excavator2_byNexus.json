@@ -1,7 +1,7 @@
 {
     "reportName": "process",
     "txt_label": "process ExCavator2 CNVs",
-    "input_fname": "data_processed.csv",
+    "input_fname": "data.csv",
     "input_directory": "output,headneck,setup_c2_excavator2_byNexus",
     "output_directory": null,
     
@@ -9,6 +9,7 @@
     "toPrint": true,
 
     "chr_col": "chr_int",
+    "gene_id_col": "gene",
     "remove_patients": null,
     "select_genes":null,
 
@@ -28,6 +29,7 @@
         "header": 0,
         "index_col": 0
     },
+    "sample_info_directory": "input,headneck,cohort2",
     "sample_info_fname": "20180208_Oliver,clinical_data.csv",
     "sample_info_table_index_colname": "Patient",
     "sample_info_table_sortLabels": "Local_Control",

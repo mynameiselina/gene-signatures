@@ -1,14 +1,15 @@
 {
-    "reportName": "process",
+    "reportName": "process_keepPanel",
     "txt_label": "process VCF (combined variants) data and keep only the genes from panel",
-    "input_fname": "data_processed.csv",
-    "input_directory": "output,headneck,setup_c2_vcf_keepPanel",
+    "input_fname": "data.csv",
+    "input_directory": "output,headneck,setup_c2_vcf",
     "output_directory": null,
 
     "saveReport": true,
     "toPrint": true,
 
     "chr_col": "chr_int",
+    "gene_id_col": "gene",
     "remove_patients": null,
     "select_genes":"BRAF,CASP8,CDKN2A,FAT1,FBXW7,HRAS,KIT,KMT2D,MED1,NOTCH3,NRAS,PIK3CA,SYNE1,SYNE2,TP53,TP63",
 
@@ -31,6 +32,7 @@
         "header": 0,
         "index_col": 0
     },
+    "sample_info_directory": "input,headneck,cohort2",
     "sample_info_fname": "20180208_Oliver,clinical_data.csv",
     "sample_info_table_index_colname": "Patient",
     "sample_info_table_sortLabels": "Local_Control",

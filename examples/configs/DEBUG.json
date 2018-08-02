@@ -1,22 +1,26 @@
 {
-    "reportName": "process",
-    "txt_label": "process Oncoscan data",
+    "reportName": "process_keepPanel",
+    "txt_label": "process VCF (combined variants) data and keep only the genes from panel",
     "input_fname": "data.csv",
-    "input_directory": "output,endometrial,setup_filt",
+    "input_directory": "output,headneck,setup_c2_vcf",
     "output_directory": null,
 
     "saveReport": true,
     "toPrint": true,
-    
+
     "chr_col": "chr_int",
+    "gene_id_col": "gene",
     "remove_patients": null,
-    "select_genes":null,
+    "select_genes":"BRAF,CASP8,CDKN2A,FAT1,FBXW7,HRAS,KIT,KMT2D,MED1,NOTCH3,NRAS,PIK3CA,SYNE1,SYNE2,TP53,TP63",
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -4,
+        "vmin": 0,
         "vmax": 4,
-        "highRes": false
+        "highRes": false,
+        "mincol": "white",
+        "midcol": "orange",
+        "maxcol": "red"
     },
     
     "gene_info_directory": null,
@@ -24,12 +28,14 @@
     "gene_order_dict_fname": null,
     
     "sample_info_read_csv_kwargs":{
-        "na_values": " "
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0
     },
-    "sample_info_directory": "input,endometrial",
-    "sample_info_fname": "20180704_emca.csv",
-    "sample_info_table_index_colname": "Oncoscan_ID",
-    "sample_info_table_sortLabels": "TP53_mut5,FOXA1_mut5",
+    "sample_info_directory": "input,headneck,cohort2",
+    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
+    "sample_info_table_index_colname": "Patient",
+    "sample_info_table_sortLabels": "Local_Control",
     
     "DEBUG": true
 }

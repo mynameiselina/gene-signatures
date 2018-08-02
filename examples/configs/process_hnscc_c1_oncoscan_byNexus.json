@@ -1,7 +1,7 @@
 {
     "reportName": "process",
     "txt_label": "process processed Oncoscan data by Nexus",
-    "input_fname": "data_processed.csv",
+    "input_fname": "data.csv",
     "input_directory": "output,headneck,setup_c1_oncoscan_byNexus",
     "output_directory": null,
 
@@ -9,6 +9,7 @@
     "toPrint": true,
 
     "chr_col": "chr_int",
+    "gene_id_col": "gene",
     "remove_patients": null,
     "select_genes":null,
 
@@ -28,6 +29,7 @@
         "header": 0,
         "index_col": 0
     },
+    "sample_info_directory": "input,headneck,cohort1",
     "sample_info_fname": "sample_info.txt",
     "sample_info_table_index_colname": "cnvID",
     "sample_info_table_sortLabels": "Tcode,Ccode,patient",
