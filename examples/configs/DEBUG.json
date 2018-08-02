@@ -1,58 +1,35 @@
 {
-    "reportName": "setup_c1_oncoscan_raw",
+    "reportName": "process",
+    "txt_label": "process Oncoscan data",
+    "input_fname": "data.csv",
+    "input_directory": "output,endometrial,setup_filt",
+    "output_directory": null,
+
     "saveReport": true,
-    "txt_label": "set up raw Oncoscan data",
     "toPrint": true,
-
-    "load_files": true,
-    "fext": "_events.txt",
-
-    "load_data_csv_kwargs":{
-        "sep": "\t",
-        "header": 0,
-        "index_col": null,
-        "comment": "#",
-        "names": null
-    },
-
-    "editWith": "Oncoscan",
-    "withFilter": false,
-    "withProcess": true,
-
-    "preproc_kwargs": {
-        "keep_columns": "Chromosome Region,Event,Gene Symbols",
-        "new_columns": "chr,start,end,id,function"
-    },
-    "filt_kwargs": {},
-    "edit_kwargs": {
-        "function_dict": {
-            "Homozygous Copy Loss": -4,
-            "CN Loss": -2,
-            "CN Gain": 2,
-            "High Copy Gain": 4,
-            "LOH": -1
-        },
-        "mergeHow":"maxAll",
-        "removeLOH":true,
-        "LOH_value": "LOH"
-    },
-
+    
     "chr_col": "chr_int",
-    "gene_id_col": "gene",
-    
-    "input_directory": "input,headneck,cohort1",
-    "data_directory": "oncoscan,raw",
-    "data_files": "DS_101,DS_107",
+    "remove_patients": null,
+    "select_genes":null,
 
-    "sample_info_read_csv_kwargs":{
-        "sep": "\t",
-        "header": 0,
-        "index_col": 0
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
+        "highRes": false
     },
-    "sample_info_fname": "sample_info.txt",
-    "sample_info_table_index_colname": "cnvID",
-    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
     
-    "output_directory": "output,headneck",
+    "gene_info_directory": null,
+    "gene_info_fname": "genes_info.csv",
+    "gene_order_dict_fname": null,
+    
+    "sample_info_read_csv_kwargs":{
+        "na_values": " "
+    },
+    "sample_info_directory": "input,endometrial",
+    "sample_info_fname": "20180704_emca.csv",
+    "sample_info_table_index_colname": "Oncoscan_ID",
+    "sample_info_table_sortLabels": "TP53_mut5,FOXA1_mut5",
+    
     "DEBUG": true
 }

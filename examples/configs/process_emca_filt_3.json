@@ -1,7 +1,7 @@
 {
     "reportName": "process",
     "txt_label": "process Oncoscan data",
-    "input_fname": "data_processed.csv",
+    "input_fname": "data.csv",
     "input_directory": "output,endometrial,setup_filt_3",
     "output_directory": null,
 

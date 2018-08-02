@@ -13,7 +13,7 @@ PLOT  heatmap after gene ordering (if available)
 SAVE processed data
 """
 
-from gene_signatures.set_up_data import (
+from gene_signatures.process_data import (
     process_data
 )
 from gene_signatures.core import (

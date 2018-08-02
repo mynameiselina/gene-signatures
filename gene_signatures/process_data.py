@@ -46,8 +46,13 @@ def process_data(**set_up_kwargs):
     )
     reportName = set_up_kwargs.get('reportName', script_fname)
 
+    input_fname = set_up_kwargs.get(
+        'input_fname', 'data_processed.csv')
+    gene_info_fname = set_up_kwargs.get(
+        'gene_info_fname', 'gene_info_fname.csv')
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
     chr_col = set_up_kwargs.get('chr_col', 'chr_int')
+    gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     remove_patients = set_up_kwargs.get('remove_patients', None)
     if remove_patients is None or remove_patients == "":
         remove_patients_list = []
@@ -165,6 +170,11 @@ def process_data(**set_up_kwargs):
                                col_as_index=sample_info_table_index_colname,
                                **sample_info_read_csv_kwargs)
 
+    # keep only info_table with data
+    ids_tmp = set(info_table.index.values
+                  ).intersection(set(data.index.values))
+    info_table = info_table.loc[ids_tmp].copy()
+
     # load gene info
     fpath = os.path.join(gene_info_directory, gene_info_fname)
     try:
@@ -172,7 +182,7 @@ def process_data(**set_up_kwargs):
                                             index_col=0)
         # get gene chrom position
         xlabels, xpos = get_chr_ticks(
-            genes_positions_table, input_data,
+            genes_positions_table, data,
             id_col='gene', chr_col=chr_col)
     except:
         logger.warning('could not get genes position info')
@@ -212,7 +222,10 @@ def process_data(**set_up_kwargs):
                              ascending=False)
     pat_labels = info_table.loc[ids_tmp][
             sample_info_table_sortLabels_list].copy()
-    pat_labels_txt = pat_labels.astype(int).reset_index().values
+    try:
+        pat_labels_txt = pat_labels.astype(int).reset_index().values
+    except:
+        pat_labels_txt = pat_labels.astype(float).reset_index().values
 
     # PLOT heatmap without gene ordering
     _show_gene_names = False
@@ -253,8 +266,21 @@ def process_data(**set_up_kwargs):
         # ORDER genes
         if toPrint:
             logger.info('Order data according to genomic position')
-        data = pd.DataFrame(data, columns=sorted(
-            gene_order_dict, key=gene_order_dict.get))
+
+        # extract the gene relative order
+        gene_order = genes_positions_table.set_index(
+            gene_id_col).loc[:, 'order'].copy()
+        # keep only gene_order with data
+        ids_tmp = set(
+            gene_order.index.values).intersection(set(data.columns.values))
+        # keep only the order of these genes
+        gene_order = gene_order.loc[ids_tmp].copy()
+        gene_order = gene_order.sort_values()
+        # then keep only these genes from the data
+        data = data.loc[:, gene_order.index].copy()
+
+        # data = pd.DataFrame(data, columns=sorted(
+        #     gene_order_dict, key=gene_order_dict.get))
 
         # PLOT heatmap after gene ordering
         if toPrint:
