@@ -506,6 +506,17 @@ def nexus_express(**set_up_kwargs):
         diff_genes.to_csv(fpath, sep='\t', header=True, index=True)
 
         if diff_genes_selected.shape[0] > 0:
+            # keep only those genes in the data
+            data = data.loc[:, diff_genes_selected.index]
+            # insert a column with the class label
+            data['class_label'] = info_table.loc[data.index, clinical_label]
+            # save this data for future classification
+            fname = 'data_features_class.csv'
+            fpath = os.path.join(output_directory, fname)
+            logger.info("-save data with selected diff genes for " +
+                        mytitle+" and samples class labels in :\n"+fpath)
+            data.to_csv(fpath, sep='\t', header=True, index=True)
+
             # save as tab-delimited csv file
             fname = 'diff_genes_selected_'+select_samples_title+'.csv'
             fpath = os.path.join(output_directory, fname)

@@ -1222,7 +1222,8 @@ def _map_cnvs_to_genes(
     chrSum = onesample.groupby(['id'])['chr'].sum()
     # save a dict with only the genes to remove
     # and an array of the diff chroms these gene exist in
-    # (SLOW?)
+    # (SLOW!!!)
+    print()
     genes_to_remove_dict = \
         {
             chrSum.index[idx]:

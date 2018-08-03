@@ -11,7 +11,7 @@
         "cmap_custom": null,
         "vmin": -4,
         "vmax": 4,
-        "highRes": true
+        "highRes": false
     },
 
     "select_samples_from": "Tcode",
@@ -26,9 +26,9 @@
     "multtest_alpha": 0.05,
     "with_perc": 100,
 
-    "input_directory": "output,headneck,setup_c1_oncoscan_byNexus",
+    "input_directory": "output,headneck,setup_c1_oncoscan_byNexus,process",
     "input_fname": "data_processed.csv",
-    "gene_info_directory": null,
+    "gene_info_directory": "output,headneck,setup_c1_oncoscan_byNexus",
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     "sample_info_directory": "input,headneck,cohort1",
@@ -43,8 +43,8 @@
     "sample_info_table_sortLabels": "Tcode,Ccode,patient",
     
     "toRemoveDupl": true,
-    "dupl_genes_directory": "rm_dpl_primary",
+    "dupl_genes_directory": "rmdpl_primary",
 
-    "output_directory": "output,headneck,setup_c1_oncoscan_byNexus,rm_dpl_primary",
+    "output_directory": "output,headneck,setup_c1_oncoscan_byNexus,process,rmdpl_primary",
     "DEBUG": true
 }

@@ -10,7 +10,7 @@
     "load_data_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
+        "index_col": null,
         "comment": "#",
         "names": "chr,id,value,function,pos"
     },

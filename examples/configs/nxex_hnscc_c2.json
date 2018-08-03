@@ -11,7 +11,7 @@
         "cmap_custom": null,
         "vmin": -2,
         "vmax": 2,
-        "highRes": true
+        "highRes": false
     },
 
     "select_samples_from": null,
@@ -26,9 +26,9 @@
     "multtest_alpha": 0.05,
     "with_perc": 100,
 
-    "input_directory": "output,headneck,setup_c2_excavator2_byNexus",
+    "input_directory": "output,headneck,setup_c2_excavator2_byNexus,process",
     "input_fname": "data_processed.csv",
-    "gene_info_directory": null,
+    "gene_info_directory": "output,headneck,setup_c2_excavator2_byNexus",
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     "sample_info_directory": "input,headneck,cohort2",
@@ -43,8 +43,8 @@
     "sample_info_table_sortLabels": "Local_Control",
     
     "toRemoveDupl": true,
-    "dupl_genes_directory": "rm_dpl",
+    "dupl_genes_directory": "rmdpl",
 
-    "output_directory": "output,headneck,setup_c2_excavator2_byNexus,rm_dpl",
+    "output_directory": "output,headneck,setup_c2_excavator2_byNexus,process,rmdpl",
     "DEBUG": true
 }

@@ -1,41 +1,59 @@
 {
-    "reportName": "process_keepPanel",
-    "txt_label": "process VCF (combined variants) data and keep only the genes from panel",
-    "input_fname": "data.csv",
-    "input_directory": "output,headneck,setup_c2_vcf",
-    "output_directory": null,
-
+    "reportName": "DEBUG_setup_c1_oncoscan_byNexus",
     "saveReport": true,
+    "txt_label": "set up processed Oncoscan data by Nexus",
     "toPrint": true,
 
-    "chr_col": "chr_int",
-    "gene_id_col": "gene",
-    "remove_patients": null,
-    "select_genes":"BRAF,CASP8,CDKN2A,FAT1,FBXW7,HRAS,KIT,KMT2D,MED1,NOTCH3,NRAS,PIK3CA,SYNE1,SYNE2,TP53,TP63",
+    "load_files": true,
+    "fext": "_events_cnvAll.txt",
 
-    "plot_kwargs": {
-        "cmap_custom": null,
-        "vmin": 0,
-        "vmax": 4,
-        "highRes": false,
-        "mincol": "white",
-        "midcol": "orange",
-        "maxcol": "red"
+    "load_data_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": null,
+        "comment": "#",
+        "names": "chr,id,value,function,pos"
+    },
+
+    "editWith": "Oncoscan",
+    "withFilter": false,
+    "withProcess": false,
+
+    "preproc_kwargs": {},
+    "filt_kwargs": {},
+    "edit_kwargs": {
+        "function_dict": {
+            "Homozygous Copy Loss": -4,
+            "CN Loss": -2,
+            "CN Gain": 2,
+            "High Copy Gain": 4,
+            "LOH": -1
+        },
+        "mergeHow":"maxAll",
+        "removeLOH":true,
+        "LOH_value": "LOH"
     },
     
-    "gene_info_directory": null,
-    "gene_info_fname": "genes_info.csv",
-    "gene_order_dict_fname": null,
+    "plot_kwargs": {
+        "highRes": false
+    },
     
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+    
+    "input_directory": "input,headneck,cohort1",
+    "data_directory": "oncoscan,processed_byNexus",
+    "data_files": "DS_101,DS_107",
+
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0
     },
-    "sample_info_directory": "input,headneck,cohort2",
-    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_info_table_index_colname": "Patient",
-    "sample_info_table_sortLabels": "Local_Control",
+    "sample_info_fname": "sample_info.txt",
+    "sample_info_table_index_colname": "cnvID",
+    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
     
+    "output_directory": "output,headneck",
     "DEBUG": true
 }

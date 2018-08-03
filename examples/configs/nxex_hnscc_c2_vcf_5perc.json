@@ -11,7 +11,7 @@
         "cmap_custom": null,
         "vmin": 0,
         "vmax": 4,
-        "highRes": true,
+        "highRes": false,
         "mincol": "white",
         "midcol": "orange",
         "maxcol": "red",
@@ -40,9 +40,9 @@
     "multtest_alpha": 0.05,
     "with_perc": 100,
 
-    "input_directory": "output,headneck,setup_c2_vcf",
+    "input_directory": "output,headneck,setup_c2_vcf,process",
     "input_fname": "data_processed.csv",
-    "gene_info_directory": null,
+    "gene_info_directory": "output,headneck,setup_c2_vcf",
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     "sample_info_directory": "input,headneck,cohort2",
@@ -57,8 +57,8 @@
     "sample_info_table_sortLabels": "Local_Control",
     
     "toRemoveDupl": true,
-    "dupl_genes_directory": "rm_dpl",
+    "dupl_genes_directory": "rmdpl",
 
-    "output_directory": "output,headneck,setup_c2_vcf,rm_dpl",
+    "output_directory": "output,headneck,setup_c2_vcf,process,rmdpl",
     "DEBUG": true
 }

@@ -14,10 +14,10 @@
         "highRes": true
     },
 
-    "select_samples_from": null,
-    "select_samples_which": null,
-    "select_samples_sort_by": "FOXA1_mut5,TP53_mut5",
-    "select_samples_title": "select_all_sortFOXA1",
+    "select_samples_from": "TP53_mut5",
+    "select_samples_which": 1,
+    "select_samples_sort_by": "FOXA1_mut5",
+    "select_samples_title": "select_tp53mut",
     "class_labels": "FOXA1wt,FOXA1mut",
     "class_values": "0,1",
 
@@ -27,10 +27,10 @@
     "with_perc": 100,
 
     
-    "input_directory": "output,endometrial,setup_endometrial",
+    "input_directory": "output,endometrial,setup_filt,process",
     "input_fname": "data_processed.csv",
     
-    "gene_info_directory": null,
+    "gene_info_directory": "output,endometrial,setup_filt",
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     
@@ -42,8 +42,8 @@
     "sample_info_table_index_colname": "Oncoscan_ID",
     
     "toRemoveDupl": true,
-    "dupl_genes_directory": "rm_dpl_emca_all_sortFOXA1",
+    "dupl_genes_directory": "rmdpl_tp53mut",
 
-    "output_directory": "output,endometrial,setup_endometrial,rm_dpl_emca_all_sortFOXA1",
+    "output_directory": "output,endometrial,setup_filt,process,rmdpl_tp53mut",
     "DEBUG": true
 }

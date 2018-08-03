@@ -1,5 +1,5 @@
 {
-    "reportName": "rm_dpl",
+    "reportName": "rmdpl",
     "saveReport": true,
     "txt_label": "remove duplicate gene profiles from cohort 2 filtered HNSCC samples",
     "toPrint": true,

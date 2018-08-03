@@ -11,7 +11,7 @@
         "cmap_custom": null,
         "vmin": -2,
         "vmax": 2,
-        "highRes": false
+        "highRes": true
     },
 
     "select_samples_from": "TP53_mut5",
@@ -27,10 +27,10 @@
     "with_perc": 100,
 
     
-    "input_directory": "output,endometrial,setup,process",
+    "input_directory": "output,endometrial,setup_filt,process",
     "input_fname": "data_processed.csv",
     
-    "gene_info_directory": "output,endometrial,setup",
+    "gene_info_directory": "output,endometrial,setup_filt",
     "gene_info_fname": "genes_info.csv",
     "gene_order_dict_fname": null,
     
@@ -44,6 +44,6 @@
     "toRemoveDupl": true,
     "dupl_genes_directory": "rmdpl_tp53wt",
 
-    "output_directory": "output,endometrial,setup,process,rmdpl_tp53wt",
+    "output_directory": "output,endometrial,setup_filt,process,rmdpl_tp53wt",
     "DEBUG": true
 }
