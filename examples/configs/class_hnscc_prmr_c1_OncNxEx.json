@@ -1,15 +1,15 @@
 {
-    "reportName": "prmr_c1_GnPnl_OncFltNxEx",
+    "reportName": "prmr_c1_OncNxEx",
     "saveReport": true,
-    "txt_label": "Classification of primary samples with features from c1 genepanel and NxEx selected filt oncoscan",
+    "txt_label": "Classification of primary samples with features from c1 NxEx selected oncoscan",
     "toPrint": true,
 
     "plot_kwargs": {
         "highRes": false
     },
 
-    "files_to_combine_features": "output,headneck,setup_c1_oncoscan_byNexus,process,rmdpl_primary,nexus_express,data_features_class.csv;output,headneck,setup_c1_genepanel,process,data_processed.csv",
-    "file_short_ids": "CNV,VAR",
+    "files_to_combine_features": "output,headneck,setup_c1_oncoscan_raw,process,rmdpl_primary,nexus_express,data_features_class.csv",
+    "file_short_ids": "CNV",
     
     "sample_info_directory": "input,headneck,cohort1",
     "sample_info_read_csv_kwargs":{
@@ -19,7 +19,7 @@
     },
     "sample_info_fname": "sample_info.txt",
     "sample_final_id": "cnvID",
-    "sample_data_ids": "cnvID,varID",
+    "sample_data_ids": "cnvID",
     "clinical_label": "Ccode",
     
     "output_directory": "output,headneck,classification",

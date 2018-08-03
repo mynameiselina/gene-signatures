@@ -1,5 +1,5 @@
 {
-    "reportName": "DEBUG__prmr_c1_GnPnl",
+    "reportName": "prmr_c1_GnPnl",
     "saveReport": true,
     "txt_label": "Classification of primary samples with features from c1 genepanel",
     "toPrint": true,
@@ -18,8 +18,8 @@
         "index_col": 0
     },
     "sample_info_fname": "sample_info.txt",
-    "sample_final_id": "cnvID",
-    "sample_data_ids": "cnvID,varID",
+    "sample_final_id": "varID",
+    "sample_data_ids": "varID",
     "clinical_label": "Ccode",
     
     "output_directory": "output,headneck,classification",

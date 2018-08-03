@@ -1,0 +1,27 @@
+{
+    "reportName": "c2_ExcvNxEx",
+    "saveReport": true,
+    "txt_label": "Classification of samples with features from c2 NxEx selected ExCavator2",
+    "toPrint": true,
+
+    "plot_kwargs": {
+        "highRes": false
+    },
+
+    "files_to_combine_features": "output,headneck,setup_c2_excavator2_byNexus,process,rmdpl,nexus_express,data_features_class.csv",
+    "file_short_ids": "CNV",
+    
+    "sample_info_directory": "input,headneck,cohort2",
+    "sample_info_read_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0
+    },
+    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
+    "sample_final_id": "Patient",
+    "sample_data_ids": "Patient",
+    "clinical_label": "Local_Control",
+    
+    "output_directory": "output,headneck,classification",
+    "DEBUG": true
+}

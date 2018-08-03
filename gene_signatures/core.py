@@ -497,7 +497,18 @@ def boxplot(all_coefs, n, labels, title='', txtbox='',
     sidespace = all_coefs.max() * sidespace
     xpos, xlabels = which_x_toPrint(all_coefs, labels, n_names=n_names)
 
-    plt.figure(figsize=(15, 5))
+    xsize = all_coefs.shape[1]
+    if xsize > 150:
+        figsize_x = 40
+        x_font_size = 5
+    elif xsize > 30:
+        figsize_x = 25
+        x_font_size = 10
+    else:
+        figsize_x = 15
+        x_font_size = 20
+
+    plt.figure(figsize=(figsize_x, 5))
     ax = sns.boxplot(data=all_coefs, color='white', saturation=1, width=0.5,
                      fliersize=0, linewidth=2, whis=1.5, notch=False)
     # iterate over boxes
@@ -524,6 +535,8 @@ def boxplot(all_coefs, n, labels, title='', txtbox='',
 
     plt.axhline(y=0, color='k', linewidth=0.2)
     plt.xlim((-1, n))
+    ax = plt.gca()
+    ax.xaxis.set_tick_params(labelsize=x_font_size)
     plt.xticks(xpos, xlabels, rotation=90)
     plt.title(title)
     lgd = plt.text(0, sidespace, txtbox)

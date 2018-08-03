@@ -41,16 +41,21 @@ logger = logging.getLogger(__name__)
 
 
 def _run_classification(dat, dat_target, random_state):
+    dat = dat.copy()
+    dat_target = dat_target.copy()
     np.random.seed(random_state)
-    logger.info("random state = "+str(random_state))
-    # model = svm.LinearSVC(
-    #     penalty='l1', C=1, random_state=random_state,
-    #     loss='squared_hinge', dual=False
+    # logger.info("random state = "+str(random_state))
+    # model = svm.SVC(
+    #     kernel='linear', random_state=random_state,
     # )
-    model = linear_model.LogisticRegression(
-        penalty='l1', C=1, random_state=random_state,
-        solver='liblinear'
+    model = svm.LinearSVC(
+        penalty='l2', C=1, random_state=random_state,
+        loss='squared_hinge', dual=False
     )
+    # model = linear_model.LogisticRegression(
+    #     penalty='l2', C=1, random_state=random_state,
+    #     solver='liblinear'
+    # )
     estimators = []
     correct = 0
     wrong = 0
@@ -61,6 +66,7 @@ def _run_classification(dat, dat_target, random_state):
         one_sample = dat.iloc[choose_sample:choose_sample+1, :]
         y_real = dat_target.iloc[choose_sample:choose_sample+1]
 
+        np.random.seed(random_state)
         model.fit(X, y)
 
         all_coefs[choose_sample:choose_sample+1, :] = model.coef_[0]
@@ -137,15 +143,23 @@ def classification(**set_up_kwargs):
     MainDataDir = os.path.join(script_path, '..', 'data')
 
     # data input
-    files_to_combine = set_up_kwargs.get('files_to_combine', None)
+    file_short_ids = set_up_kwargs.get('file_short_ids', None)
+    if ',' in file_short_ids:
+        file_short_ids = file_short_ids.rsplit(',')
+    else:
+        file_short_ids = [file_short_ids]
+
+    files_to_combine_features = set_up_kwargs.get(
+        'files_to_combine_features', None)
     try:
         data_fpaths = []
-        if ';' in files_to_combine:
+        if ';' in files_to_combine_features:
             # split fpaths for different files
-            files_to_combine_list = files_to_combine.rsplit(';')
+            files_to_combine_features_list = \
+                files_to_combine_features.rsplit(';')
         else:
-            files_to_combine_list = [files_to_combine]
-        for single_file in files_to_combine_list:
+            files_to_combine_features_list = [files_to_combine_features]
+        for single_file in files_to_combine_features_list:
             if ',' in single_file:
                 #  join the path for a single file
                 data_fpaths.append(
@@ -153,7 +167,7 @@ def classification(**set_up_kwargs):
     except:
         logger.error(
             'No valid file paths were given to get the features!\n' +
-            'files_to_combine: '+str(files_to_combine))
+            'files_to_combine_features: '+str(files_to_combine_features))
         raise
 
     # sample info input
@@ -235,10 +249,7 @@ def classification(**set_up_kwargs):
             label_bool.append(False)
 
     common_samples = list(set.intersection(*sample_sets))
-    # common_samples = natsorted(common_samples)
-    # common_samples = list(common_samples)[::-1]
-
-    print("\n\n\n"+str(common_samples)+"\n\n\n")
+    common_samples = natsorted(common_samples)
 
     label_copies = sum(label_bool)
 
@@ -256,13 +267,15 @@ def classification(**set_up_kwargs):
             raise
 
         common_samples_with_label = set.intersection(
-            common_samples, info_table.index)
-        if common_samples_with_label < common_samples:
+            set(common_samples), set(info_table.index))
+        if len(common_samples_with_label) < len(common_samples):
             logger.warning(
                 "some samples do not have a class label " +
                 "and have to be discarded: " +
-                common_samples.difference(common_samples_with_label))
-            common_samples = common_samples_with_label
+                str(set(common_samples).difference(
+                    set(common_samples_with_label)))
+            )
+            common_samples = list(common_samples_with_label)
 
         ground_truth = info_table.loc[common_samples, clinical_label].copy()
 
@@ -299,14 +312,21 @@ def classification(**set_up_kwargs):
 
     else:
         # keep the ONLY copy
-        ground_truth = label_list[0].copy()
+        ground_truth = label_list[0].loc[common_samples].copy()
 
     # now we concat the data features from the multiple datasets
+    for i, df in enumerate(data_dfs):
+        # remove the class_label
+        try:
+            df.drop('class_label', axis=1, inplace=True)
+        except:
+            continue
+        # add suffix to separate common genes between datasets
+        df.columns += "__"+file_short_ids[i]
+
     data = pd.concat(data_dfs, axis=1, sort=False)
     # select only the common_samples
     data = data.loc[common_samples, :]
-    # remove the class_label
-    data.drop('class_label', axis=1, inplace=True)
 
     # Classification
     binom_test_thres = 0.5
@@ -326,13 +346,14 @@ def classification(**set_up_kwargs):
         abs(all_coefs).mean(axis=0)
     clasification_results['classification_std_coef'] =\
         abs(all_coefs).std(axis=0)
-    nnz_coef_genes = data.columns.values[(abs(all_coefs).max(axis=0) > 0)]
-    clasification_results.loc[nnz_coef_genes, 'classification'] = 1
-    n_names = nnz_coef_genes.shape[0]
+    nnz_coef_bool = (abs(all_coefs).max(axis=0) > 0)
+    nnz_coef_gene_names = data.columns.values[nnz_coef_bool]
+    clasification_results.loc[nnz_coef_gene_names, 'classification'] = 1
+    n_names = nnz_coef_gene_names.shape[0]
 
     logger.info('printing the names of the '+str(n_names) +
                 ' features with non-zero coefficient in at least ' +
-                'one classification run:\n'+str(nnz_coef_genes))
+                'one classification run:\n'+str(nnz_coef_gene_names))
 
     # save as tab-delimited csv file
     fname = 'clasification_results.csv'
@@ -354,10 +375,11 @@ def classification(**set_up_kwargs):
     fname = 'data_from_classification.csv'
     fpath = os.path.join(output_directory, fname)
     logger.info('-save the classification selected genes')
-    data.reindex(nnz_coef_genes, axis=1).to_csv(fpath, sep='\t')
+    data.reindex(nnz_coef_gene_names, axis=1).to_csv(fpath, sep='\t')
 
     # boxplot
-    boxplot(all_coefs, data.shape[1], data.columns.values,
+    coefs_to_plot = all_coefs[:, np.where(nnz_coef_bool)[0]]
+    boxplot(coefs_to_plot, coefs_to_plot.shape[1], nnz_coef_gene_names,
             title=txt_label, txtbox=printed_results, sidespace=2,
             swarm=False, n_names=n_names)
     if saveReport:
@@ -373,7 +395,7 @@ def classification(**set_up_kwargs):
         plt.show()
 
     # swarmplot
-    boxplot(all_coefs, data.shape[1], data.columns.values,
+    boxplot(coefs_to_plot, coefs_to_plot.shape[1], nnz_coef_gene_names,
             title=txt_label, txtbox=printed_results, sidespace=2,
             swarm=True, n_names=n_names)
     if saveReport:
