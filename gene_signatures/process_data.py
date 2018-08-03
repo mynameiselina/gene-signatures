@@ -80,6 +80,13 @@ def process_data(**set_up_kwargs):
     sample_info_table_sortLabels_list = \
         sample_info_table_sortLabels.rsplit(',')
 
+    # chose sample set from data
+    # function: choose_samples()
+    select_samples_from = set_up_kwargs.get('select_samples_from', None)
+    select_samples_which = parse_arg_type(
+        set_up_kwargs.get('select_samples_which', None),
+        int
+    )
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
     function_dict = plot_kwargs.get('function_dict', None)
@@ -220,16 +227,20 @@ def process_data(**set_up_kwargs):
     # SELECT sample groups (optional)
     ids_tmp = choose_samples(info_table.reset_index(),
                              sample_info_table_index_colname,
-                             choose_from=None,
-                             choose_what=None,
+                             choose_from=select_samples_from,
+                             choose_what=select_samples_which,
                              sortby=sample_info_table_sortLabels_list,
                              ascending=False)
-    pat_labels = info_table.loc[ids_tmp][
-            sample_info_table_sortLabels_list].copy()
+    choose_columns = sample_info_table_sortLabels_list
+    if sample_info_table_index_colname in choose_columns:
+        choose_columns = list(
+            set(sample_info_table_sortLabels_list)
+            .difference(set([sample_info_table_index_colname])))
+    pat_labels = info_table.loc[ids_tmp][choose_columns].copy()
     try:
         pat_labels_txt = pat_labels.astype(int).reset_index().values
     except:
-        pat_labels_txt = pat_labels.astype(float).reset_index().values
+        pat_labels_txt = pat_labels.reset_index().values
 
     # PLOT heatmap without gene ordering
     _show_gene_names = False

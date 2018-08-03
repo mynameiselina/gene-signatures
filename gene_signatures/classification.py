@@ -24,6 +24,7 @@ from natsort import natsorted, index_natsorted
 import math
 import logging
 from sklearn import linear_model
+from sklearn import svm
 from distutils.util import strtobool
 from scipy.stats import binom_test
 
@@ -39,8 +40,17 @@ script_path = os.path.dirname(__file__)
 logger = logging.getLogger(__name__)
 
 
-def _run_classification(dat, dat_target):
-    model = linear_model.LogisticRegression(penalty='l1', C=1, random_state=0)
+def _run_classification(dat, dat_target, random_state):
+    np.random.seed(random_state)
+    logger.info("random state = "+str(random_state))
+    # model = svm.LinearSVC(
+    #     penalty='l1', C=1, random_state=random_state,
+    #     loss='squared_hinge', dual=False
+    # )
+    model = linear_model.LogisticRegression(
+        penalty='l1', C=1, random_state=random_state,
+        solver='liblinear'
+    )
     estimators = []
     correct = 0
     wrong = 0
@@ -77,7 +87,10 @@ def classification(**set_up_kwargs):
     )
     reportName = set_up_kwargs.get('reportName', script_fname)
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
-
+    random_state = parse_arg_type(
+        set_up_kwargs.get('random_state', 0),
+        int
+    )
     sample_final_id = set_up_kwargs.get('sample_final_id')
     sample_data_ids = set_up_kwargs.get('sample_data_ids')
     if ',' in sample_data_ids:
@@ -131,7 +144,7 @@ def classification(**set_up_kwargs):
             # split fpaths for different files
             files_to_combine_list = files_to_combine.rsplit(';')
         else:
-            files_to_combine_list = files_to_combine
+            files_to_combine_list = [files_to_combine]
         for single_file in files_to_combine_list:
             if ',' in single_file:
                 #  join the path for a single file
@@ -183,7 +196,7 @@ def classification(**set_up_kwargs):
         raise
 
     # get id column for each dataset
-    sample_data_ids = ['cnvID','varID']
+    sample_data_ids = ['cnvID', 'varID']
     sample_final_id = 'cnvID'
     select_columns = sample_data_ids.copy()
     select_columns = set(select_columns).difference(set([sample_final_id]))
@@ -201,7 +214,7 @@ def classification(**set_up_kwargs):
             logger.error('failed to read data file from: '+str(fpath))
             raise
 
-        # if datasets have different sample IDs 
+        # if datasets have different sample IDs
         # map them to a user defined common one
         if sample_data_ids[i] != sample_final_id:
             # get the two ids from the info_table
@@ -221,7 +234,12 @@ def classification(**set_up_kwargs):
         else:
             label_bool.append(False)
 
-    common_samples = set.intersection(*sample_sets)
+    common_samples = list(set.intersection(*sample_sets))
+    # common_samples = natsorted(common_samples)
+    # common_samples = list(common_samples)[::-1]
+
+    print("\n\n\n"+str(common_samples)+"\n\n\n")
+
     label_copies = sum(label_bool)
 
     # to retrieve the ground truth i.e. the samples class label
@@ -284,14 +302,17 @@ def classification(**set_up_kwargs):
         ground_truth = label_list[0].copy()
 
     # now we concat the data features from the multiple datasets
-    data = pd.concat(data_dfs, axis=1)
-    # nad select only the common_samples
+    data = pd.concat(data_dfs, axis=1, sort=False)
+    # select only the common_samples
     data = data.loc[common_samples, :]
+    # remove the class_label
+    data.drop('class_label', axis=1, inplace=True)
 
     # Classification
     binom_test_thres = 0.5
     logger.info("Running classification...")
-    all_coefs, (correct, wrong) = _run_classification(data, ground_truth)
+    all_coefs, (correct, wrong) =\
+        _run_classification(data, ground_truth, random_state)
     pval = binom_test(correct, n=correct+wrong, p=binom_test_thres)
     printed_results = 'correct = '+str(correct)+', wrong = '+str(wrong) + \
         '\n'+'pvalue = '+str(pval)
@@ -303,7 +324,8 @@ def classification(**set_up_kwargs):
     clasification_results['classification'] = 0
     clasification_results['classification_mean_coef'] = \
         abs(all_coefs).mean(axis=0)
-    clasification_results['classification_std_coef'] = abs(all_coefs).std(axis=0)
+    clasification_results['classification_std_coef'] =\
+        abs(all_coefs).std(axis=0)
     nnz_coef_genes = data.columns.values[(abs(all_coefs).max(axis=0) > 0)]
     clasification_results.loc[nnz_coef_genes, 'classification'] = 1
     n_names = nnz_coef_genes.shape[0]
@@ -336,32 +358,32 @@ def classification(**set_up_kwargs):
 
     # boxplot
     boxplot(all_coefs, data.shape[1], data.columns.values,
-            title=title, txtbox=printed_results, sidespace=3,
+            title=txt_label, txtbox=printed_results, sidespace=2,
             swarm=False, n_names=n_names)
-    plt.title(txt_label)
     if saveReport:
         logger.info('Save boxplot')
         fpath = os.path.join(
-            output_directory, 'Fig_'+title+'_boxplot'+img_ext
+            output_directory, 'Fig_boxplot'+img_ext
         )
-        plt.savefig(fpath, transparent=True, bbox_inches='tight',
-                    pad_inches=0.1, frameon=False)
+        plt.savefig(
+            fpath, transparent=True, bbox_inches='tight',
+            pad_inches=0.1, frameon=False)
         plt.close("all")
     else:
         plt.show()
 
     # swarmplot
     boxplot(all_coefs, data.shape[1], data.columns.values,
-            title=title, txtbox=printed_results, sidespace=2,
+            title=txt_label, txtbox=printed_results, sidespace=2,
             swarm=True, n_names=n_names)
-    plt.title(txt_label)
     if saveReport:
         logger.info('Save swarmplot')
         fpath = os.path.join(
-            output_directory, 'Fig_'+title+'_swarmplot'+img_ext
+            output_directory, 'Fig_swarmplot'+img_ext
         )
-        plt.savefig(fpath, transparent=True,
-                    bbox_inches='tight', pad_inches=0.1, frameon=False)
+        plt.savefig(
+            fpath, transparent=True, bbox_inches='tight',
+            pad_inches=0.1, frameon=False)
         plt.close("all")
     else:
         plt.show()

@@ -590,11 +590,11 @@ def nexus_express(**set_up_kwargs):
         fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10
         fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
         plt.figure(figsize=(fs_x, fs_y))
-        ax = sns.heatmap(data, vmin=vmin, vmax=vmax,
-                         xticklabels=True,
-                         yticklabels=patientNames2plot,
-                         cmap=cmap_custom,
-                         cbar_kws={'ticks': np.arange(-5, 5)})
+        data2plot = data.drop(['class_label'], axis=1)
+        ax = sns.heatmap(
+            data2plot, vmin=vmin, vmax=vmax,
+            xticklabels=True, yticklabels=patientNames2plot,
+            cmap=cmap_custom, cbar_kws={'ticks': np.arange(-5, 5)})
         plt.title(mytitle)
         if saveReport:
             fpath = os.path.join(output_directory, 'Fig_Heatmap_' +
@@ -616,11 +616,10 @@ def nexus_express(**set_up_kwargs):
             fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10
             fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
             plt.figure(figsize=(fs_x, fs_y))
-            ax = sns.heatmap(data2plot, vmin=vmin, vmax=vmax,
-                             xticklabels=True,
-                             yticklabels=patientNames2plot,
-                             cmap=cmap_custom,
-                             cbar_kws={'ticks': np.arange(-5, 5)})
+            ax = sns.heatmap(
+                data2plot, vmin=vmin, vmax=vmax,
+                xticklabels=True, yticklabels=patientNames2plot,
+                cmap=cmap_custom, cbar_kws={'ticks': np.arange(-5, 5)})
             plt.title(mytitle)
             if saveReport:
                 fpath = os.path.join(output_directory, 'Fig_Heatmap_' +

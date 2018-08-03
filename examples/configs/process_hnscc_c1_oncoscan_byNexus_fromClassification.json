@@ -1,26 +1,28 @@
 {
-    "reportName": "process_select_primary",
-    "txt_label": "process genepanel data from cohort 1",
+    "reportName": "process_fromClassification",
+    "txt_label": "process processed Oncoscan data by Nexus",
     "input_fname": "data.csv",
-    "input_directory": "output,headneck,setup_c1_genepanel",
+    "input_directory": "output,headneck,setup_c1_oncoscan_byNexus",
     "output_directory": null,
-    
+
     "saveReport": true,
     "toPrint": true,
 
     "chr_col": "chr_int",
+    "gene_id_col": "gene",
     "remove_patients": null,
-    "select_genes":null,
+    "select_genes":"FZD8,AMOTL1,ANGPTL5,CEP57",
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": 0,
+        "vmin": -4,
         "vmax": 4,
-        "highRes": false,
-        "mincol": "white",
-        "midcol": "orange",
-        "maxcol": "red"
+        "highRes": false
     },
+    
+    "gene_info_directory": null,
+    "gene_info_fname": "genes_info.csv",
+    "gene_order_dict_fname": null,
     
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
@@ -29,7 +31,7 @@
     },
     "sample_info_directory": "input,headneck,cohort1",
     "sample_info_fname": "sample_info.txt",
-    "sample_info_table_index_colname": "varID",
+    "sample_info_table_index_colname": "cnvID",
     "sample_info_table_sortLabels": "Tcode,Ccode,cnvID",
 
     "select_samples_from": "Tcode",
