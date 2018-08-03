@@ -107,8 +107,8 @@ def nexus_express(**set_up_kwargs):
         set_up_kwargs.get('toPrint', False),
         bool
     )
-    toPlotFreq = parse_arg_type(
-        set_up_kwargs.get('toPlotFreq', True),
+    toPlot = parse_arg_type(
+        set_up_kwargs.get('toPlot', True),
         bool
     )
     reportName = set_up_kwargs.get('reportName', script_fname)
@@ -291,7 +291,7 @@ def nexus_express(**set_up_kwargs):
 
     # plot CNV frequencies of all samples
     data_ampl, data_del = _get_ampl_del_from_data(data)
-    if toPlotFreq:
+    if toPlot:
         _plot_oncoscan_frequency_plot(
             data_ampl, data_del, select_samples_title, '',
             gene_info_fname, xlabels, xpos,
@@ -331,7 +331,7 @@ def nexus_express(**set_up_kwargs):
 
             # plot CNV frequencies of all samples with uniq genes
             data_ampl, data_del = _get_ampl_del_from_data(data)
-            if toPlotFreq:
+            if toPlot:
                 _plot_oncoscan_frequency_plot(
                     data_ampl, data_del, select_samples_title,
                     extra_label, gene_info_fname, xlabels, xpos,
@@ -350,14 +350,14 @@ def nexus_express(**set_up_kwargs):
         info_table[clinical_label] == class_values[1]]].copy()
 
     group0_ampl, group0_del = _get_ampl_del_from_data(group0)
-    if toPlotFreq:
+    if toPlot:
         _plot_oncoscan_frequency_plot(
             group0_ampl, group0_del, select_samples_title,
             class_labels[0]+extra_label, gene_info_fname, xlabels, xpos,
             saveReport, img_ext, output_directory)
 
     group1_ampl, group1_del = _get_ampl_del_from_data(group1)
-    if toPlotFreq:
+    if toPlot:
         _plot_oncoscan_frequency_plot(
             group1_ampl, group1_del, select_samples_title,
             class_labels[1]+extra_label, gene_info_fname, xlabels, xpos,
@@ -372,7 +372,7 @@ def nexus_express(**set_up_kwargs):
 
         group0_ampl_wDupl, group0_del_wDupl = \
             _get_ampl_del_from_data(group0_wDupl)
-        if toPlotFreq:
+        if toPlot:
             _plot_oncoscan_frequency_plot(
                 group0_ampl_wDupl, group0_del_wDupl, select_samples_title,
                 class_labels[0], gene_info_fname, xlabels_wDupl,
@@ -380,7 +380,7 @@ def nexus_express(**set_up_kwargs):
 
         group1_ampl_wDupl, group1_del_wDupl = \
             _get_ampl_del_from_data(group1_wDupl)
-        if toPlotFreq:
+        if toPlot:
             _plot_oncoscan_frequency_plot(
                 group1_ampl_wDupl, group1_del_wDupl, select_samples_title,
                 class_labels[1], gene_info_fname, xlabels_wDupl,
@@ -420,65 +420,87 @@ def nexus_express(**set_up_kwargs):
     diff_genes['pvals_corrected'] = pvals_corrected
     diff_genes['pvals_reject'] = pvals_reject
     diff_genes['gained'] = gained
-    diff_genes['ampl_diff'] = np.abs(
-        diff_genes[class_labels[0]+'_'+clinical_label+'_ampl'] -
-        diff_genes[class_labels[1]+'_'+clinical_label+'_ampl'])
     diff_genes['deleted'] = deleted
-    diff_genes['del_diff'] = np.abs(
-        diff_genes[class_labels[0]+'_'+clinical_label+'_del'] -
-        diff_genes[class_labels[1]+'_'+clinical_label+'_del'])
 
-    # add the dupl_genes column only if there are duplicate genes
+    # add the dupl_genes_dict column only if there are duplicate genes
     if toRemoveDupl:
-        diff_genes['dupl_genes'] = \
+        diff_genes['dupl_genes_dict'] = \
             diff_genes.reset_index()['gene'].map(dupl_genes_dict).values
 
-        # save also the positions of these duplicate genes
-        diff_genes['newGeneName'] = diff_genes.index.values
-        diff_genes.loc[dupl_genes_dict.keys(), 'newGeneName'] += '__wDupl'
-        if gene_info_fname is not None:
-            diff_genes['aggChrGene'] = None
-            diff_genes['aggPos'] = None
-            diff_genes['aggChrStart'] = None
-            diff_genes['aggChrEnd'] = None
+    # save also the positions of these duplicate genes
+    diff_genes['aggChrGene'] = diff_genes.index
+    if gene_info_fname is not None:
+        diff_genes['aggPos'] = diff_genes.reset_index()[
+            ['gene', 'chr', 'start', 'end']].astype(str).apply(
+                lambda x: ':'.join(x), axis=1).values
+        diff_genes['aggChrStart'] = diff_genes['start'].astype(object)
+        diff_genes['aggChrEnd'] = diff_genes['end'].astype(object)
 
+        if toRemoveDupl:
             # for each duplicated gene, aggregate and save
             # the name, start, end, chr values in the table
-            for agene in dupl_genes_dict.keys():
+            for agene in diff_genes.index:
                 l = [agene]
-                # if agene in dupl_genes_dict.keys():
-                l.extend(dupl_genes_dict[agene])
-                diff_genes.loc[agene, 'aggChrEnd'] = str(natsorted(
-                    genes_positions_table.set_index(
-                        'gene').loc[l].reset_index().groupby(
-                            by=['chr'])['end'].apply(
-                                lambda x: list(np.unique(np.append([], x)))
-                                ).reset_index().values.tolist()))
-                diff_genes.loc[agene, 'aggChrStart'] = str(natsorted(
-                    genes_positions_table.set_index(
-                        'gene').loc[l].reset_index().groupby(
-                            by=['chr'])['start'].apply(
-                                lambda x: list(np.unique(np.append([], x)))
-                                ).reset_index().values.tolist()))
-                diff_genes.loc[agene, 'aggChrGene'] = str(natsorted(
-                    genes_positions_table.set_index(
-                        'gene').loc[l].reset_index().groupby(
-                            by=['chr'])['gene'].apply(
-                                lambda x: list(np.unique(np.append([], x)))
-                                ).reset_index().values.tolist()))
-                aggPos = \
-                    genes_positions_table.set_index('gene').loc[l].groupby(
-                        by=['chr']).agg(
-                            {'start': min, 'end': max}
-                            ).reset_index().astype(str).apply(
-                                lambda x: ':'.join(x), axis=1).values
-                diff_genes.loc[agene, 'aggPos'] = np.apply_along_axis(
-                    lambda x: '__'.join(x), 0, natsorted(aggPos))
+                if agene in dupl_genes_dict.keys():
+                    l.extend(dupl_genes_dict[agene])
+                    diff_genes.loc[agene, 'aggChrEnd'] = str(natsorted(
+                        genes_positions_table.set_index(
+                            'gene').loc[l].reset_index().groupby(
+                                by=['chr'])['end'].apply(
+                                    lambda x: list(np.unique(np.append([], x)))
+                                    ).reset_index().values.tolist()))
+                    diff_genes.loc[agene, 'aggChrStart'] = str(natsorted(
+                        genes_positions_table.set_index(
+                            'gene').loc[l].reset_index().groupby(
+                                by=['chr'])['start'].apply(
+                                    lambda x: list(np.unique(np.append([], x)))
+                                    ).reset_index().values.tolist()))
+                    diff_genes.loc[agene, 'aggChrGene'] = str(natsorted(
+                        genes_positions_table.set_index(
+                            'gene').loc[l].reset_index().groupby(
+                                by=['chr'])['gene'].apply(
+                                    lambda x: list(np.unique(np.append([], x)))
+                                    ).reset_index().values.tolist()))
+                    aggPos = \
+                        genes_positions_table.set_index('gene').loc[l].groupby(
+                            by=['chr']).agg(
+                                {'start': min, 'end': max}
+                                ).reset_index().astype(str).apply(
+                                    lambda x: ':'.join(x), axis=1).values
+                    diff_genes.loc[agene, 'aggPos'] = np.apply_along_axis(
+                        lambda x: '__'.join(x), 0, natsorted(aggPos))
 
     # from the above table: select only the selected genes
     # according to the Nexus Express diff analysis
     diff_genes_selected = diff_genes[
         (diff_genes['gained'] > 0) | (diff_genes['deleted'] > 0)].copy()
+    if toRemoveDupl:
+        group0_ampl_new_wDupl = group0_ampl_wDupl.copy()
+        group0_ampl_new_wDupl[:] = 0
+        group1_ampl_new_wDupl = group1_ampl_wDupl.copy()
+        group1_ampl_new_wDupl[:] = 0
+        group0_del_new_wDupl = group0_del_wDupl.copy()
+        group0_del_new_wDupl[:] = 0
+        group1_del_new_wDupl = group1_del_wDupl.copy()
+        group1_del_new_wDupl[:] = 0
+
+        list__diff_genes_selected_wDupl = []
+        for i in range(diff_genes_selected.shape[0]):
+            theGene = diff_genes_selected.index[i]
+            genes2edit = [theGene]
+            list__diff_genes_selected_wDupl.extend(genes2edit)
+            duplgenes_ = diff_genes_selected.loc[theGene]['dupl_genes_dict']
+            if duplgenes_ is not np.nan:
+                list__diff_genes_selected_wDupl.extend(duplgenes_)
+                genes2edit.extend(duplgenes_)
+            group0_ampl_new_wDupl.loc[
+                genes2edit] = group0_ampl_new.loc[theGene]
+            group1_ampl_new_wDupl.loc[
+                genes2edit] = group1_ampl_new.loc[theGene]
+            group0_del_new_wDupl.loc[
+                genes2edit] = group0_del_new.loc[theGene]
+            group1_del_new_wDupl.loc[
+                genes2edit] = group1_del_new.loc[theGene]
 
     # save tables
     if saveReport:
@@ -490,11 +512,6 @@ def nexus_express(**set_up_kwargs):
         if diff_genes_selected.shape[0] > 0:
             # keep only those genes in the data
             data = data.loc[:, diff_genes_selected.index]
-            # change the name of the genes to indicate if they have duplicates
-            if 'newGeneName' in diff_genes_selected.columns.values:
-                newgeneNames = diff_genes_selected.loc[
-                    data.columns, 'newGeneName'].values
-                data.columns = newgeneNames
             # insert a column with the class label
             data['class_label'] = info_table.loc[data.index, clinical_label]
             # save this data for future classification
@@ -522,7 +539,7 @@ def nexus_express(**set_up_kwargs):
             writer.save()
 
     # plot CNV frequencies OF SELECTED GENES for each group in comparison
-    if toPlotFreq:
+    if toPlot:
         if ((group0_ampl_new != 0).any() or (group0_del_new != 0).any()):
             _plot_oncoscan_frequency_plot(
                 group0_ampl_new, group0_del_new, select_samples_title+'_DIFF',
@@ -534,64 +551,42 @@ def nexus_express(**set_up_kwargs):
                 class_labels[1]+extra_label, gene_info_fname, xlabels, xpos,
                 saveReport, img_ext, output_directory)
 
-    if toRemoveDupl:
-        group0_ampl_new_wDupl = group0_ampl_wDupl.copy()
-        group0_ampl_new_wDupl[:] = 0
-        group1_ampl_new_wDupl = group1_ampl_wDupl.copy()
-        group1_ampl_new_wDupl[:] = 0
-        group0_del_new_wDupl = group0_del_wDupl.copy()
-        group0_del_new_wDupl[:] = 0
-        group1_del_new_wDupl = group1_del_wDupl.copy()
-        group1_del_new_wDupl[:] = 0
-
-        list__diff_genes_selected_wDupl = []
-        for i in range(diff_genes_selected.shape[0]):
-            theGene = diff_genes_selected.index[i]
-            genes2edit = [theGene]
-            list__diff_genes_selected_wDupl.extend(genes2edit)
-            duplgenes_ = diff_genes_selected.loc[theGene]['dupl_genes']
-            if duplgenes_ is not np.nan:
-                list__diff_genes_selected_wDupl.extend(duplgenes_)
-                genes2edit.extend(duplgenes_)
-            group0_ampl_new_wDupl.loc[
-                genes2edit] = group0_ampl_new.loc[theGene]
-            group1_ampl_new_wDupl.loc[
-                genes2edit] = group1_ampl_new.loc[theGene]
-            group0_del_new_wDupl.loc[
-                genes2edit] = group0_del_new.loc[theGene]
-            group1_del_new_wDupl.loc[
-                genes2edit] = group1_del_new.loc[theGene]
-
-        if toPlotFreq:
-            # plot with the duplicate genes too
-            if ((group0_ampl_new_wDupl != 0).any() or
-                    (group0_del_new_wDupl != 0).any()):
-                _plot_oncoscan_frequency_plot(
-                    group0_ampl_new_wDupl, group0_del_new_wDupl,
-                    select_samples_title+'_DIFF', class_labels[0],
-                    gene_info_fname, xlabels_wDupl, xpos_wDupl,
-                    saveReport, img_ext, output_directory
-                )
-            if ((group1_ampl_new_wDupl != 0).any() or
-                    (group1_del_new_wDupl != 0).any()):
-                _plot_oncoscan_frequency_plot(
-                    group1_ampl_new_wDupl, group1_del_new_wDupl,
-                    select_samples_title+'_DIFF', class_labels[1],
-                    gene_info_fname, xlabels_wDupl, xpos_wDupl,
-                    saveReport, img_ext, output_directory
-                )
+    if toRemoveDupl and to Plot:
+        # plot with the duplicate genes too
+        if ((group0_ampl_new_wDupl != 0).any() or
+                (group0_del_new_wDupl != 0).any()):
+            _plot_oncoscan_frequency_plot(
+                group0_ampl_new_wDupl, group0_del_new_wDupl,
+                select_samples_title+'_DIFF', class_labels[0],
+                gene_info_fname, xlabels_wDupl, xpos_wDupl,
+                saveReport, img_ext, output_directory
+            )
+        if ((group1_ampl_new_wDupl != 0).any() or
+                (group1_del_new_wDupl != 0).any()):
+            _plot_oncoscan_frequency_plot(
+                group1_ampl_new_wDupl, group1_del_new_wDupl,
+                select_samples_title+'_DIFF', class_labels[1],
+                gene_info_fname, xlabels_wDupl, xpos_wDupl,
+                saveReport, img_ext, output_directory
+            )
 
     # PLOT heatmaps of selected features
     if diff_genes_selected.shape[0] > 0:
         # get only the CNVs from the selected genes
-        # data2plot = data[diff_genes_selected.index]
+        data2plot = data[diff_genes_selected.index]
+        # change the name of the genes to reflect the genome area
+        # in case duplicate genes map to it
+        if 'newGeneName' in diff_genes_selected.columns.values:
+            geneNames2plot = diff_genes_selected['newGeneName']
+        else:
+            geneNames2plot = diff_genes_selected.index
         patientNames2plot = pat_labels_txt
-        ds_y, ds_x = data.shape
+        ds_y, ds_x = data2plot.shape
         fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10
         fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
         plt.figure(figsize=(fs_x, fs_y))
-        ax = sns.heatmap(data, vmin=vmin, vmax=vmax,
-                         xticklabels=True,
+        ax = sns.heatmap(data2plot, vmin=vmin, vmax=vmax,
+                         xticklabels=geneNames2plot,
                          yticklabels=patientNames2plot,
                          cmap=cmap_custom,
                          cbar_kws={'ticks': np.arange(-5, 5)})

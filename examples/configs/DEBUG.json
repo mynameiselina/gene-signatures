@@ -1,59 +1,26 @@
 {
-    "reportName": "DEBUG_setup_c1_oncoscan_byNexus",
+    "reportName": "DEBUG__prmr_c1_GnPnl_OncFltNxEx",
     "saveReport": true,
-    "txt_label": "set up processed Oncoscan data by Nexus",
+    "txt_label": "Classification of primary samples with features from c1 genepanel and NxEx selected filt oncoscan",
     "toPrint": true,
 
-    "load_files": true,
-    "fext": "_events_cnvAll.txt",
-
-    "load_data_csv_kwargs":{
-        "sep": "\t",
-        "header": 0,
-        "index_col": null,
-        "comment": "#",
-        "names": "chr,id,value,function,pos"
-    },
-
-    "editWith": "Oncoscan",
-    "withFilter": false,
-    "withProcess": false,
-
-    "preproc_kwargs": {},
-    "filt_kwargs": {},
-    "edit_kwargs": {
-        "function_dict": {
-            "Homozygous Copy Loss": -4,
-            "CN Loss": -2,
-            "CN Gain": 2,
-            "High Copy Gain": 4,
-            "LOH": -1
-        },
-        "mergeHow":"maxAll",
-        "removeLOH":true,
-        "LOH_value": "LOH"
-    },
-    
     "plot_kwargs": {
         "highRes": false
     },
-    
-    "chr_col": "chr_int",
-    "gene_id_col": "gene",
-    
-    "input_directory": "input,headneck,cohort1",
-    "data_directory": "oncoscan,processed_byNexus",
-    "data_files": "DS_101,DS_107",
 
+    "files_to_combine": "output,headneck,setup_c1_oncoscan_byNexus,process,rmdpl_primary,nexus_express,data_features_class.csv;output,headneck,setup_c1_genepanel,process,data_processed.csv",
+    
+    "sample_info_directory": "input,headneck,cohort1",
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0
     },
     "sample_info_fname": "sample_info.txt",
-    "sample_info_table_index_colname": "cnvID",
-    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
+    "sample_final_id": "cnvID",
+    "sample_data_ids": "cnvID,varID",
+    "clinical_label": "Ccode",
     
-    "output_directory": "output,headneck",
+    "output_directory": "output,headneck,classification",
     "DEBUG": true
 }
