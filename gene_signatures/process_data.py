@@ -249,7 +249,7 @@ def process_data(**set_up_kwargs):
         pat_labels_txt = pat_labels.astype(int).reset_index().values
     except:
         pat_labels_txt = pat_labels.reset_index().values
-
+    pat_labels_title = str(pat_labels.reset_index().columns.values)
     # PLOT heatmap without gene ordering
     _show_gene_names = False
     _figure_x_size = 20
@@ -262,6 +262,7 @@ def process_data(**set_up_kwargs):
     ax = sns.heatmap(data.loc[pat_labels.index],
                      vmin=vmin, vmax=vmax, xticklabels=_show_gene_names,
                      yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
+    ax.set_ylabel(pat_labels_title)
     cbar = ax.figure.colorbar(ax.collections[0])
     if function_dict is not None:
         functionImpact_dict_r = dict(
@@ -322,6 +323,7 @@ def process_data(**set_up_kwargs):
             yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
         ax.set_xticks(xpos)
         ax.set_xticklabels(xlabels, rotation=0)
+        ax.set_ylabel(pat_labels_title)
         cbar = ax.figure.colorbar(ax.collections[0])
         myTicks = np.arange(vmin, vmax+2, 1)
         cbar.set_ticks(myTicks)

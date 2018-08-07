@@ -294,6 +294,7 @@ def nexus_express(**set_up_kwargs):
     info_table = info_table.dropna()
     # create the row labels for the plots
     pat_labels_txt = info_table.astype(int).reset_index().values
+    pat_labels_title = str(info_table.reset_index().columns.values)
 
     # keep only these samples from the data
     data = data.loc[info_table.index, :].copy()
@@ -606,6 +607,7 @@ def nexus_express(**set_up_kwargs):
             data2plot, vmin=vmin, vmax=vmax,
             xticklabels=True, yticklabels=patientNames2plot,
             cmap=cmap_custom, cbar_kws={'ticks': np.arange(-5, 5)})
+        ax.set_ylabel(pat_labels_title)
         plt.title(mytitle)
         if saveReport:
             fpath = os.path.join(output_directory, 'Fig_Heatmap_' +
@@ -631,6 +633,7 @@ def nexus_express(**set_up_kwargs):
                 data2plot, vmin=vmin, vmax=vmax,
                 xticklabels=True, yticklabels=patientNames2plot,
                 cmap=cmap_custom, cbar_kws={'ticks': np.arange(-5, 5)})
+            ax.set_ylabel(pat_labels_title)
             plt.title(mytitle)
             if saveReport:
                 fpath = os.path.join(output_directory, 'Fig_Heatmap_' +

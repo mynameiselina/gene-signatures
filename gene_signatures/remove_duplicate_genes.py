@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 import math
+import json
 import logging
 from scipy.spatial.distance import (
     pdist, squareform
@@ -224,6 +225,7 @@ def remove_duplicate_genes(**set_up_kwargs):
             select_samples_sort_by_list].copy()
     pat_labels = pat_labels.dropna()
     pat_labels_txt = pat_labels.astype(int).reset_index().values
+    pat_labels_title = str(pat_labels.reset_index().columns.values)
 
     data = input_data.loc[pat_labels.index, :].copy()
 
@@ -290,7 +292,7 @@ def remove_duplicate_genes(**set_up_kwargs):
         plt.xticks(xpos_choose[i_data], xlabels_choose[i_data], rotation=0)
         plt.xlabel('chromosomes (the number is aligned at the end ' +
                    'of the chr region)')
-        plt.ylabel('samples '+select_samples_title)
+        plt.ylabel('samples '+select_samples_title+'\n'+pat_labels_title)
         cbar = ax.figure.colorbar(ax.collections[0])
         if function_dict is not None:
             functionImpact_dict_r = dict(
@@ -325,7 +327,7 @@ def remove_duplicate_genes(**set_up_kwargs):
         sns.heatmap(data_cor, vmin=-1, vmax=1, yticklabels=pat_labels_txt,
                     xticklabels=pat_labels_txt, cmap='PiYG', square=True)
         plt.xlabel("samples "+select_samples_title)
-        plt.ylabel("samples "+select_samples_title)
+        plt.ylabel(pat_labels_title)
         plt.title("Auto-corerelation of "+select_samples_title +
                   " samples - "+txt_label)
         if saveReport:
