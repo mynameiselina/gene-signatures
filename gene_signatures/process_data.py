@@ -163,6 +163,14 @@ def process_data(**set_up_kwargs):
         output_directory = set_directory(
             os.path.join(MainDataDir, output_directory, reportName))
 
+    # save the set_up_kwargs in the output dir for reproducibility
+    fname = 'set_up_kwargs.json'
+    f = os.path.join(output_directory, fname)
+    if toPrint:
+        logger.info(
+            '-save set_up_kwargs dictionary for reproducibility in: '+f)
+    with open(f, 'w') as fp:
+        json.dump(set_up_kwargs, fp, indent=4)
     #########################################
     # load input_data
     fpath = os.path.join(input_directory, input_fname)

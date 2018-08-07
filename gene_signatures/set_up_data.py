@@ -118,6 +118,15 @@ def set_up_data(**set_up_kwargs):
             os.path.join(MainDataDir, output_directory, reportName)
         )
 
+    # save the set_up_kwargs in the output dir for reproducibility
+    fname = 'set_up_kwargs.json'
+    f = os.path.join(output_directory, fname)
+    if toPrint:
+        logger.info(
+            '-save set_up_kwargs dictionary for reproducibility in: '+f)
+    with open(f, 'w') as fp:
+        json.dump(set_up_kwargs, fp, indent=4)
+
     data_directory = set_up_kwargs.get('data_directory', None)
     if data_directory is None:
         data_directory = input_directory

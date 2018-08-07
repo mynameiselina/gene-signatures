@@ -202,6 +202,15 @@ def combine_feaures(**set_up_kwargs):
         os.path.join(MainDataDir, output_directory, reportName)
     )
 
+    # save the set_up_kwargs in the output dir for reproducibility
+    fname = 'set_up_kwargs.json'
+    f = os.path.join(output_directory, fname)
+    if toPrint:
+        logger.info(
+            '-save set_up_kwargs dictionary for reproducibility in: '+f)
+    with open(f, 'w') as fp:
+        json.dump(set_up_kwargs, fp, indent=4)
+
     # load info table of samples
     try:
         fpath = os.path.join(sample_info_directory, sample_info_fname)
@@ -365,6 +374,15 @@ def combine_cohorts(**set_up_kwargs):
     output_directory = set_directory(
         os.path.join(_output_directory, reportName)
     )
+
+    # save the set_up_kwargs in the output dir for reproducibility
+    fname = 'set_up_kwargs.json'
+    f = os.path.join(output_directory, fname)
+    if toPrint:
+        logger.info(
+            '-save set_up_kwargs dictionary for reproducibility in: '+f)
+    with open(f, 'w') as fp:
+        json.dump(set_up_kwargs, fp, indent=4)
 
     # sample_info params
     sample_info_kwargs = set_up_kwargs.get('sample_info_kwargs', {})

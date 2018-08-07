@@ -232,6 +232,15 @@ def nexus_express(**set_up_kwargs):
             os.path.join(MainDataDir, output_directory, reportName)
         )
 
+    # save the set_up_kwargs in the output dir for reproducibility
+    fname = 'set_up_kwargs.json'
+    f = os.path.join(output_directory, fname)
+    if toPrint:
+        logger.info(
+            '-save set_up_kwargs dictionary for reproducibility in: '+f)
+    with open(f, 'w') as fp:
+        json.dump(set_up_kwargs, fp, indent=4)
+
     # load info table of samples
     if toPrint:
         logger.info('Load info table of samples')
