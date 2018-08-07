@@ -390,7 +390,9 @@ def nexus_express(**set_up_kwargs):
     # select genes with significant p-value (multtest_alpha)
     # after mutliple test correction (multtest_method) and
     # absolute change higher than the defined threshold (min_diff_thres)
-    mytitle = select_samples_title+': '+class_labels[0]+' vs. '+class_labels[1]
+    mytitle = select_samples_title+': '+class_labels[0] +\
+        '['+str(class_values[0])+'] vs. ' +\
+        class_labels[1]+'['+str(class_values[1])+']'
     group0_ampl_new, group1_ampl_new, group0_del_new, group1_del_new, \
         pvals, pvals_corrected, pvals_reject, gained, deleted = \
         get_NexusExpress_diff_analysis(
