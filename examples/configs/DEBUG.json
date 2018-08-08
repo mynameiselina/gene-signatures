@@ -1,37 +1,40 @@
 {
-    "reportName": "DEBUG__rmdpl",
+    "reportName": "DEBUG__process_select_nonresp",
+    "txt_label": "process genepanel data from cohort 1",
+    "input_fname": "data.csv",
+    "input_directory": "output,headneck,setup_c1_genepanel",
+    "output_directory": null,
+    
     "saveReport": true,
-    "txt_label": "remove duplicate gene profiles from the integrated cohorts 1 and 2 primary HNSCC samples",
     "toPrint": true,
 
     "chr_col": "chr_int",
-    "gene_id_col": "gene",
+    "remove_patients": null,
+    "select_genes":null,
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -2,
-        "vmax": 2,
-        "highRes": false
+        "vmin": 0,
+        "vmax": 4,
+        "highRes": false,
+        "mincol": "white",
+        "midcol": "orange",
+        "maxcol": "red"
     },
-
-    "compute_pdist": false,
     
-    "input_directory": "output,headneck,integrate_cohorts,c1c2,CNV_mapped",
-    "input_fname": "integrated_data.csv",
-    "gene_info_directory": "output,headneck,setup_c1_oncoscan_byNexus",
-    "gene_info_fname": "genes_info.csv",
-    "gene_order_dict_fname": null,
-    "sample_info_directory": "output,headneck,integrate_cohorts,c1c2",
-
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0
+        "index_col": 0,
+        "col_as_index":"varID"
     },
-    "sample_info_fname": "integrated_sample_info.csv",
-    "sample_info_table_index_colname": "patientID",
-    "select_samples_sort_by": "Relapsed",
+    "sample_info_directory": "input,headneck,cohort1",
+    "sample_info_fname": "sample_info.txt",
+    "select_samples_sort_by": "Ccode,Tcode,cnvID",
+
+    "select_samples_from": "Ccode",
+    "select_samples_which": 0,
+    "select_samples_title": "select_nonresp",
     
-    "output_directory": null,
     "DEBUG": true
 }

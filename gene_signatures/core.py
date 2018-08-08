@@ -1992,7 +1992,7 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
 def set_heatmap_size(data):
     ds_y, ds_x = data.shape
     fs_x = 25 if ds_x > 50 else 20 if ds_x > 15 else 15 if ds_x > 10 else 10
-    fs_y = 20 if ds_x > 100 else 16 if ds_x > 50 else 12 if ds_x > 25 else 8
+    fs_y = 20 if ds_y > 100 else 16 if ds_y > 50 else 12 if ds_y > 25 else 8
 
     print_samples = True
     if ds_y > 100:

@@ -85,10 +85,10 @@ def nexus_express(**set_up_kwargs):
     select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
                                                None)
     if select_samples_sort_by is not None:
-        select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
+        select_samples_sort_by = select_samples_sort_by.rsplit(',')
     select_samples_title = set_up_kwargs.get('select_samples_title',
                                              'select_all')
-    clinical_label = select_samples_sort_by_list[0]
+    clinical_label = select_samples_sort_by[0]
     class_labels = set_up_kwargs.get('class_labels', None)
     if class_labels is not None:
         if ',' in class_labels:
@@ -282,12 +282,12 @@ def nexus_express(**set_up_kwargs):
                              info_table.index.name,
                              choose_from=select_samples_from,
                              choose_what=select_samples_which,
-                             sortby=select_samples_sort_by_list,
+                             sortby=select_samples_sort_by,
                              ascending=False)
 
     # keep a subpart of the info_table (rows and columns)
     info_table = info_table.loc[ids_tmp][
-            select_samples_sort_by_list].copy()
+            select_samples_sort_by].copy()
     info_table = info_table.dropna()
     # create the row labels for the plots
     pat_labels_txt = info_table.astype(int).reset_index().values
@@ -601,6 +601,7 @@ def nexus_express(**set_up_kwargs):
             xticklabels=True, yticklabels=patientNames2plot,
             cmap=cmap_custom, cbar=False)
         ax.set_ylabel(pat_labels_title)
+        plt.xticks(rotation=90)
         cbar = ax.figure.colorbar(ax.collections[0])
         if function_dict is not None:
             functionImpact_dict_r = dict(
@@ -639,6 +640,7 @@ def nexus_express(**set_up_kwargs):
                 xticklabels=True, yticklabels=patientNames2plot,
                 cmap=cmap_custom)
             ax.set_ylabel(pat_labels_title)
+            plt.xticks(rotation=90)
             cbar = ax.figure.colorbar(ax.collections[0])
             if function_dict is not None:
                 functionImpact_dict_r = dict(

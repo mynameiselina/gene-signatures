@@ -265,6 +265,7 @@ def combine_features(**set_up_kwargs):
                      yticklabels=_show_sample_names,
                      xticklabels=_show_gene_names,
                      cmap=cmap_custom, cbar=True)
+    plt.xticks(rotation=90)
     plt.title(txt_label)
 
     if saveReport:
@@ -386,6 +387,9 @@ def combine_cohorts(**set_up_kwargs):
         sample_info_swap_class_label = _split_argument_to_list(
             sample_info_kwargs, 'sample_info_swap_class_label',
             asPath=False)
+        # if not isinstance(sample_info_swap_class_label, list):
+        #     sample_info_swap_class_label = \
+        #         [sample_info_swap_class_label]
 
         # new sample_info output dir
         new_sample_info_fpath = set_up_kwargs.get('new_sample_info_fpath')
@@ -414,6 +418,8 @@ def combine_cohorts(**set_up_kwargs):
                     [sample_info_swap_class_label[i]]
 
             for j in range(len(_sample_info_swap_class_label_list)):
+                if _sample_info_swap_class_label_list[j] == '':
+                    continue
                 logger.warning(
                     'The user requested to swap the ' +
                     str(_sample_info_swap_class_label_list[j]) +
@@ -483,6 +489,7 @@ def combine_cohorts(**set_up_kwargs):
                      yticklabels=_show_sample_names,
                      xticklabels=_show_gene_names,
                      cmap=cmap_custom, cbar=False)
+    plt.xticks(rotation=90)
     cbar = ax.figure.colorbar(ax.collections[0])
     if function_dict is not None:
         functionImpact_dict_r = dict(

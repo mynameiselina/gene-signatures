@@ -1,20 +1,20 @@
 {
-    "reportName": "c1_prmr_GnPnl_OncNxEx_bin",
+    "reportName": "c1_nnrsp_GnPnl_OncNxEx",
     "saveReport": true,
-    "txt_label": "Combine features of primary samples from c1 genepanel and NxEx selected oncoscan",
+    "txt_label": "Combine features of nonresp samples from c1 genepanel and NxEx selected oncoscan",
     "toPrint": true,
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": 0,
-        "vmax": 1,
+        "vmin": -4,
+        "vmax": 4,
         "highRes": false,
-        "mincol": "white",
-        "midcol": "grey",
-        "maxcol": "black"
+        "mincol": "red",
+        "midcol": "white",
+        "maxcol": "purple"
     },
 
-    "files_to_combine_features": "output,headneck,setup_c1_oncoscan_raw,process_primary_bin,rmdpl_primary,nexus_express,data_features_class.csv;output,headneck,setup_c1_genepanel,process_primary_bin,data_processed.csv",
+    "files_to_combine_features": "output,headneck,setup_c1_oncoscan_raw,process,rmdpl_nonresp,nexus_express,data_features_class.csv;output,headneck,setup_c1_genepanel,process,data_processed.csv",
     "file_short_ids": "CNV,VAR",
     "sample_data_ids": "cnvID,varID",
     

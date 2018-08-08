@@ -162,6 +162,43 @@ def classification(**set_up_kwargs):
         os.path.join(MainDataDir, output_directory, reportName)
     )
 
+    # plotting params
+    plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
+    highRes = parse_arg_type(
+        plot_kwargs.get('highRes', False),
+        bool
+    )
+    if highRes:
+        img_ext = '.pdf'
+    else:
+        img_ext = '.png'
+    cmap_custom = plot_kwargs.get('cmap_custom', None)
+    vmin = parse_arg_type(
+        plot_kwargs.get('vmin', None),
+        int
+    )
+    vmax = parse_arg_type(
+        plot_kwargs.get('vmax', None),
+        int
+    )
+    if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
+        custom_div_cmap_arg = abs(vmin)+abs(vmax)
+        if (vmin <= 0) and (vmax >= 0):
+            custom_div_cmap_arg = custom_div_cmap_arg + 1
+        mincol = plot_kwargs.get('mincol', None)
+        midcol = plot_kwargs.get('midcol', None)
+        maxcol = plot_kwargs.get('maxcol', None)
+        if (
+                (mincol is not None) and
+                (midcol is not None) and
+                (maxcol is not None)
+                ):
+            cmap_custom = custom_div_cmap(
+                numcolors=custom_div_cmap_arg,
+                mincol=mincol, midcol=midcol, maxcol=maxcol)
+        else:
+            cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
+
     # save the set_up_kwargs in the output dir for reproducibility
     fname = 'set_up_kwargs.json'
     f = os.path.join(output_directory, fname)
@@ -281,6 +318,7 @@ def classification(**set_up_kwargs):
                      yticklabels=yticklabels,
                      xticklabels=True,
                      cmap=cmap_custom, cbar=True)
+    plt.xticks(rotation=90)
     plt.title(str(n_names)+' selected genes from classification coefficients')
 
     if saveReport:

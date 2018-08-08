@@ -7,6 +7,7 @@ from gene_signatures.core import (
     get_chr_ticks,
     parse_arg_type,
     choose_samples,
+    set_heatmap_size
 )
 
 # basic imports
@@ -83,14 +84,14 @@ def process_data(**set_up_kwargs):
     select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
                                                None)
     if select_samples_sort_by is not None:
-        select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
+        select_samples_sort_by = select_samples_sort_by.rsplit(',')
     # map_values_dict
     map_values = set_up_kwargs.get('map_values', None)
     if map_values is not None:
         map_values_dict = None
         if isinstance(map_values, dict):
             map_values_dict = {
-                int(k): int(v) for k, v in map_values_dict.items()
+                int(k): int(v) for k, v in map_values.items()
             }
 
     # plotting params
@@ -282,18 +283,16 @@ def process_data(**set_up_kwargs):
     pat_labels_title = str(pat_labels.reset_index().columns.values)
 
     # PLOT heatmap without gene ordering
-    _show_gene_names = False
-    _figure_x_size = 20
-    if data.shape[1] < 50:
-        _show_gene_names = True
-        _figure_x_size = 10
     if toPrint:
         logger.info('Plot heatmap before gene ordering')
-    plt.figure(figsize=(_figure_x_size, 8))
+    _figure_x_size, _figure_y_size, _show_gene_names, _ = \
+        set_heatmap_size(data)
+    plt.figure(figsize=(_figure_x_size, _figure_y_size))
     ax = sns.heatmap(data.loc[pat_labels.index],
                      vmin=vmin, vmax=vmax, xticklabels=_show_gene_names,
                      yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
     ax.set_ylabel(pat_labels_title)
+    plt.xticks(rotation=90)
     cbar = ax.figure.colorbar(ax.collections[0])
     if function_dict is not None:
         functionImpact_dict_r = dict(
@@ -338,22 +337,17 @@ def process_data(**set_up_kwargs):
         #     gene_order_dict, key=gene_order_dict.get))
 
         # PLOT heatmap after gene ordering
-        _show_gene_names = False
-        _figure_x_size = 20
-        if data.shape[1] < 50:
-            _show_gene_names = True
-            _figure_x_size = 10
-
         if toPrint:
             logger.info('Plot heatmap after gene ordering')
-
-        plt.figure(figsize=(_figure_x_size, 8))
+        _figure_x_size, _figure_y_size, _show_gene_names, _ = \
+            set_heatmap_size(data)
+        plt.figure(figsize=(_figure_x_size, _figure_y_size))
         ax = sns.heatmap(
             data.loc[pat_labels.index],
             vmin=vmin, vmax=vmax, xticklabels=_show_gene_names,
             yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
         ax.set_xticks(xpos)
-        ax.set_xticklabels(xlabels, rotation=0)
+        ax.set_xticklabels(xlabels, rotation=90)
         ax.set_ylabel(pat_labels_title)
         cbar = ax.figure.colorbar(ax.collections[0])
         myTicks = np.arange(vmin, vmax+2, 1)

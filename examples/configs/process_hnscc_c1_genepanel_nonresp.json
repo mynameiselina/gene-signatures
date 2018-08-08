@@ -1,5 +1,5 @@
 {
-    "reportName": "process_select_primary_bin",
+    "reportName": "process_select_nonresp",
     "txt_label": "process genepanel data from cohort 1",
     "input_fname": "data.csv",
     "input_directory": "output,headneck,setup_c1_genepanel",
@@ -15,11 +15,11 @@
     "plot_kwargs": {
         "cmap_custom": null,
         "vmin": 0,
-        "vmax": 1,
+        "vmax": 4,
         "highRes": false,
         "mincol": "white",
-        "midcol": "grey",
-        "maxcol": "black",
+        "midcol": "orange",
+        "maxcol": "red",
         "function_dict": {
             "no mutation": 0,
             "missense": 1,
@@ -33,8 +33,6 @@
         }
     },
     
-    "map_values": "bin",
-
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
@@ -43,11 +41,11 @@
     },
     "sample_info_directory": "input,headneck,cohort1",
     "sample_info_fname": "sample_info.txt",
-    "select_samples_sort_by": "Tcode,Ccode,cnvID",
+    "select_samples_sort_by": "Ccode,Tcode,cnvID",
 
-    "select_samples_from": "Tcode",
+    "select_samples_from": "Ccode",
     "select_samples_which": 0,
-    "select_samples_title": "select_primary",
+    "select_samples_title": "select_nonresp",
     
     "DEBUG": true
 }

@@ -52,7 +52,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
                                                None)
     if select_samples_sort_by is not None:
-        select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
+        select_samples_sort_by = select_samples_sort_by.rsplit(',')
     select_samples_title = set_up_kwargs.get('select_samples_title',
                                              'select_all')
 
@@ -214,11 +214,11 @@ def remove_duplicate_genes(**set_up_kwargs):
                              info_table.index.name,
                              choose_from=select_samples_from,
                              choose_what=select_samples_which,
-                             sortby=select_samples_sort_by_list,
+                             sortby=select_samples_sort_by,
                              ascending=False)
 
     pat_labels = info_table.loc[ids_tmp][
-            select_samples_sort_by_list].copy()
+            select_samples_sort_by].copy()
     pat_labels = pat_labels.dropna()
     pat_labels_txt = pat_labels.astype(int).reset_index().values
     pat_labels_title = str(pat_labels.reset_index().columns.values)
@@ -293,6 +293,7 @@ def remove_duplicate_genes(**set_up_kwargs):
         plt.xlabel('chromosomes (the number is aligned at the end ' +
                    'of the chr region)')
         plt.ylabel('samples '+select_samples_title+'\n'+pat_labels_title)
+        plt.xticks(rotation=90)
         cbar = ax.figure.colorbar(ax.collections[0])
         if function_dict is not None:
             functionImpact_dict_r = dict(

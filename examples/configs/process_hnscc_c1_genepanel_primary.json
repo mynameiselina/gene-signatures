@@ -19,7 +19,18 @@
         "highRes": false,
         "mincol": "white",
         "midcol": "orange",
-        "maxcol": "red"
+        "maxcol": "red",
+        "function_dict": {
+            "no mutation": 0,
+            "missense": 1,
+            "nonframeshiftInsertion": 2,
+            "nonframeshiftDeletion": 2,
+            "nonframeshiftIndel": 2,
+            "nonsense": 3,
+            "frameshiftDeletion": 4,
+            "frameshiftInsertion": 4,
+            "frameshiftIndel": 4
+        }
     },
     
     "sample_info_read_csv_kwargs":{

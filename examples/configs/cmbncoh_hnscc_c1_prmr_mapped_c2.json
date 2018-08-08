@@ -29,7 +29,7 @@
         },
         "sample_data_ids": "cnvID;Patient",
         "sample_final_id": "cnvID;Patient",
-        "sample_info_swap_class_label": "Ccode",
+        "sample_info_swap_class_label": "Ccode;",
         "sample_info_new_label": "Relapsed",
         "sample_info_combine_labels": "Ccode,Local_Control",
         "new_sample_info_fpath": null
