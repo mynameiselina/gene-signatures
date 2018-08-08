@@ -1,0 +1,50 @@
+{
+    "reportName": "process_primary_map_values",
+    "txt_label": "process raw Oncoscan data and map values to integrate with cohort 2",
+    "input_fname": "data.csv",
+    "input_directory": "output,headneck,setup_c1_oncoscan_byNexus",
+    "output_directory": null,
+    
+    "saveReport": true,
+    "toPrint": true,
+
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+    "remove_patients": null,
+    "select_genes":null,
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -2,
+        "vmax": 2,
+        "highRes": false
+    },
+
+    "map_values_dict":{
+        "4":2,
+        "2":1,
+        "-4":-2,
+        "-2":-1
+    },
+    
+    "gene_info_directory": null,
+    "gene_info_fname": "genes_info.csv",
+    "gene_order_dict_fname": null,
+    
+    "sample_info_read_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0
+    },
+    "sample_info_directory": "input,headneck,cohort1",
+    "sample_info_fname": "sample_info.txt",
+    "sample_info_table_index_colname": "cnvID",
+    "sample_info_table_sortLabels": "Ccode",
+
+    "select_samples_from": "Tcode",
+    "select_samples_which": 0,
+    "select_samples_sort_by": "Ccode",
+    "select_samples_title": "select_primary",
+    
+    "DEBUG": true
+}

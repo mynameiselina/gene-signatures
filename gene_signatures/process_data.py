@@ -87,6 +87,11 @@ def process_data(**set_up_kwargs):
         set_up_kwargs.get('select_samples_which', None),
         int
     )
+    # map_values_dict
+    map_values_dict = set_up_kwargs.get('map_values_dict', {})
+    if map_values_dict:
+        map_values_dict = {int(k): int(v) for k, v in map_values_dict.items()}
+
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
     function_dict = plot_kwargs.get('function_dict', None)
@@ -232,6 +237,23 @@ def process_data(**set_up_kwargs):
                 genes_positions_table, data,
                 id_col='gene', chr_col=chr_col)
 
+    # MAP values with a dictionary (optional)
+    if map_values_dict:
+        _diff_set = set(np.unique(data.values.flatten().astype(int)))\
+            .difference(set([0]))\
+            .difference(set(list(map_values_dict.keys())))
+        if _diff_set:
+            logger.warning(
+                "the user\'s dict to replace data values is incomplete " +
+                "the following values in the data are not accounted for " +
+                "and will remain the same:\n"+str(_diff_set)
+            )
+        logger.info(
+            "replacing data values with user\'s dictionary:\n" +
+            str(map_values_dict)
+        )
+        data.replace(map_values_dict, inplace=True)
+
     # SELECT sample groups (optional)
     ids_tmp = choose_samples(info_table.reset_index(),
                              sample_info_table_index_colname,
@@ -250,6 +272,7 @@ def process_data(**set_up_kwargs):
     except:
         pat_labels_txt = pat_labels.reset_index().values
     pat_labels_title = str(pat_labels.reset_index().columns.values)
+
     # PLOT heatmap without gene ordering
     _show_gene_names = False
     _figure_x_size = 20
