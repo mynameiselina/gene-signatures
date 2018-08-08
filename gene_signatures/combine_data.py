@@ -295,8 +295,7 @@ def combine_feaures(**set_up_kwargs):
     else:
         plt.show()
 
-    # save only the data from those samples
-    # and the classification selected genes
+    # save the combined data
     fname = 'data_with_'+sample_final_id+'_id.csv'
     fpath = os.path.join(output_directory, fname)
     logger.info('-save the combined data with different features')
@@ -532,7 +531,7 @@ def combine_cohorts(**set_up_kwargs):
     else:
         plt.show()
 
-    # save the data
+    # save the combined data
     fname = 'integrated_data.csv'
     fpath = os.path.join(output_directory, fname)
     logger.info('-save the combined data from different cohorts')

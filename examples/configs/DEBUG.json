@@ -1,27 +1,32 @@
 {
-    "reportName": "DEBUG__prmr_c1_GnPnl",
+    "reportName": "c1_prmr_GnPnl_OncNxEx",
     "saveReport": true,
-    "txt_label": "Classification of primary samples with features from c1 genepanel",
+    "txt_label": "Combine features of primary samples from c1 genepanel and NxEx selected oncoscan",
     "toPrint": true,
 
     "plot_kwargs": {
-        "highRes": false
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
+        "highRes": false,
+        "mincol": "red",
+        "midcol": "white",
+        "maxcol": "purple"
     },
 
-    "files_to_combine": "output,headneck,setup_c1_genepanel,process,data_processed.csv",
-    "file_short_ids": "VAR",
-
+    "files_to_combine_features": "output,headneck,setup_c1_oncoscan_raw,process,rmdpl_primary,nexus_express,data_features_class.csv;output,headneck,setup_c1_genepanel,process,data_processed.csv",
+    "file_short_ids": "CNV,VAR",
+    "sample_data_ids": "cnvID,varID",
+    
+    "sample_final_id": "cnvID",
+    "sample_info_fname": "sample_info.txt",
     "sample_info_directory": "input,headneck,cohort1",
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0
     },
-    "sample_info_fname": "sample_info.txt",
-    "sample_final_id": "cnvID",
-    "sample_data_ids": "cnvID,varID",
-    "clinical_label": "Ccode",
     
-    "output_directory": "output,headneck,classification",
+    "output_directory": "output,headneck,combine_features",
     "DEBUG": true
 }

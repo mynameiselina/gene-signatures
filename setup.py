@@ -125,6 +125,8 @@ scripts = [
     'bin/process_data',
     'bin/rm_dpl_genes',
     'bin/nexus_express',
+    'bin/combine_features',
+    'bin/combine_cohorts',
     'bin/classification',
 ]
 
