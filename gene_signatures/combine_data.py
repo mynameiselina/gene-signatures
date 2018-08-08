@@ -8,7 +8,6 @@ from omics_processing.remove_duplicates import (
 from gene_signatures.core import (
     custom_div_cmap,
     get_chr_ticks,
-    choose_samples,
     parse_arg_type,
     boxplot,
     which_x_toPrint,

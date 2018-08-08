@@ -1808,27 +1808,31 @@ def choose_samples(ids, dataID, choose_from=None, choose_what=None,
     return ids[dataID]
 
 
-def load_clinical(datadir, which_dataID=None, fname=None, **read_csv_kwargs):
-    if fname is None:
-        fname = 'patient_ids_pandas.txt'
-    f = datadir+fname
-    patient_ids = pd.read_csv(f, **read_csv_kwargs)
+# def load_clinical(fpath, **read_csv_kwargs):
+#     which_dataID = read_csv_kwargs.pop('col_as_index', None)
+#     patient_ids = pd.read_csv(fpath, **read_csv_kwargs)
 
-    # check if there are samples missing from the chosen dataID
-    # keep only the patients for which we have a sample
-    # (for CNV or var depending on our analysis)
-    # which_dataID = 'varID'
-    # which_dataID = 'cnvID'
-    if which_dataID is not None:
-        missing_samples = patient_ids[which_dataID].isna()
-        if missing_samples.any():
-            logger.info(str(missing_samples.sum())+' missing ' +
-                        which_dataID+' samples from patient(s): ' +
-                        str(patient_ids['patient'][missing_samples].unique()))
-            patient_ids.drop(patient_ids.index[missing_samples], axis=0,
-                             inplace=True)
+#     # check if there are samples missing from the chosen dataID
+#     # keep only the patients for which we have a sample
+#     # (for CNV or var depending on our analysis)
+#     # which_dataID = 'varID'
+#     # which_dataID = 'cnvID'
+#     if which_dataID is not None:
+#         if which_dataID != patient_ids.index.name:
+#             missing_samples = patient_ids[which_dataID].isna()
+#             if missing_samples.any():
+#                 logger.info(
+#                     str(missing_samples.sum())+' missing ' +
+#                     which_dataID+' samples from patient(s): ' +
+#                     str(patient_ids['patient'][missing_samples].unique())
+#                 )
+#                 patient_ids.drop(
+#                     patient_ids.index[missing_samples],
+#                     axis=0, inplace=True)
 
-    return patient_ids
+#             patient_ids.set_index(which_dataID, inplace=True)
+
+#     return patient_ids
 
 
 def get_code_value(patient_ids, valueFrom, codeFrom, code):
@@ -1986,27 +1990,16 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
 
 
 def set_heatmap_size(data):
-    _show_gene_names = True
-    _figure_x_size = 20
-    if data.shape[1] < 10:
-        _figure_x_size = 10
-    elif data.shape[1] < 15:
-        _figure_x_size = 15
-    elif data.shape[1] < 50:
-        _figure_x_size = 20
-    else:
-        _figure_x_size = 25
-        _show_gene_names = False
+    ds_y, ds_x = data.shape
+    fs_x = 25 if ds_x > 50 else 20 if ds_x > 15 else 15 if ds_x > 10 else 10
+    fs_y = 20 if ds_x > 100 else 16 if ds_x > 50 else 12 if ds_x > 25 else 8
 
-    _show_sample_names = True
-    if data.shape[0] < 25:
-        _figure_y_size = 8
-    elif data.shape[0] < 50:
-        _figure_y_size = 12
-    elif data.shape[0] < 100:
-        _figure_y_size = 16
-    else:
-        _figure_y_size = 20
-        _show_sample_names = False
+    print_samples = True
+    if ds_y > 100:
+        print_samples = False
 
-    return _figure_x_size, _figure_y_size, _show_gene_names, _show_sample_names
+    print_genes = True
+    if ds_x > 50:
+        print_genes = False
+
+    return fs_x, fs_y, print_genes, print_samples

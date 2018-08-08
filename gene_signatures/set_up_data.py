@@ -80,12 +80,9 @@ def set_up_data(**set_up_kwargs):
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {}
     )
-    sample_info_table_index_colname = \
-        set_up_kwargs.get('sample_info_table_index_colname',
-                          'Oncoscan_ID')
     sample_info_table_sortLabels = \
-        set_up_kwargs.get('sample_info_table_sortLabels',
-                          'TP53_mut5,FOXA1_mut5')
+        set_up_kwargs.get('sample_info_table_sortLabels', None)
+
     sample_info_table_sortLabels_list = \
         sample_info_table_sortLabels.rsplit(',')
 
@@ -145,9 +142,7 @@ def set_up_data(**set_up_kwargs):
     if toPrint:
         logger.info('Load info table of samples')
     fpath = os.path.join(input_directory, sample_info_fname)
-    info_table = load_clinical(fpath,
-                               col_as_index=sample_info_table_index_colname,
-                               **sample_info_read_csv_kwargs)
+    info_table = load_clinical(fpath, **sample_info_read_csv_kwargs)
 
     if toPrint:
         logger.info('Missing values for each column:\n')

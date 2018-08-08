@@ -29,7 +29,6 @@
         "index_col": 0
     },
     "sample_info_fname": "integrated_sample_info.csv",
-    "sample_info_table_index_colname": "patientID",
     "select_samples_sort_by": "Relapsed",
     
     "output_directory": null,

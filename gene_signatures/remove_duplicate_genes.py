@@ -44,7 +44,6 @@ logger = logging.getLogger(__name__)
 def remove_duplicate_genes(**set_up_kwargs):
 
     # chose sample set from data
-    # function: choose_samples()
     select_samples_from = set_up_kwargs.get('select_samples_from', None)
     select_samples_which = parse_arg_type(
         set_up_kwargs.get('select_samples_which', None),
@@ -71,15 +70,13 @@ def remove_duplicate_genes(**set_up_kwargs):
     input_fname = set_up_kwargs.get('input_fname',
                                     'data_processed.csv')
     gene_info_fname = set_up_kwargs.get('gene_info_fname',
-                                        'gene_info.csv')
+                                        None)
     chr_col = set_up_kwargs.get('chr_col', 'chr_int')
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     sample_info_fname = set_up_kwargs.get('sample_info_fname',
-                                          '20180704_emca.csv')
+                                          None)
     if ',' in sample_info_fname:
         sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
-    sample_info_table_index_colname = \
-        set_up_kwargs.get('sample_info_table_index_colname', None)
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {})
 
@@ -214,7 +211,7 @@ def remove_duplicate_genes(**set_up_kwargs):
 
     # choose samples to plot heatmap and pairwise correlation
     ids_tmp = choose_samples(info_table.reset_index(),
-                             sample_info_table_index_colname,
+                             info_table.index.name,
                              choose_from=select_samples_from,
                              choose_what=select_samples_which,
                              sortby=select_samples_sort_by_list,

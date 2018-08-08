@@ -9,8 +9,8 @@
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -4,
-        "vmax": 4,
+        "vmin": -2,
+        "vmax": 2,
         "highRes": false
     },
 
@@ -29,10 +29,10 @@
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0
+        "index_col": 0,
+        "col_as_index":"patientID"
     },
     "sample_info_fname": "integrated_sample_info.csv",
-    "sample_info_table_index_colname": "patientID",
     "select_samples_sort_by": "Relapsed",
     "class_labels": "Relapsed,NOTRelapsed",
     "class_values": "1,0",

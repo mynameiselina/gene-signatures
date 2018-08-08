@@ -72,14 +72,6 @@ def process_data(**set_up_kwargs):
         sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {})
-    sample_info_table_index_colname = \
-        set_up_kwargs.get('sample_info_table_index_colname',
-                          'Oncoscan_ID')
-    sample_info_table_sortLabels = \
-        set_up_kwargs.get('sample_info_table_sortLabels',
-                          'TP53_mut5,FOXA1_mut5')
-    sample_info_table_sortLabels_list = \
-        sample_info_table_sortLabels.rsplit(',')
 
     # chose sample set from data
     # function: choose_samples()
@@ -88,6 +80,10 @@ def process_data(**set_up_kwargs):
         set_up_kwargs.get('select_samples_which', None),
         int
     )
+    select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
+                                               None)
+    if select_samples_sort_by is not None:
+        select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
     # map_values_dict
     map_values = set_up_kwargs.get('map_values', None)
     if map_values is not None:
@@ -191,9 +187,7 @@ def process_data(**set_up_kwargs):
     if toPrint:
         logger.info('Load info table of samples')
     fpath = os.path.join(sample_info_directory, sample_info_fname)
-    info_table = load_clinical(fpath,
-                               col_as_index=sample_info_table_index_colname,
-                               **sample_info_read_csv_kwargs)
+    info_table = load_clinical(fpath, **sample_info_read_csv_kwargs)
 
     # keep only info_table with data
     ids_tmp = set(info_table.index.values
@@ -275,17 +269,12 @@ def process_data(**set_up_kwargs):
 
     # SELECT sample groups (optional)
     ids_tmp = choose_samples(info_table.reset_index(),
-                             sample_info_table_index_colname,
+                             info_table.index.name,
                              choose_from=select_samples_from,
                              choose_what=select_samples_which,
-                             sortby=sample_info_table_sortLabels_list,
+                             sortby=select_samples_sort_by,
                              ascending=False)
-    choose_columns = sample_info_table_sortLabels_list
-    if sample_info_table_index_colname in choose_columns:
-        choose_columns = list(
-            set(sample_info_table_sortLabels_list)
-            .difference(set([sample_info_table_index_colname])))
-    pat_labels = info_table.loc[ids_tmp][choose_columns].copy()
+    pat_labels = info_table.loc[ids_tmp][select_samples_sort_by].copy()
     try:
         pat_labels_txt = pat_labels.astype(int).reset_index().values
     except:

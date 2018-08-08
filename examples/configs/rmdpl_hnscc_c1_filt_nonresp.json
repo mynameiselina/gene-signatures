@@ -35,7 +35,6 @@
         "col_as_index":"cnvID"
     },
     "sample_info_fname": "sample_info.txt",
-    "sample_info_table_index_colname": "cnvID",
     
     "output_directory": null,
     "DEBUG": true

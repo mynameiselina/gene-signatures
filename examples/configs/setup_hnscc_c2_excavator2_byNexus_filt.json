@@ -47,10 +47,10 @@
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0
+        "index_col": 0,
+        "col_as_index":"Patient"
     },
     "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_info_table_index_colname": "Patient",
     "sample_info_table_sortLabels": "Local_Control",
     
     "output_directory": "output,headneck",

@@ -117,16 +117,13 @@ def nexus_express(**set_up_kwargs):
     input_fname = set_up_kwargs.get('input_fname',
                                     'data_processed.csv')
     gene_info_fname = set_up_kwargs.get('gene_info_fname',
-                                        'gene_info_fname.csv')
+                                        None)
     chr_col = set_up_kwargs.get('chr_col', 'chr_int')
     gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
     sample_info_fname = set_up_kwargs.get('sample_info_fname',
-                                          '20180704_emca.csv')
+                                          None)
     if ',' in sample_info_fname:
         sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
-    sample_info_table_index_colname = \
-        set_up_kwargs.get('sample_info_table_index_colname',
-                          None)
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {})
     data_uniq_fname = input_fname.rsplit('.')[0]+'__' + \
@@ -282,7 +279,7 @@ def nexus_express(**set_up_kwargs):
                 ', select_samples_title: '+str(select_samples_title))
 
     ids_tmp = choose_samples(info_table.reset_index(),
-                             sample_info_table_index_colname,
+                             info_table.index.name,
                              choose_from=select_samples_from,
                              choose_what=select_samples_which,
                              sortby=select_samples_sort_by_list,
@@ -596,7 +593,7 @@ def nexus_express(**set_up_kwargs):
         # get only the CNVs from the selected genes
         patientNames2plot = pat_labels_txt
         ds_y, ds_x = data.shape
-        fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10
+        fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10 if ds_x > 3 else 5
         fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
         plt.figure(figsize=(fs_x, fs_y))
         ax = sns.heatmap(

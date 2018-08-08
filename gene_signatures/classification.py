@@ -93,14 +93,14 @@ def classification(**set_up_kwargs):
     )
     reportName = set_up_kwargs.get('reportName', script_fname)
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
+    sample_class_label = set_up_kwargs.get('sample_class_label', None)
+    if sample_class_label is NOne:
+        logger.error("NO class label was defined!")
+        raise
     random_state = parse_arg_type(
         set_up_kwargs.get('random_state', 0),
         int
     )
-    sample_final_id = set_up_kwargs.get('sample_final_id')
-    sample_data_ids = set_up_kwargs.get('sample_data_ids')
-    if ',' in sample_data_ids:
-        sample_data_ids = sample_data_ids.rsplit(',')
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
@@ -143,61 +143,24 @@ def classification(**set_up_kwargs):
     MainDataDir = os.path.join(script_path, '..', 'data')
 
     # data input
-    file_short_ids = set_up_kwargs.get('file_short_ids', None)
-    if ',' in file_short_ids:
-        file_short_ids = file_short_ids.rsplit(',')
-    else:
-        file_short_ids = [file_short_ids]
-
-    files_to_combine_features = set_up_kwargs.get(
-        'files_to_combine_features', None)
-    try:
-        data_fpaths = []
-        if ';' in files_to_combine_features:
-            # split fpaths for different files
-            files_to_combine_features_list = \
-                files_to_combine_features.rsplit(';')
-        else:
-            files_to_combine_features_list = [files_to_combine_features]
-        for single_file in files_to_combine_features_list:
-            if ',' in single_file:
-                #  join the path for a single file
-                data_fpaths.append(
-                    os.path.join(MainDataDir, *single_file.rsplit(',')))
-    except:
-        logger.error(
-            'No valid file paths were given to get the features!\n' +
-            'files_to_combine_features: '+str(files_to_combine_features))
-        raise
+    data_fpath = set_up_kwargs.get('data_fpath')
+    if ',' in sample_info_fpath:
+        data_fpath = os.path.join(*data_fpath.rsplit(','))
 
     # sample info input
-    sample_info_directory = set_up_kwargs.get('sample_info_directory')
-    if ',' in sample_info_directory:
-        sample_info_directory = os.path.join(
-            *sample_info_directory.rsplit(','))
-    sample_info_directory = os.path.join(
-        MainDataDir, sample_info_directory)
-
-    sample_info_fname = set_up_kwargs.get('sample_info_fname')
-    if ',' in sample_info_fname:
-        sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
-    sample_info_table_index_colname = \
-        set_up_kwargs.get('sample_info_table_index_colname')
+    sample_info_fpath = set_up_kwargs.get('sample_info_fpath')
+    if ',' in sample_info_fpath:
+        sample_info_fpath = os.path.join(*sample_info_fpath.rsplit(','))
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {})
 
     # data output
     output_directory = set_up_kwargs.get('output_directory')
-    if output_directory is None:
-        output_directory = set_directory(
-            os.path.join(selected_genes_directory, reportName)
-        )
-    else:
-        if ',' in output_directory:
-            output_directory = os.path.join(*output_directory.rsplit(','))
-        output_directory = set_directory(
-            os.path.join(MainDataDir, output_directory, reportName)
-        )
+    if ',' in output_directory:
+        output_directory = os.path.join(*output_directory.rsplit(','))
+    output_directory = set_directory(
+        os.path.join(MainDataDir, output_directory, reportName)
+    )
 
     # save the set_up_kwargs in the output dir for reproducibility
     fname = 'set_up_kwargs.json'
@@ -208,134 +171,24 @@ def classification(**set_up_kwargs):
     with open(f, 'w') as fp:
         json.dump(set_up_kwargs, fp, indent=4)
 
+    # load data
+    try:
+        data = pd.read_csv(data_fpath, sep='\t', header=0, index_col=0)
+        logger.error('loaded data file with shape: '+str(df.shape))
+    except:
+        logger.error('failed to read data file from: '+str(fpath))
+        raise
+
     # load info table of samples
     try:
-        fpath = os.path.join(sample_info_directory, sample_info_fname)
         info_table = load_clinical(
-            fpath, col_as_index=sample_final_id,
-            **sample_info_read_csv_kwargs)
+            sample_info_fpath, **sample_info_read_csv_kwargs)
     except:
         logger.error('Load info table of samples FAILED!')
         raise
 
-    # get id column for each dataset
-    sample_data_ids = ['cnvID', 'varID']
-    sample_final_id = 'cnvID'
-    select_columns = sample_data_ids.copy()
-    select_columns = set(select_columns).difference(set([sample_final_id]))
-    select_columns = np.unique(select_columns)
-
-    # load data
-    data_dfs = []
-    sample_sets = []
-    label_bool = []
-    label_list = []
-    for i, fpath in enumerate(data_fpaths):
-        try:
-            df = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
-        except:
-            logger.error('failed to read data file from: '+str(fpath))
-            raise
-
-        # if datasets have different sample IDs
-        # map them to a user defined common one
-        if sample_data_ids[i] != sample_final_id:
-            # get the two ids from the info_table
-            matching_ids = info_table.reset_index()\
-                .set_index(sample_data_ids[i])[sample_final_id]
-            # add the new id and drop the old one
-            # join help with the one-to-one mapping
-            df = df.join(matching_ids, how='right')\
-                .set_index(sample_final_id, drop=True)
-
-        data_dfs.append(df)
-        sample_sets.append(set(df.index.values))
-
-        if 'class_label' in df.columns.values:
-            label_bool.append(True)
-            label_list.append(df['class_label'])
-        else:
-            label_bool.append(False)
-
-    common_samples = list(set.intersection(*sample_sets))
-    common_samples = natsorted(common_samples)
-
-    label_copies = sum(label_bool)
-
-    # to retrieve the ground truth i.e. the samples class label
-    # first we check if the class_label column exists in none
-    # or more than one of the datasets
-    if label_copies == 0:
-        logger.warning(
-            "The class label is not in any of the datasets, " +
-            "retrieving it from user...")
-
-        clinical_label = set_up_kwargs.get('clinical_label', None)
-        if clinical_label is None:
-            logger.error('no label was selected from samples info table')
-            raise
-
-        common_samples_with_label = set.intersection(
-            set(common_samples), set(info_table.index))
-        if len(common_samples_with_label) < len(common_samples):
-            logger.warning(
-                "some samples do not have a class label " +
-                "and have to be discarded: " +
-                str(set(common_samples).difference(
-                    set(common_samples_with_label)))
-            )
-            common_samples = list(common_samples_with_label)
-
-        ground_truth = info_table.loc[common_samples, clinical_label].copy()
-
-    elif label_copies > 1:
-        logger.warning(
-            "There are "+str(label_copies)+" label copies " +
-            "of the class label, comparing them first...")
-        joined_labels = pd.concat(label_list, axis=1)
-        # makes sense only to compare the common_samples that we keep
-        joined_labels = joined_labels.loc[common_samples, :]
-
-        if label_copies == 2:
-            comparison = (joined_labels[0] == joined_labels[1])
-            different_samples = comparison.index.values[(~comparison)]
-        else:
-            comparison = \
-                joined_labels.iloc[:, 1:]\
-                .apply(lambda x: np.where(x == joined_labels[0], True, False),
-                       axis=0)\
-                .add_suffix('_CALC')
-            different_samples = comparison.index.values[
-                (~comparison).any(axis=1)]
-
-        if different_samples.size > 0:
-            logger.warning(
-                "The label copies disagree in " +
-                str(different_samples.size) + " samples: " +
-                str(different_samples) +
-                "\n\nKeeping the first copy from file: " +
-                str(np.array(data_fpaths)[label_bool][0]))
-
-        # keep the fist copy
-        ground_truth = joined_labels[0].copy()
-
-    else:
-        # keep the ONLY copy
-        ground_truth = label_list[0].loc[common_samples].copy()
-
-    # now we concat the data features from the multiple datasets
-    for i, df in enumerate(data_dfs):
-        # remove the class_label
-        try:
-            df.drop('class_label', axis=1, inplace=True)
-        except:
-            continue
-        # add suffix to separate common genes between datasets
-        df.columns += "__"+file_short_ids[i]
-
-    data = pd.concat(data_dfs, axis=1, sort=False)
-    # select only the common_samples
-    data = data.loc[common_samples, :]
+    # set the ground truth
+    ground_truth = info_table.loc[data.index, sample_class_label]
 
     # Classification
     binom_test_thres = 0.5
@@ -379,13 +232,6 @@ def classification(**set_up_kwargs):
     clasification_results.to_excel(writer)
     writer.save()
 
-    # save only the data from those samples
-    # and the classification selected genes
-    fname = 'data_from_classification.csv'
-    fpath = os.path.join(output_directory, fname)
-    logger.info('-save the classification selected genes')
-    data.reindex(nnz_coef_gene_names, axis=1).to_csv(fpath, sep='\t')
-
     # boxplot
     coefs_to_plot = all_coefs[:, np.where(nnz_coef_bool)[0]]
     boxplot(coefs_to_plot, coefs_to_plot.shape[1], nnz_coef_gene_names,
@@ -419,68 +265,32 @@ def classification(**set_up_kwargs):
     else:
         plt.show()
 
-    # TODO: need to rething the heatmaps
-    # for mutliple datasets of different values
-    #
-    # # heatmap all selected genes
-    # xpos, xlabels = which_x_toPrint(
-    #     all_coefs, data.columns.values, n_names=n_names)
-    # xpos = xpos + 0.5
-    # if data.shape[1] < 6:
-    #     figsize = (8, 8)
-    # elif data.shape[1] < 15:
-    #     figsize = (15, 8)
-    # else:
-    #     figsize = (25, 8)
+    # heatmap of genes with nnz coefs in classification
+    yticklabels = ground_truth.index.values+',' + \
+        ground_truth.values.flatten().astype(str)
 
-    # plt.figure(figsize=figsize)
-    # ticklabels = ground_truth.index.values+',' + \
-    #     ground_truth.values.flatten().astype(str)
-    # bwr_custom = custom_div_cmap(5)
-    # ax = sns.heatmap(data, vmin=vmin, vmax=vmax,
-    #                  yticklabels=ticklabels, xticklabels=False,
-    #                  cmap=cmap_custom, cbar=True)
-    # plt.xticks(xpos, xlabels, rotation=90)
-    # plt.title(title+' diff mutated genes')
+    _, xlabels = which_x_toPrint(
+        all_coefs, data.columns.values, n_names=n_names)
 
-    # if saveReport:
-    #     logger.info('Save heatmap')
-    #     fpath = os.path.join(
-    #         output_directory, 'Fig_'+title+'_heatmap'+img_ext
-    #     )
-    #     plt.savefig(fpath,
-    #                 transparent=True, bbox_inches='tight',
-    #                 pad_inches=0.1, frameon=False)
-    #     plt.close("all")
-    # else:
-    #     plt.show()
+    ds_y, ds_x = data.shape
+    fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10 if ds_x > 3 else 5
+    fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
 
-    # # heatmap of genes with nnz coefs in classification
-    # _, xlabels = which_x_toPrint(
-    #     all_coefs, data.columns.values, n_names=n_names)
-    # if data.shape[1] < 6:
-    #     figsize = (8, 8)
-    # elif data.shape[1] < 15:
-    #     figsize = (15, 8)
-    # else:
-    #     figsize = (25, 8)
+    plt.figure(figsize=(fs_x, fs_y))
+    ax = sns.heatmap(data.loc[:, xlabels], vmin=vmin, vmax=vmax,
+                     yticklabels=yticklabels,
+                     xticklabels=True,
+                     cmap=cmap_custom, cbar=True)
+    plt.title(str(n_names)+' selected genes from classification coefficients')
 
-    # plt.figure(figsize=figsize)
-    # ticklabels = ground_truth.index.values+',' + \
-    #     ground_truth.values.flatten().astype(str)
-    # ax = sns.heatmap(data.loc[:, xlabels], vmin=vmin, vmax=vmax,
-    #                  yticklabels=ticklabels, xticklabels=True,
-    #                  cmap=cmap_custom, cbar=True)
-    # plt.title(title+' diff mutated genes - '+str(n_names) +
-    #           ' selected from classification coefficients')
-
-    # if saveReport:
-    #     logger.info('Save heatmap')
-    #     fpath = os.path.join(
-    #         output_directory, 'Fig_'+title+'_heatmap2'+img_ext
-    #     )
-    #     plt.savefig(fpath, transparent=True, bbox_inches='tight',
-    #                 pad_inches=0.1, frameon=False)
-    #     plt.close("all")
-    # else:
-    #     plt.show()
+    if saveReport:
+        logger.info('Save heatmap')
+        fpath = os.path.join(
+            output_directory, 'Fig_heatmap_with_'+sample_final_id+'_id'+img_ext
+        )
+        plt.savefig(fpath,
+                    transparent=True, bbox_inches='tight',
+                    pad_inches=0.1, frameon=False)
+        plt.close("all")
+    else:
+        plt.show()

@@ -34,16 +34,15 @@
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0
+        "index_col": 0,
+        "col_as_index":"cnvID"
     },
     "sample_info_directory": "input,headneck,cohort1",
     "sample_info_fname": "sample_info.txt",
-    "sample_info_table_index_colname": "cnvID",
-    "sample_info_table_sortLabels": "Ccode",
+    "select_samples_sort_by": "Ccode",
 
     "select_samples_from": "Tcode",
     "select_samples_which": 0,
-    "select_samples_sort_by": "Ccode",
     "select_samples_title": "select_primary",
     
     "DEBUG": true

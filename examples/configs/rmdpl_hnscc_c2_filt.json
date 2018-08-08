@@ -35,7 +35,6 @@
         "col_as_index":"Patient"
     },
     "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_info_table_index_colname": "Patient",
     
     "output_directory": null,
     "DEBUG": true
