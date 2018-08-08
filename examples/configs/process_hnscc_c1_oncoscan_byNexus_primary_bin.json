@@ -1,10 +1,10 @@
 {
-    "reportName": "process_primary_map_values",
-    "txt_label": "process raw Oncoscan data and map values to integrate with cohort 2",
+    "reportName": "process_primary_bin",
+    "txt_label": "process processed Oncoscan data by Nexus",
     "input_fname": "data.csv",
-    "input_directory": "output,headneck,setup_c1_oncoscan_raw",
+    "input_directory": "output,headneck,setup_c1_oncoscan_byNexus",
     "output_directory": null,
-    
+
     "saveReport": true,
     "toPrint": true,
 
@@ -15,17 +15,15 @@
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -2,
-        "vmax": 2,
-        "highRes": false
+        "vmin": 0,
+        "vmax": 1,
+        "highRes": false,
+        "mincol": "white",
+        "midcol": "grey",
+        "maxcol": "black"
     },
 
-    "map_values":{
-        "4":2,
-        "2":1,
-        "-4":-2,
-        "-2":-1
-    },
+    "map_values": "bin",
     
     "gene_info_directory": null,
     "gene_info_fname": "genes_info.csv",
@@ -39,11 +37,10 @@
     "sample_info_directory": "input,headneck,cohort1",
     "sample_info_fname": "sample_info.txt",
     "sample_info_table_index_colname": "cnvID",
-    "sample_info_table_sortLabels": "Ccode",
-
+    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
+    
     "select_samples_from": "Tcode",
     "select_samples_which": 0,
-    "select_samples_sort_by": "Ccode",
     "select_samples_title": "select_primary",
     
     "DEBUG": true

@@ -41,7 +41,8 @@ logger = logging.getLogger(__name__)
 
 
 def _split_argument_to_list(
-        argument_name, asPath, MainDataDir=None, forceType=None):
+        set_up_kwargs, argument_name,
+        asPath, MainDataDir=None, forceType=None):
     # nested lists:
     # if the format of the argument is "string,string;string,string"
     # then the argument_list will be
@@ -112,7 +113,7 @@ def _split_argument_to_list(
     return argument_list
 
 
-def combine_feaures(**set_up_kwargs):
+def combine_features(**set_up_kwargs):
     # initialize script params
     saveReport = parse_arg_type(
         set_up_kwargs.get('saveReport', False),
@@ -178,7 +179,8 @@ def combine_feaures(**set_up_kwargs):
         file_short_ids = [file_short_ids]
 
     data_fpaths = _split_argument_to_list(
-        'files_to_combine_features', asPath=True, MainDataDir=MainDataDir)
+        set_up_kwargs, 'files_to_combine_features',
+        asPath=True, MainDataDir=MainDataDir)
 
     # sample info input
     sample_info_directory = set_up_kwargs.get('sample_info_directory')
@@ -363,7 +365,8 @@ def combine_cohorts(**set_up_kwargs):
         file_short_ids = [file_short_ids]
 
     data_fpaths = _split_argument_to_list(
-        'files_to_combine_samples', asPath=True, MainDataDir=MainDataDir)
+        set_up_kwargs, 'files_to_combine_samples',
+        asPath=True, MainDataDir=MainDataDir)
 
     # data output
     _output_directory = set_up_kwargs.get('output_directory')
@@ -390,17 +393,19 @@ def combine_cohorts(**set_up_kwargs):
         save_new_sample_info = True
         # sample info input
         sample_info_fpaths = _split_argument_to_list(
-            'sample_info_fpaths', asPath=True, MainDataDir=MainDataDir)
+            set_up_kwargs, 'sample_info_fpaths',
+            asPath=True, MainDataDir=MainDataDir)
         sample_info_read_csv_kwargs = set_up_kwargs.get(
             'sample_info_read_csv_kwargs', {})
         sample_final_id = _split_argument_to_list(
-            'sample_final_id', asPath=False)
+            set_up_kwargs, 'sample_final_id', asPath=False)
         sample_info_new_label = _split_argument_to_list(
-            'sample_info_new_label', asPath=False)
+            set_up_kwargs, 'sample_info_new_label', asPath=False)
         sample_info_combine_labels = _split_argument_to_list(
-            'sample_info_combine_labels', asPath=False)
+            set_up_kwargs, 'sample_info_combine_labels', asPath=False)
         sample_info_swap_class_label = _split_argument_to_list(
-            'sample_info_swap_class_label', asPath=False, forceType=bool)
+            set_up_kwargs, 'sample_info_swap_class_label',
+            asPath=False, forceType=bool)
 
         # new sample_info output dir
         new_sample_info_fpath = set_up_kwargs.get('new_sample_info_fpath')

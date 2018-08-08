@@ -152,6 +152,7 @@ def nexus_express(**set_up_kwargs):
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
+    function_dict = plot_kwargs.get('function_dict', None)
     cmap_custom = plot_kwargs.get('cmap_custom', None)
     vmin = parse_arg_type(
         plot_kwargs.get('vmin', None),
@@ -507,8 +508,6 @@ def nexus_express(**set_up_kwargs):
                 newgeneNames = diff_genes_selected.loc[
                     data.columns, 'newGeneName'].values
                 data.columns = newgeneNames
-            # insert a column with the class label
-            data['class_label'] = info_table.loc[data.index, clinical_label]
             # save this data for future classification
             fname = 'data_features_class.csv'
             fpath = os.path.join(output_directory, fname)
@@ -596,18 +595,28 @@ def nexus_express(**set_up_kwargs):
     # PLOT heatmaps of selected features
     if diff_genes_selected.shape[0] > 0:
         # get only the CNVs from the selected genes
-        # data2plot = data[diff_genes_selected.index]
         patientNames2plot = pat_labels_txt
         ds_y, ds_x = data.shape
         fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10
         fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
         plt.figure(figsize=(fs_x, fs_y))
-        data2plot = data.drop(['class_label'], axis=1)
         ax = sns.heatmap(
-            data2plot, vmin=vmin, vmax=vmax,
+            data, vmin=vmin, vmax=vmax,
             xticklabels=True, yticklabels=patientNames2plot,
-            cmap=cmap_custom, cbar_kws={'ticks': np.arange(-5, 5)})
+            cmap=cmap_custom, cbar=False)
         ax.set_ylabel(pat_labels_title)
+        cbar = ax.figure.colorbar(ax.collections[0])
+        if function_dict is not None:
+            functionImpact_dict_r = dict(
+                (v, k) for k, v in function_dict.items()
+                )
+            myTicks = [0, 1, 2, 3, 4, 5]
+            cbar.set_ticks(myTicks)
+            cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
+        else:
+            if custom_div_cmap_arg is not None:
+                cbar.set_ticks(np.arange(-custom_div_cmap_arg,
+                                         custom_div_cmap_arg))
         plt.title(mytitle)
         if saveReport:
             fpath = os.path.join(output_directory, 'Fig_Heatmap_' +
@@ -632,8 +641,20 @@ def nexus_express(**set_up_kwargs):
             ax = sns.heatmap(
                 data2plot, vmin=vmin, vmax=vmax,
                 xticklabels=True, yticklabels=patientNames2plot,
-                cmap=cmap_custom, cbar_kws={'ticks': np.arange(-5, 5)})
+                cmap=cmap_custom)
             ax.set_ylabel(pat_labels_title)
+            cbar = ax.figure.colorbar(ax.collections[0])
+            if function_dict is not None:
+                functionImpact_dict_r = dict(
+                    (v, k) for k, v in function_dict.items()
+                    )
+                myTicks = [0, 1, 2, 3, 4, 5]
+                cbar.set_ticks(myTicks)
+                cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
+            else:
+                if custom_div_cmap_arg is not None:
+                    cbar.set_ticks(np.arange(-custom_div_cmap_arg,
+                                            custom_div_cmap_arg))
             plt.title(mytitle)
             if saveReport:
                 fpath = os.path.join(output_directory, 'Fig_Heatmap_' +

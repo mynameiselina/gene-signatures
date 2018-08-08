@@ -19,6 +19,7 @@ import scipy as sp
 from natsort import natsorted, index_natsorted
 import logging
 from distutils.util import strtobool
+from sklearn.preprocessing import binarize
 
 # plotting imports
 import matplotlib
@@ -88,9 +89,13 @@ def process_data(**set_up_kwargs):
         int
     )
     # map_values_dict
-    map_values_dict = set_up_kwargs.get('map_values_dict', {})
-    if map_values_dict:
-        map_values_dict = {int(k): int(v) for k, v in map_values_dict.items()}
+    map_values = set_up_kwargs.get('map_values', None)
+    if map_values is not None:
+        map_values_dict = None
+        if isinstance(map_values, dict):
+            map_values_dict = {
+                int(k): int(v) for k, v in map_values_dict.items()
+            }
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
@@ -238,21 +243,35 @@ def process_data(**set_up_kwargs):
                 id_col='gene', chr_col=chr_col)
 
     # MAP values with a dictionary (optional)
-    if map_values_dict:
-        _diff_set = set(np.unique(data.values.flatten().astype(int)))\
-            .difference(set([0]))\
-            .difference(set(list(map_values_dict.keys())))
-        if _diff_set:
-            logger.warning(
-                "the user\'s dict to replace data values is incomplete " +
-                "the following values in the data are not accounted for " +
-                "and will remain the same:\n"+str(_diff_set)
+    if map_values is not None:
+        if map_values_dict is not None:
+            _diff_set = set(np.unique(data.values.flatten().astype(int)))\
+                .difference(set([0]))\
+                .difference(set(list(map_values_dict.keys())))
+            if _diff_set:
+                logger.warning(
+                    "the user\'s dict to replace data values is incomplete " +
+                    "the following values in the data are not accounted for " +
+                    "and will remain the same:\n"+str(_diff_set)
+                )
+            logger.info(
+                "replacing data values with user\'s dictionary:\n" +
+                str(map_values_dict)
             )
-        logger.info(
-            "replacing data values with user\'s dictionary:\n" +
-            str(map_values_dict)
-        )
-        data.replace(map_values_dict, inplace=True)
+            data.replace(map_values_dict, inplace=True)
+
+        elif map_values in ['bin', 'binary', 'binarize']:
+            logger.info(
+                "binarizing data values" +
+                str(map_values_dict)
+            )
+            binarize(data, copy=False)
+
+        else:
+            logger.warning(
+                "invalid map_values argument, no action will be taken: \n" +
+                str(map_values)
+            )
 
     # SELECT sample groups (optional)
     ids_tmp = choose_samples(info_table.reset_index(),
