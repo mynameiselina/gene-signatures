@@ -34,7 +34,7 @@ from gene_signatures.core import (
     custom_div_cmap
 )
 from gene_signatures.combine_data import (
-    combine_features
+    combine_cohorts
 )
 import os
 import sys
@@ -98,7 +98,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
         #  update default params with command line params
         params.update(set_up_kwargs)
 
-    combine_features(**params)
+    combine_cohorts(**params)
 
 
 if __name__ == '__main__':
