@@ -1,0 +1,18 @@
+{
+    "reportName": "CNV_mapped_filt",
+    "saveReport": true,
+    "txt_label": "Combine samples from c1 primary oncoscan and c2 Excavator2",
+    "toPrint": true,
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -2,
+        "vmax": 2,
+        "highRes": false
+    },
+
+    "files_to_combine_samples": "output,headneck,setup_c1_oncoscan_byNexus,process_primary_map_values,data_processed.csv;output,headneck,setup_c2_excavator2_byNexus_filt,process,data_processed.csv",
+    
+    "output_directory": "output,headneck,integrate_cohorts,c1c2",
+    "DEBUG": true
+}

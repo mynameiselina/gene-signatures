@@ -11,7 +11,8 @@ from gene_signatures.core import (
     choose_samples,
     parse_arg_type,
     boxplot,
-    which_x_toPrint
+    which_x_toPrint,
+    set_heatmap_size
 )
 
 # basic imports
@@ -73,7 +74,7 @@ def _split_argument_to_list(
         argument_name, None)
     if argument is None:
         logger.warning(
-            'The argument \''+str(argument)+'\' is not given!'
+            'The argument \''+str(argument_name)+'\' is not given!'
         )
         return None
     try:
@@ -228,6 +229,7 @@ def combine_features(**set_up_kwargs):
     for i, fpath in enumerate(data_fpaths):
         try:
             df = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
+            logger.error('loaded data file with shape: '+str(df.shape))
         except:
             logger.error('failed to read data file from: '+str(fpath))
             raise
@@ -256,27 +258,8 @@ def combine_features(**set_up_kwargs):
     data = data.loc[all_samples, :]
 
     # heatmap of combined data (on features)
-    _show_gene_names = True
-    if data.shape[1] < 10:
-        _figure_x_size = 10
-    elif data.shape[1] < 15:
-        _figure_x_size = 15
-    elif data.shape[1] < 50:
-        _figure_x_size = 20
-    else:
-        _figure_x_size = 25
-        _show_gene_names = False
-
-    _show_sample_names = True
-    if data.shape[0] < 25:
-        _figure_y_size = 8
-    elif data.shape[0] < 50:
-        _figure_y_size = 12
-    elif data.shape[0] < 100:
-        _figure_y_size = 16
-    else:
-        _figure_y_size = 20
-        _show_sample_names = False
+    _figure_x_size, _figure_y_size, _show_gene_names, _show_sample_names = \
+        set_heatmap_size(data)
 
     plt.figure(figsize=(_figure_x_size, _figure_y_size))
     ax = sns.heatmap(data, vmin=vmin, vmax=vmax,
@@ -300,7 +283,10 @@ def combine_features(**set_up_kwargs):
     # save the combined data
     fname = 'data_with_'+sample_final_id+'_id.csv'
     fpath = os.path.join(output_directory, fname)
-    logger.info('-save the combined data with different features')
+    logger.info(
+        '-save the combined data with different features ' +
+        'with shape:\n'+str(data.shape)
+    )
     data.to_csv(fpath, sep='\t')
 
 
@@ -319,6 +305,7 @@ def combine_cohorts(**set_up_kwargs):
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
+    function_dict = plot_kwargs.get('function_dict', None)
     highRes = parse_arg_type(
         plot_kwargs.get('highRes', False),
         bool
@@ -358,12 +345,6 @@ def combine_cohorts(**set_up_kwargs):
     MainDataDir = os.path.join(script_path, '..', 'data')
 
     # data input
-    file_short_ids = set_up_kwargs.get('file_short_ids', None)
-    if ',' in file_short_ids:
-        file_short_ids = file_short_ids.rsplit(',')
-    else:
-        file_short_ids = [file_short_ids]
-
     data_fpaths = _split_argument_to_list(
         set_up_kwargs, 'files_to_combine_samples',
         asPath=True, MainDataDir=MainDataDir)
@@ -393,19 +374,19 @@ def combine_cohorts(**set_up_kwargs):
         save_new_sample_info = True
         # sample info input
         sample_info_fpaths = _split_argument_to_list(
-            set_up_kwargs, 'sample_info_fpaths',
+            sample_info_kwargs, 'sample_info_fpaths',
             asPath=True, MainDataDir=MainDataDir)
-        sample_info_read_csv_kwargs = set_up_kwargs.get(
+        sample_info_read_csv_kwargs = sample_info_kwargs.get(
             'sample_info_read_csv_kwargs', {})
         sample_final_id = _split_argument_to_list(
-            set_up_kwargs, 'sample_final_id', asPath=False)
+            sample_info_kwargs, 'sample_final_id', asPath=False)
         sample_info_new_label = _split_argument_to_list(
-            set_up_kwargs, 'sample_info_new_label', asPath=False)
+            sample_info_kwargs, 'sample_info_new_label', asPath=False)
         sample_info_combine_labels = _split_argument_to_list(
-            set_up_kwargs, 'sample_info_combine_labels', asPath=False)
+            sample_info_kwargs, 'sample_info_combine_labels', asPath=False)
         sample_info_swap_class_label = _split_argument_to_list(
-            set_up_kwargs, 'sample_info_swap_class_label',
-            asPath=False, forceType=bool)
+            sample_info_kwargs, 'sample_info_swap_class_label',
+            asPath=False)
 
         # new sample_info output dir
         new_sample_info_fpath = set_up_kwargs.get('new_sample_info_fpath')
@@ -420,20 +401,20 @@ def combine_cohorts(**set_up_kwargs):
         if save_new_sample_info:
             try:
                 info_table = load_clinical(
-                    fpath, col_as_index=sample_final_id[i],
+                    sample_info_fpaths[i], col_as_index=sample_final_id[i],
                     **sample_info_read_csv_kwargs[str(i)])
             except:
                 logger.error('Load info table of samples FAILED!')
                 raise
 
-            if isistance(sample_info_swap_class_label[i], list):
+            if isinstance(sample_info_swap_class_label[i], list):
                 _sample_info_swap_class_label_list = \
                     sample_info_swap_class_label[i]
             else:
                 _sample_info_swap_class_label_list = \
                     [sample_info_swap_class_label[i]]
 
-            for i in range(len(_sample_info_swap_class_label_list)):
+            for j in range(len(_sample_info_swap_class_label_list)):
                 logger.warning(
                     'The user requested to swap the ' +
                     str(_sample_info_swap_class_label_list[j]) +
@@ -448,6 +429,7 @@ def combine_cohorts(**set_up_kwargs):
         fpath = data_fpaths[i]
         try:
             df = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
+            logger.error('loaded data file with shape: '+str(df.shape))
         except:
             logger.error('failed to read data file from: '+str(fpath))
             raise
@@ -464,11 +446,11 @@ def combine_cohorts(**set_up_kwargs):
         # but keep all collumns (outer join)
         sample_info = pd.concat(
             sample_info_tables, axis=0, join='outer', sort=False)
-
+        sample_info.index.name = 'patientID'
         # create new label name by merging existing labels
         # (when no common label name between cohorts)
         if sample_info_new_label is not None:
-            if isistance(sample_info_new_label, list):
+            if isinstance(sample_info_new_label, list):
                 _sample_info_new_label_list = \
                     sample_info_new_label
                 _sample_info_combine_labels_list = \
@@ -480,7 +462,7 @@ def combine_cohorts(**set_up_kwargs):
                     [sample_info_combine_labels]
         for l, new_label in enumerate(_sample_info_new_label_list):
             combine_labels = _sample_info_combine_labels_list[l]
-            sample_info[new_label] = df[combine_labels].sum(axis=1)
+            sample_info[new_label] = sample_info[combine_labels].sum(axis=1)
             logger.info(
                 'combined labels: '+str(combine_labels) +
                 'into the new label: '+str(new_label)
@@ -494,40 +476,32 @@ def combine_cohorts(**set_up_kwargs):
 
     # heatmap of combined data (on samples)
     # without gene ordering
-    _show_gene_names = True
-    _figure_x_size = 20
-    if data.shape[1] < 10:
-        _figure_x_size = 10
-    elif data.shape[1] < 15:
-        _figure_x_size = 15
-    elif data.shape[1] < 50:
-        _figure_x_size = 20
-    else:
-        _figure_x_size = 25
-        _show_gene_names = False
-
-    _show_sample_names = True
-    if data.shape[0] < 25:
-        _figure_y_size = 8
-    elif data.shape[0] < 50:
-        _figure_y_size = 12
-    elif data.shape[0] < 100:
-        _figure_y_size = 16
-    else:
-        _figure_y_size = 20
-        _show_sample_names = False
+    _figure_x_size, _figure_y_size, _show_gene_names, _show_sample_names = \
+        set_heatmap_size(data)
 
     plt.figure(figsize=(_figure_x_size, _figure_y_size))
     ax = sns.heatmap(data, vmin=vmin, vmax=vmax,
                      yticklabels=_show_sample_names,
                      xticklabels=_show_gene_names,
-                     cmap=cmap_custom, cbar=True)
+                     cmap=cmap_custom, cbar=False)
+    cbar = ax.figure.colorbar(ax.collections[0])
+    if function_dict is not None:
+        functionImpact_dict_r = dict(
+            (v, k) for k, v in function_dict.items()
+            )
+        myTicks = [0, 1, 2, 3, 4, 5]
+        cbar.set_ticks(myTicks)
+        cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
+    else:
+        if custom_div_cmap_arg is not None:
+            cbar.set_ticks(
+                np.arange(-custom_div_cmap_arg, custom_div_cmap_arg))
     plt.title(txt_label)
 
     if saveReport:
         logger.info('Save heatmap')
         fpath = os.path.join(
-            output_directory, 'Fig_heatmap_with_'+sample_final_id+'_id'+img_ext
+            output_directory, 'Fig_heatmap'+img_ext
         )
         plt.savefig(fpath,
                     transparent=True, bbox_inches='tight',
@@ -539,12 +513,18 @@ def combine_cohorts(**set_up_kwargs):
     # save the combined data
     fname = 'integrated_data.csv'
     fpath = os.path.join(output_directory, fname)
-    logger.info('-save the combined data from different cohorts')
+    logger.info(
+        '-save the combined data from different cohorts ' +
+        'with shape:\n'+str(data.shape)
+    )
     data.to_csv(fpath, sep='\t')
 
     if save_new_sample_info:
         # save the sample_info
         fname = 'integrated_sample_info.csv'
         fpath = os.path.join(new_sample_info_fpath, fname)
-        logger.info('-save the combined sample_info from different cohorts')
+        logger.info(
+            '-save the combined sample_info from different cohorts ' +
+            'with shape:\n'+str(sample_info.shape)
+        )
         sample_info.to_csv(fpath, sep='\t')

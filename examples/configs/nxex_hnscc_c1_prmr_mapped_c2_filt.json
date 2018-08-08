@@ -1,7 +1,7 @@
 {
-    "reportName": "DEBUG__rmdpl",
+    "reportName": "nexus_express",
     "saveReport": true,
-    "txt_label": "remove duplicate gene profiles from the integrated cohorts 1 and 2 primary HNSCC samples",
+    "txt_label": "Nexus Express for feature selection",
     "toPrint": true,
 
     "chr_col": "chr_int",
@@ -9,14 +9,17 @@
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -2,
-        "vmax": 2,
+        "vmin": -4,
+        "vmax": 4,
         "highRes": false
     },
 
-    "compute_pdist": false,
-    
-    "input_directory": "output,headneck,integrate_cohorts,c1c2,CNV_mapped",
+    "min_diff_thres": 0.25,
+    "multtest_method": "fdr_bh",
+    "multtest_alpha": 0.05,
+    "with_perc": 100,
+
+    "input_directory": "output,headneck,integrate_cohorts,c1c2,CNV_mapped_filt",
     "input_fname": "integrated_data.csv",
     "gene_info_directory": "output,headneck,setup_c1_oncoscan_byNexus",
     "gene_info_fname": "genes_info.csv",
@@ -31,7 +34,12 @@
     "sample_info_fname": "integrated_sample_info.csv",
     "sample_info_table_index_colname": "patientID",
     "select_samples_sort_by": "Relapsed",
+    "class_labels": "Relapsed,NOTRelapsed",
+    "class_values": "1,0",
     
-    "output_directory": null,
+    "toRemoveDupl": true,
+    "dupl_genes_directory": "rmdpl",
+
+    "output_directory": "output,headneck,integrate_cohorts,c1c2,CNV_mapped_filt,rmdpl",
     "DEBUG": true
 }

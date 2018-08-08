@@ -1,0 +1,40 @@
+{
+    "reportName": "CNV_mapped",
+    "saveReport": true,
+    "txt_label": "Combine samples from c1 primary oncoscan and c2 Excavator2",
+    "toPrint": true,
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -2,
+        "vmax": 2,
+        "highRes": false
+    },
+
+    "files_to_combine_samples": "output,headneck,setup_c1_oncoscan_raw,process_primary_map_values,data_processed.csv;output,headneck,setup_c2_excavator2_byNexus,process,data_processed.csv",
+
+    "sample_info_kwargs": {
+        "sample_info_fpaths": "input,headneck,cohort1,sample_info.txt;input,headneck,cohort2,20180208_Oliver,clinical_data.csv",
+        "sample_info_read_csv_kwargs":{
+            "0":{
+                "sep": "\t",
+                "header": 0,
+                "index_col": 0
+            },
+            "1":{
+                "sep": "\t",
+                "header": 0,
+                "index_col": 0
+            }
+        },
+        "sample_data_ids": "cnvID;Patient",
+        "sample_final_id": "cnvID;Patient",
+        "sample_info_swap_class_label": "Ccode;Local_Control",
+        "sample_info_new_label": "Relapsed",
+        "sample_info_combine_labels": "Ccode,Local_Control",
+        "new_sample_info_fpath": null
+    },
+    
+    "output_directory": "output,headneck,integrate_cohorts,c1c2",
+    "DEBUG": true
+}

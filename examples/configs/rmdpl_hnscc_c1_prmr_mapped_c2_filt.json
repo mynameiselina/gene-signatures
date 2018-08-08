@@ -1,7 +1,7 @@
 {
-    "reportName": "DEBUG__rmdpl",
+    "reportName": "rmdpl",
     "saveReport": true,
-    "txt_label": "remove duplicate gene profiles from the integrated cohorts 1 and 2 primary HNSCC samples",
+    "txt_label": "remove duplicate gene profiles from the integrated filtered cohorts 1 and 2 primary HNSCC samples",
     "toPrint": true,
 
     "chr_col": "chr_int",
@@ -16,7 +16,7 @@
 
     "compute_pdist": false,
     
-    "input_directory": "output,headneck,integrate_cohorts,c1c2,CNV_mapped",
+    "input_directory": "output,headneck,integrate_cohorts,c1c2,CNV_mapped_filt",
     "input_fname": "integrated_data.csv",
     "gene_info_directory": "output,headneck,setup_c1_oncoscan_byNexus",
     "gene_info_fname": "genes_info.csv",

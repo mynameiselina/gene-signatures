@@ -34,11 +34,11 @@
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0
+        "index_col": 0,
+        "col_as_index":"cnvID"
     },
     "sample_info_fname": "sample_info.txt",
     "sample_info_table_index_colname": "cnvID",
-    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
     
     "output_directory": null,
     "DEBUG": true

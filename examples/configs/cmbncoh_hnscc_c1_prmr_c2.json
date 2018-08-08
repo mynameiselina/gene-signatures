@@ -1,7 +1,7 @@
 {
-    "reportName": "CNV_NxEx",
+    "reportName": "CNV",
     "saveReport": true,
-    "txt_label": "Combine samples from c1 primary NxEx selected oncoscan and c2 NxEx selected Excavator2",
+    "txt_label": "Combine samples from c1 primary oncoscan and c2 Excavator2",
     "toPrint": true,
 
     "plot_kwargs": {
@@ -11,7 +11,7 @@
         "highRes": false
     },
 
-    "files_to_combine_samples": "output,headneck,setup_c1_oncoscan_raw,process,rmdpl_primary,nexus_express,data_features_class.csv;output,headneck,setup_c2_excavator2_byNexus,process,rmdpl,nexus_express,data_features_class.csv",
+    "files_to_combine_samples": "output,headneck,setup_c1_oncoscan_raw,process,data_processed.csv;output,headneck,setup_c2_excavator2_byNexus,process,data_processed.csv",
 
     "sample_info_kwargs": {
         "sample_info_fpaths": "input,headneck,cohort1,sample_info.txt;input,headneck,cohort2,20180208_Oliver,clinical_data.csv",

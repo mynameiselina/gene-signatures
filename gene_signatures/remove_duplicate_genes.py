@@ -10,7 +10,8 @@ from gene_signatures.core import (
     custom_div_cmap,
     get_chr_ticks,
     distplot_breakYaxis,
-    parse_arg_type
+    parse_arg_type,
+    set_heatmap_size
 )
 
 # basic imports
@@ -50,8 +51,9 @@ def remove_duplicate_genes(**set_up_kwargs):
         int
     )
     select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
-                                               'TP53_mut5,FOXA1_mut5')
-    select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
+                                               None)
+    if select_samples_sort_by is not None:
+        select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
     select_samples_title = set_up_kwargs.get('select_samples_title',
                                              'select_all')
 
@@ -77,8 +79,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     if ',' in sample_info_fname:
         sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
     sample_info_table_index_colname = \
-        set_up_kwargs.get('sample_info_table_index_colname',
-                          'Oncoscan_ID')
+        set_up_kwargs.get('sample_info_table_index_colname', None)
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {})
 
@@ -181,9 +182,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     if toPrint:
         logger.info('Load info table of samples')
     fpath = os.path.join(sample_info_directory, sample_info_fname)
-    info_table = load_clinical(fpath,
-                               col_as_index=sample_info_table_index_colname,
-                               **sample_info_read_csv_kwargs)
+    info_table = load_clinical(fpath,  **sample_info_read_csv_kwargs)
 
     # load input_data
     fpath = os.path.join(input_directory, input_fname)
@@ -245,6 +244,7 @@ def remove_duplicate_genes(**set_up_kwargs):
     for i_data, choose_data in enumerate([data, uniqdata]):
         if select_samples_which is None:
             # distplot DO NOT break Y-axis
+            logger.info('Plotting distplot..')
             sns.distplot(choose_data.values.flatten(),
                          hist=True, kde=False, color='b')
             plt.title("Copy number abundance in "+txt_label+" (uniq genes)")
@@ -260,6 +260,7 @@ def remove_duplicate_genes(**set_up_kwargs):
                 plt.show()
 
             # distplot break Y-axis
+            logger.info('Plotting break Y-axis distplot..')
             _, uniq_count = np.unique(choose_data.values.flatten(),
                                       return_counts=True)
             ymax_bottom = int(math.ceil(
@@ -285,7 +286,9 @@ def remove_duplicate_genes(**set_up_kwargs):
                 plt.show()
 
         # Plot heatmap
-        plt.figure(figsize=(20, 8))
+        _figure_x_size, _figure_y_size, _, _ = \
+            set_heatmap_size(data)
+        plt.figure(figsize=(_figure_x_size, _figure_y_size))
         ax = sns.heatmap(choose_data, vmin=vmin, vmax=vmax,
                          yticklabels=pat_labels_txt, xticklabels=False,
                          cmap=cmap_custom, cbar=False)

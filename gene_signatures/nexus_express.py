@@ -83,8 +83,9 @@ def nexus_express(**set_up_kwargs):
         int
     )
     select_samples_sort_by = set_up_kwargs.get('select_samples_sort_by',
-                                               'TP53_mut5,FOXA1_mut5')
-    select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
+                                               None)
+    if select_samples_sort_by is not None:
+        select_samples_sort_by_list = select_samples_sort_by.rsplit(',')
     select_samples_title = set_up_kwargs.get('select_samples_title',
                                              'select_all')
     clinical_label = select_samples_sort_by_list[0]
@@ -125,7 +126,7 @@ def nexus_express(**set_up_kwargs):
         sample_info_fname = os.path.join(*sample_info_fname.rsplit(','))
     sample_info_table_index_colname = \
         set_up_kwargs.get('sample_info_table_index_colname',
-                          'Oncoscan_ID')
+                          None)
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {})
     data_uniq_fname = input_fname.rsplit('.')[0]+'__' + \
@@ -246,9 +247,7 @@ def nexus_express(**set_up_kwargs):
     if toPrint:
         logger.info('Load info table of samples')
     fpath = os.path.join(sample_info_directory, sample_info_fname)
-    info_table = load_clinical(fpath,
-                               col_as_index=sample_info_table_index_colname,
-                               **sample_info_read_csv_kwargs)
+    info_table = load_clinical(fpath, **sample_info_read_csv_kwargs)
 
     # load processed data
     fpath = os.path.join(input_directory, input_fname)
@@ -650,11 +649,12 @@ def nexus_express(**set_up_kwargs):
                     )
                 myTicks = [0, 1, 2, 3, 4, 5]
                 cbar.set_ticks(myTicks)
-                cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
+                cbar.set_ticklabels(
+                    pd.Series(myTicks).map(functionImpact_dict_r))
             else:
                 if custom_div_cmap_arg is not None:
-                    cbar.set_ticks(np.arange(-custom_div_cmap_arg,
-                                            custom_div_cmap_arg))
+                    cbar.set_ticks(
+                        np.arange(-custom_div_cmap_arg, custom_div_cmap_arg))
             plt.title(mytitle)
             if saveReport:
                 fpath = os.path.join(output_directory, 'Fig_Heatmap_' +

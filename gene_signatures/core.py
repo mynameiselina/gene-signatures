@@ -142,7 +142,7 @@ def distplot_breakYaxis(x, ymax_bottom, ymax_top, mytitle='',
 
     # leave as is
     break_yAxis(axis[0], axis[1], d=d)
-    plt.tight_layout(pad=pad)
+    # plt.tight_layout(pad=pad)
 
 
 def biplot(dat, ground_truth, pca, pc1=0, pc2=1, n=None, ax=None, isdf=True):
@@ -1983,3 +1983,30 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
     plt.suptitle(title)
 
     return pca
+
+
+def set_heatmap_size(data):
+    _show_gene_names = True
+    _figure_x_size = 20
+    if data.shape[1] < 10:
+        _figure_x_size = 10
+    elif data.shape[1] < 15:
+        _figure_x_size = 15
+    elif data.shape[1] < 50:
+        _figure_x_size = 20
+    else:
+        _figure_x_size = 25
+        _show_gene_names = False
+
+    _show_sample_names = True
+    if data.shape[0] < 25:
+        _figure_y_size = 8
+    elif data.shape[0] < 50:
+        _figure_y_size = 12
+    elif data.shape[0] < 100:
+        _figure_y_size = 16
+    else:
+        _figure_y_size = 20
+        _show_sample_names = False
+
+    return _figure_x_size, _figure_y_size, _show_gene_names, _show_sample_names
