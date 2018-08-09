@@ -5,6 +5,9 @@
     "toPrint": true,
 
     "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
         "highRes": false
     },
 
@@ -17,7 +20,9 @@
         "index_col": 0,
         "col_as_index":"cnvID"
     },
-    "sample_class_label": "Ccode",
+    "sample_class_column": "Ccode",
+    "class_labels": "responders,NONresponders",
+    "class_values": "1,0",
     
     "output_directory": "output,headneck,classification",
     "DEBUG": true

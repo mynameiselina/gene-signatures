@@ -2003,3 +2003,18 @@ def set_heatmap_size(data):
         print_genes = False
 
     return fs_x, fs_y, print_genes, print_samples
+
+
+def set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg):
+    if function_dict is not None:
+        functionImpact_dict_r = dict(
+            (v, k) for k, v in function_dict.items()
+            )
+        myTicks = sorted(list(functionImpact_dict_r.keys()))
+        # myTicks = [0, 1, 2, 3, 4, 5]
+        cbar.set_ticks(myTicks)
+        cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
+    else:
+        if custom_div_cmap_arg is not None:
+            cbar.set_ticks(
+                np.arange(-custom_div_cmap_arg, custom_div_cmap_arg))

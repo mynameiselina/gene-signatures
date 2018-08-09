@@ -11,7 +11,8 @@ from gene_signatures.core import (
     parse_arg_type,
     boxplot,
     which_x_toPrint,
-    set_heatmap_size
+    set_heatmap_size,
+    set_cbar_ticks
 )
 
 # basic imports
@@ -104,10 +105,11 @@ def _split_argument_to_list(
         # if the argument contained only one level list (not nested)
         if len(argument_list_nested) == 1:
             argument_list = argument_list[0]
-    except:
+    except Exception as ex:
         logger.error(
             'The argument could not be split!\n' +
             argument_name+': '+str(argument))
+        logger.error(ex)
         raise
 
     return argument_list
@@ -219,8 +221,9 @@ def combine_features(**set_up_kwargs):
         info_table = load_clinical(
             fpath, col_as_index=sample_final_id,
             **sample_info_read_csv_kwargs)
-    except:
+    except Exception as ex:
         logger.error('Load info table of samples FAILED!')
+        logger.error(ex)
         raise
 
     # load data
@@ -229,8 +232,9 @@ def combine_features(**set_up_kwargs):
         try:
             df = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
             logger.error('loaded data file with shape: '+str(df.shape))
-        except:
+        except Exception as ex:
             logger.error('failed to read data file from: '+str(fpath))
+            logger.error(ex)
             raise
 
         # if datasets have different sample IDs
@@ -406,8 +410,9 @@ def combine_cohorts(**set_up_kwargs):
                 info_table = load_clinical(
                     sample_info_fpaths[i], col_as_index=sample_final_id[i],
                     **sample_info_read_csv_kwargs[str(i)])
-            except:
+            except Exception as ex:
                 logger.error('Load info table of samples FAILED!')
+                logger.error(ex)
                 raise
 
             if isinstance(sample_info_swap_class_label[i], list):
@@ -435,8 +440,9 @@ def combine_cohorts(**set_up_kwargs):
         try:
             df = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
             logger.error('loaded data file with shape: '+str(df.shape))
-        except:
+        except Exception as ex:
             logger.error('failed to read data file from: '+str(fpath))
+            logger.error(ex)
             raise
 
         data_dfs.append(df)
@@ -446,6 +452,34 @@ def combine_cohorts(**set_up_kwargs):
     # now we join the cohort samples from the multiple datasets
     # on the common features (inner join)
     data = pd.concat(data_dfs, axis=0, join='inner', sort=False)
+
+    # gene info input
+    gene_info_fpath = set_up_kwargs.get('gene_info_fpath')
+    if gene_info_fpath is not None:
+        if ',' in gene_info_fpath:
+            gene_info_fpath = os.path.join(
+                *gene_info_fpath.rsplit(','))
+            gene_info_fpath = os.path.join(
+                MainDataDir, gene_info_fpath)
+
+        chr_col = set_up_kwargs.get('chr_col', 'chr_int')
+        gene_id_col = set_up_kwargs.get('gene_id_col', 'gene')
+
+        # load gene info
+        try:
+            genes_positions_table = pd.read_csv(
+                gene_info_fpath, sep='\t', header=0, index_col=0)
+            # get gene chrom position
+            xlabels, xpos = get_chr_ticks(
+                genes_positions_table, data,
+                id_col='gene', chr_col=chr_col)
+        except Exception as ex:
+            logger.warning('could not get genes position info')
+            logger.warning(ex)
+            xlabels, xpos = None, None
+    else:
+        xlabels, xpos = None, None
+
     if save_new_sample_info:
         # do the same for the info_tables
         # but keep all collumns (outer join)
@@ -480,7 +514,7 @@ def combine_cohorts(**set_up_kwargs):
         sample_info = sample_info.loc[all_samples, :]
 
     # heatmap of combined data (on samples)
-    # without gene ordering
+
     _figure_x_size, _figure_y_size, _show_gene_names, _show_sample_names = \
         set_heatmap_size(data)
 
@@ -491,17 +525,7 @@ def combine_cohorts(**set_up_kwargs):
                      cmap=cmap_custom, cbar=False)
     plt.xticks(rotation=90)
     cbar = ax.figure.colorbar(ax.collections[0])
-    if function_dict is not None:
-        functionImpact_dict_r = dict(
-            (v, k) for k, v in function_dict.items()
-            )
-        myTicks = [0, 1, 2, 3, 4, 5]
-        cbar.set_ticks(myTicks)
-        cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-    else:
-        if custom_div_cmap_arg is not None:
-            cbar.set_ticks(
-                np.arange(-custom_div_cmap_arg, custom_div_cmap_arg))
+    set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
     plt.title(txt_label)
 
     if saveReport:
@@ -515,6 +539,51 @@ def combine_cohorts(**set_up_kwargs):
         plt.close("all")
     else:
         plt.show()
+
+    #########################################
+    if (xlabels is not None) and (xpos is not None):
+        # ORDER genes
+        if toPrint:
+            logger.info('Order data according to genomic position')
+
+        # extract the gene relative order
+        gene_order = genes_positions_table.set_index(
+            gene_id_col).loc[:, 'order'].copy()
+        # keep only gene_order with data
+        ids_tmp = set(
+            gene_order.index.values).intersection(set(data.columns.values))
+        # keep only the order of these genes
+        gene_order = gene_order.loc[ids_tmp].copy()
+        gene_order = gene_order.sort_values()
+        # then keep only these genes from the data
+        data2plot = data.loc[:, gene_order.index].copy()
+
+        # PLOT heatmap after gene ordering
+        if toPrint:
+            logger.info('Plot heatmap after gene ordering')
+        _figure_x_size, _figure_y_size, \
+            _show_gene_names, _show_sample_names = \
+            set_heatmap_size(data2plot)
+        plt.figure(figsize=(_figure_x_size, _figure_y_size))
+        ax = sns.heatmap(
+            data2plot,
+            vmin=vmin, vmax=vmax, xticklabels=_show_gene_names,
+            yticklabels=_show_sample_names, cmap=cmap_custom, cbar=False)
+        ax.set_xticks(xpos)
+        ax.set_xticklabels(xlabels, rotation=0)
+        cbar = ax.figure.colorbar(ax.collections[0])
+        set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
+        if saveReport:
+            if toPrint:
+                logger.info('Save heatmap')
+            plt.savefig(
+                os.path.join(output_directory, 'Fig_heatmap_ordered'+img_ext),
+                transparent=True, bbox_inches='tight',
+                pad_inches=0.1, frameon=False)
+            plt.close("all")
+        else:
+            plt.show()
+    #########################################
 
     # save the combined data
     fname = 'integrated_data.csv'

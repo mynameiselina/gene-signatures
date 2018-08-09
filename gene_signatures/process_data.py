@@ -7,7 +7,8 @@ from gene_signatures.core import (
     get_chr_ticks,
     parse_arg_type,
     choose_samples,
-    set_heatmap_size
+    set_heatmap_size,
+    set_cbar_ticks
 )
 
 # basic imports
@@ -294,17 +295,7 @@ def process_data(**set_up_kwargs):
     ax.set_ylabel(pat_labels_title)
     plt.xticks(rotation=90)
     cbar = ax.figure.colorbar(ax.collections[0])
-    if function_dict is not None:
-        functionImpact_dict_r = dict(
-            (v, k) for k, v in function_dict.items()
-            )
-        myTicks = [0, 1, 2, 3, 4, 5]
-        cbar.set_ticks(myTicks)
-        cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-    else:
-        if custom_div_cmap_arg is not None:
-            cbar.set_ticks(np.arange(
-                -custom_div_cmap_arg, custom_div_cmap_arg))
+    set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
     if saveReport:
         if toPrint:
             logger.info('Save heatmap')
@@ -350,17 +341,7 @@ def process_data(**set_up_kwargs):
         ax.set_xticklabels(xlabels, rotation=90)
         ax.set_ylabel(pat_labels_title)
         cbar = ax.figure.colorbar(ax.collections[0])
-        myTicks = np.arange(vmin, vmax+2, 1)
-        cbar.set_ticks(myTicks)
-        if function_dict is not None:
-            functionImpact_dict_r = dict(
-                (v, k) for k, v in function_dict.items()
-                )
-            cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-        else:
-            if custom_div_cmap_arg is not None:
-                cbar.set_ticks(np.arange(
-                    -custom_div_cmap_arg, custom_div_cmap_arg))
+        set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
         if saveReport:
             if toPrint:
                 logger.info('Save heatmap')

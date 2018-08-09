@@ -11,7 +11,8 @@ from gene_signatures.core import (
     choose_samples,
     plot_aggr_mut,
     get_NexusExpress_diff_analysis,
-    parse_arg_type
+    parse_arg_type,
+    set_cbar_ticks
 )
 
 # basic imports
@@ -603,17 +604,7 @@ def nexus_express(**set_up_kwargs):
         ax.set_ylabel(pat_labels_title)
         plt.xticks(rotation=90)
         cbar = ax.figure.colorbar(ax.collections[0])
-        if function_dict is not None:
-            functionImpact_dict_r = dict(
-                (v, k) for k, v in function_dict.items()
-                )
-            myTicks = [0, 1, 2, 3, 4, 5]
-            cbar.set_ticks(myTicks)
-            cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-        else:
-            if custom_div_cmap_arg is not None:
-                cbar.set_ticks(np.arange(-custom_div_cmap_arg,
-                                         custom_div_cmap_arg))
+        set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
         plt.title(mytitle)
         if saveReport:
             fpath = os.path.join(output_directory, 'Fig_Heatmap_' +
@@ -642,18 +633,7 @@ def nexus_express(**set_up_kwargs):
             ax.set_ylabel(pat_labels_title)
             plt.xticks(rotation=90)
             cbar = ax.figure.colorbar(ax.collections[0])
-            if function_dict is not None:
-                functionImpact_dict_r = dict(
-                    (v, k) for k, v in function_dict.items()
-                    )
-                myTicks = [0, 1, 2, 3, 4, 5]
-                cbar.set_ticks(myTicks)
-                cbar.set_ticklabels(
-                    pd.Series(myTicks).map(functionImpact_dict_r))
-            else:
-                if custom_div_cmap_arg is not None:
-                    cbar.set_ticks(
-                        np.arange(-custom_div_cmap_arg, custom_div_cmap_arg))
+            set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
             plt.title(mytitle)
             if saveReport:
                 fpath = os.path.join(output_directory, 'Fig_Heatmap_' +

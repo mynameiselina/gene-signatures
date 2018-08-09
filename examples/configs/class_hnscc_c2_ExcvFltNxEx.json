@@ -5,22 +5,24 @@
     "toPrint": true,
 
     "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -2,
+        "vmax": 2,
         "highRes": false
     },
 
-    "files_to_combine_features": "output,headneck,setup_c2_excavator2_byNexus_filt,process,rmdpl,nexus_express,data_features_class.csv",
-    "file_short_ids": "CNV",
+    "data_fpath": "output,headneck,setup_c2_excavator2_byNexus_filt,process,rmdpl,nexus_express,data_features_class.csv",
     
-    "sample_info_directory": "input,headneck,cohort2",
+    "sample_info_fpath": "input,headneck,cohort2,20180208_Oliver,clinical_data.csv",
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0
+        "index_col": 0,
+        "col_as_index":"Patient"
     },
-    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "sample_final_id": "Patient",
-    "sample_data_ids": "Patient",
-    "clinical_label": "Local_Control",
+    "sample_class_column": "Local_Control",
+    "class_labels": "relapse,NOrelapse",
+    "class_values": "1,0",
     
     "output_directory": "output,headneck,classification",
     "DEBUG": true

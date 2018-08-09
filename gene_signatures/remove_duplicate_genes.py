@@ -11,7 +11,8 @@ from gene_signatures.core import (
     get_chr_ticks,
     distplot_breakYaxis,
     parse_arg_type,
-    set_heatmap_size
+    set_heatmap_size,
+    set_cbar_ticks
 )
 
 # basic imports
@@ -283,29 +284,25 @@ def remove_duplicate_genes(**set_up_kwargs):
                 plt.show()
 
         # Plot heatmap
-        _figure_x_size, _figure_y_size, _, _ = \
+        _figure_x_size, _figure_y_size, _show_gene_names, _ = \
             set_heatmap_size(data)
         plt.figure(figsize=(_figure_x_size, _figure_y_size))
         ax = sns.heatmap(choose_data, vmin=vmin, vmax=vmax,
                          yticklabels=pat_labels_txt, xticklabels=False,
                          cmap=cmap_custom, cbar=False)
-        plt.xticks(xpos_choose[i_data], xlabels_choose[i_data], rotation=0)
+        if (_show_gene_names and (
+                (xpos_choose[i_data] is None) or
+                (xlabels_choose[i_data] is None))):
+            plt.xticks(rotation=90)
+        elif (
+                (xpos_choose[i_data] is not None) and
+                (xlabels_choose[i_data] is not None)):
+            plt.xticks(xpos_choose[i_data], xlabels_choose[i_data], rotation=0)
         plt.xlabel('chromosomes (the number is aligned at the end ' +
                    'of the chr region)')
         plt.ylabel('samples '+select_samples_title+'\n'+pat_labels_title)
-        plt.xticks(rotation=90)
         cbar = ax.figure.colorbar(ax.collections[0])
-        if function_dict is not None:
-            functionImpact_dict_r = dict(
-                (v, k) for k, v in function_dict.items()
-                )
-            myTicks = [0, 1, 2, 3, 4, 5]
-            cbar.set_ticks(myTicks)
-            cbar.set_ticklabels(pd.Series(myTicks).map(functionImpact_dict_r))
-        else:
-            if custom_div_cmap_arg is not None:
-                cbar.set_ticks(np.arange(-custom_div_cmap_arg,
-                                         custom_div_cmap_arg))
+        set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
 
         plt.title(
             txt_label+'\nheatmap of ' +

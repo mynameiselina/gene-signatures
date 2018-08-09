@@ -1,0 +1,170 @@
+#### cohort 1
+
+## genepanel
+#set_up_data -config ./examples/configs/setup_hnscc_c1_genepanel.json > ./data/output/headneck/setup_hnscc_c1_genepanel.log
+process_data -config ./examples/configs/process_hnscc_c1_genepanel.json > ./data/output/headneck/setup_c1_genepanel/process.log
+
+# primary
+process_data -config ./examples/configs/process_hnscc_c1_genepanel_primary.json > ./data/output/headneck/setup_c1_genepanel/process_primary.log
+
+# binarize primary
+process_data -config ./examples/configs/process_hnscc_c1_genepanel_primary_bin.json > ./data/output/headneck/setup_c1_genepanel/process_primary_bin.log
+
+# nonresp
+process_data -config ./examples/configs/process_hnscc_c1_genepanel_nonresp.json > ./data/output/headneck/setup_c1_genepanel/process_nonresp.log
+
+# binarize nonresp
+process_data -config ./examples/configs/process_hnscc_c1_genepanel_nonresp_bin.json > ./data/output/headneck/setup_c1_genepanel/process_nonresp_bin.log
+
+
+
+## oncoscan raw
+#set_up_data -config ./examples/configs/setup_hnscc_c1_oncoscan_raw.json > ./data/output/headneck/setup_hnscc_c1_oncoscan_raw.log
+process_data -config ./examples/configs/process_hnscc_c1_oncoscan_raw.json > ./data/output/headneck/setup_c1_oncoscan_raw/process.log
+
+# primary
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_primary.json > ./data/output/headneck/setup_c1_oncoscan_raw/process/rmdpl_primary.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_primary.json > ./data/output/headneck/setup_c1_oncoscan_raw/process/rmdpl_primary/nexus_express.log
+
+# map values for cohort integration later
+process_data -config ./examples/configs/process_hnscc_c1_oncoscan_raw_map_values.json > ./data/output/headneck/setup_c1_oncoscan_raw/process_primary_map_values.log
+
+# binarize primary
+process_data -config ./examples/configs/process_hnscc_c1_oncoscan_raw_primary_bin.json > ./data/output/headneck/setup_c1_oncoscan_raw/process_primary_bin.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_primary_bin.json > ./data/output/headneck/setup_c1_oncoscan_raw/process_primary_bin/rmdpl_primary.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_primary_bin.json > ./data/output/headneck/setup_c1_oncoscan_raw/process_primary_bin/rmdpl_primary/nexus_express.log
+
+# nonresponders
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_nonresp.json > ./data/output/headneck/setup_c1_oncoscan_raw/process/rmdpl_nonresp.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_nonresp.json > ./data/output/headneck/setup_c1_oncoscan_raw/process/rmdpl_nonresp/nexus_express.log
+
+# binarize nonresp
+process_data -config ./examples/configs/process_hnscc_c1_oncoscan_raw_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_raw/process_nonresp_bin.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_raw/process_nonresp_bin/rmdpl_nonresp.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_raw/process_nonresp_bin/rmdpl_nonresp/nexus_express.log
+
+
+
+## oncoscan filtered
+#set_up_data -config ./examples/configs/setup_hnscc_c1_oncoscan_byNexus.json > ./data/output/headneck/setup_hnscc_c1_oncoscan_byNexus.log
+process_data -config ./examples/configs/process_hnscc_c1_oncoscan_byNexus.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process.log
+
+# primary
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_filt_primary.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process/rmdpl_primary.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_filt_primary.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process/rmdpl_primary/nexus_express.log
+
+# map values for cohort integration later
+process_data -config ./examples/configs/process_hnscc_c1_oncoscan_byNexus_map_values.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_primary_map_values.log
+
+# binarize primary
+process_data -config ./examples/configs/process_hnscc_c1_oncoscan_byNexus_primary_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_primary_bin.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_filt_primary_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_primary_bin/rmdpl_primary.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_filt_primary_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_primary_bin/rmdpl_primary/nexus_express.log
+
+# nonresponders
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_filt_nonresp.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process/rmdpl_nonresp.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_filt_nonresp.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process/rmdpl_nonresp/nexus_express.log
+
+# binarize nonresp
+process_data -config ./examples/configs/process_hnscc_c1_oncoscan_byNexus_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_filt_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin/rmdpl_nonresp.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_filt_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin/rmdpl_nonresp/nexus_express.log
+
+
+
+# combine features, cohort 1 primary samples
+
+# genepanel and oncoscan raw
+combine_features -config ./examples/configs/cmbnfeat_hnscc_c1_prmr_GnPnl_OncNxEx.json > ./data/output/headneck/combine_features_c1_prmr_GnPnl_OncNxEx.log
+
+# genepanel and oncoscan filtered
+combine_features -config ./examples/configs/cmbnfeat_hnscc_c1_prmr_GnPnl_OncFltNxEx.json > ./data/output/headneck/combine_features_c1_prmr_GnPnl_OncFltNxEx.log
+
+# BIN genepanel and oncoscan raw CANNOT because no selected feat from oncoscan
+# BIN genepanel and oncoscan filtered CANNOT because no selected feat from oncoscan
+
+
+
+# combine features, cohort 1 nonresp samples
+
+# genepanel and oncoscan raw
+combine_features -config ./examples/configs/cmbnfeat_hnscc_c1_nnrsp_GnPnl_OncNxEx.json > ./data/output/headneck/combine_features_c1_nnrsp_GnPnl_OncNxEx.log
+
+# genepanel and oncoscan filtered
+combine_features -config ./examples/configs/cmbnfeat_hnscc_c1_nnrsp_GnPnl_OncFltNxEx.json > ./data/output/headneck/combine_features_c1_nnrsp_GnPnl_OncFltNxEx.log
+
+# BIN genepanel and oncoscan raw CANNOT because no selected feat from oncoscan
+# BIN genepanel and oncoscan filtered CANNOT because no selected feat from oncoscan
+
+
+
+
+# cohort 2
+
+# VCF
+#set_up_data -config ./examples/configs/setup_hnscc_c2_vcf.json > ./data/output/headneck/setup_hnscc_c2_vcf.log
+process_data -config ./examples/configs/process_hnscc_c2_vcf.json > ./data/output/headneck/setup_c2_vcf/process.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c2_vcf.json > ./data/output/headneck/setup_c2_vcf/process/rmdpl.log
+nexus_express -config ./examples/configs/nxex_hnscc_c2_vcf.json > ./data/output/headneck/setup_c2_vcf/process/rmdpl/nexus_express.log
+
+# select genepanel
+process_data -config ./examples/configs/process_hnscc_c2_vcf_keepPanel.json > ./data/output/headneck/setup_c2_vcf/process_keepPanel.log
+
+
+# ExCavator2
+#set_up_data -config ./examples/configs/setup_hnscc_c2_excavator2_byNexus.json > ./data/output/headneck/setup_c2_excavator2_byNexus.log
+process_data -config ./examples/configs/process_hnscc_c2_excavator2_byNexus.json > ./data/output/headneck/setup_c2_excavator2_byNexus/process.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c2.json > ./data/output/headneck/setup_c2_excavator2_byNexus/process/rmdpl.log
+nexus_express -config ./examples/configs/nxex_hnscc_c2.json > ./data/output/headneck/setup_c2_excavator2_byNexus/process/rmdpl/nexus_express.log
+
+
+# ExCavator2 filtered
+#set_up_data -config ./examples/configs/setup_hnscc_c2_excavator2_byNexus_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt.log
+process_data -config ./examples/configs/process_hnscc_c2_excavator2_byNexus_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt/process.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c2_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt/process/rmdpl.log
+nexus_express -config ./examples/configs/nxex_hnscc_c2_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt/process/rmdpl/nexus_express.log
+
+
+
+# cohort integration THIS IS USELESS
+
+# cohort integration (MAPPED values of c1 to c2 range)
+combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_mapped_c2.json > ./data/output/headneck/integrate_cohorts_c1c2_CNV_mapped.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_prmr_mapped_c2.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped/rmdpl.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_prmr_mapped_c2.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped/rmdpl/nexus_express.log
+
+
+# FILT cohort integration (MAPPED values of c1 to c2 range)
+combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_mapped_c2_filt.json > ./data/output/headneck/integrate_cohorts_c1c2_CNV_mapped_filt.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_prmr_mapped_c2_filt.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_filt/rmdpl.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_prmr_mapped_c2_filt.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_filt/rmdpl/nexus_express.log
+
+
+###### CLASSIFICATION ######
+
+## C1 primary
+classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl.json > ./data/output/headneck/c1_prmr_GnPnl.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_OncNxEx.json > ./data/output/headneck/c1_prmr_OncNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_OncFltNxEx.json > ./data/output/headneck/c1_prmr_OncFltNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl_OncNxEx.json > ./data/output/headneck/c1_prmr_GnPnl_OncNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl_OncFltNxEx.json > ./data/output/headneck/c1_prmr_GnPnl_OncFltNxEx.log
+
+
+## C2 nonresp
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl.json > ./data/output/headneck/c1_nnrsp_GnPnl.log
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_OncNxEx.json > ./data/output/headneck/c1_nnrsp_OncNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_OncFltNxEx.json > ./data/output/headneck/c1_nnrsp_OncFltNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl_OncNxEx.json > ./data/output/headneck/c1_nnrsp_GnPnl_OncNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl_OncFltNxEx.json > ./data/output/headneck/c1_nnrsp_GnPnl_OncFltNxEx.log
+
+
+## C2
+classification -config ./examples/configs/class_hnscc_c2_ExcvNxEx.json > ./data/output/headneck/c2_ExcvNxEx.log
+classification -config ./examples/configs/class_hnscc_c2_ExcvFltNxEx.json > ./data/output/headneck/c2_ExcvFltNxEx.log
+
+
+## C1+C2 integrated
+classification -config ./examples/configs/class_hnscc_c1_prmr_mapped_c2.json > ./data/output/headneck/class_hnscc_c1_prmr_mapped_c2.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_mapped_c2_filt.json > ./data/output/headneck/class_hnscc_c1_prmr_mapped_c2_filt.log
+
+

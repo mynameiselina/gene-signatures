@@ -5,7 +5,13 @@
     "toPrint": true,
 
     "plot_kwargs": {
-        "highRes": false
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
+        "highRes": false,
+        "mincol": "red",
+        "midcol": "white",
+        "maxcol": "purple"
     },
 
     "data_fpath": "output,headneck,combine_features,c1_prmr_GnPnl_OncNxEx,data_with_cnvID_id.csv",
@@ -17,7 +23,9 @@
         "index_col": 0,
         "col_as_index":"cnvID"
     },
-    "sample_class_label": "Ccode",
+    "sample_class_column": "Ccode",
+    "class_labels": "responders,NONresponders",
+    "class_values": "1,0",
     
     "output_directory": "output,headneck,classification",
     "DEBUG": true

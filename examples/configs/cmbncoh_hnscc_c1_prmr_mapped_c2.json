@@ -35,6 +35,10 @@
         "new_sample_info_fpath": null
     },
     
+    "gene_info_fpath": "output,headneck,setup_c1_oncoscan_raw,genes_info.csv",
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+
     "output_directory": "output,headneck,integrate_cohorts,c1c2",
     "DEBUG": true
 }

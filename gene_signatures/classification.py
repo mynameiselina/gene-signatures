@@ -11,6 +11,7 @@ from gene_signatures.core import (
     choose_samples,
     parse_arg_type,
     boxplot,
+    set_heatmap_size,
     which_x_toPrint
 )
 
@@ -27,6 +28,7 @@ from sklearn import linear_model
 from sklearn import svm
 from distutils.util import strtobool
 from scipy.stats import binom_test
+from sklearn.externals import joblib
 
 # plotting imports
 import matplotlib
@@ -41,13 +43,20 @@ logger = logging.getLogger(__name__)
 
 
 def _run_classification(dat, dat_target, random_state):
+
+    logger.info("Running classification...")
     dat = dat.copy()
     dat_target = dat_target.copy()
     np.random.seed(random_state)
+
     # logger.info("random state = "+str(random_state))
     # model = svm.SVC(
     #     kernel='linear', random_state=random_state,
     # )
+    logger.info(
+        "model: svm.LinearSVC with l2 penalty and squared_hinge loss" +
+        "random_state: "+str(random_state)
+    )
     model = svm.LinearSVC(
         penalty='l2', C=1, random_state=random_state,
         loss='squared_hinge', dual=False
@@ -56,6 +65,15 @@ def _run_classification(dat, dat_target, random_state):
     #     penalty='l2', C=1, random_state=random_state,
     #     solver='liblinear'
     # )
+
+    logger.info(
+        "\n\n\'we fit the model n times, where n = number of samples (" +
+        str(dat.shape[0])+"), to predict each sample once\n" +
+        "at the end we return the feature coefficients from each model " +
+        "and a count of how many correct vs. wrong predictions we had " +
+        "these counts will be evaluated with a bionomial test " +
+        "and show how likely it is to get them by chance\'\n\n"
+    )
     estimators = []
     correct = 0
     wrong = 0
@@ -66,7 +84,7 @@ def _run_classification(dat, dat_target, random_state):
         one_sample = dat.iloc[choose_sample:choose_sample+1, :]
         y_real = dat_target.iloc[choose_sample:choose_sample+1]
 
-        np.random.seed(random_state)
+        # np.random.seed(random_state)
         model.fit(X, y)
 
         all_coefs[choose_sample:choose_sample+1, :] = model.coef_[0]
@@ -78,7 +96,15 @@ def _run_classification(dat, dat_target, random_state):
         else:
             wrong = wrong + 1
 
-    return all_coefs, (correct, wrong)
+    # binomial test
+    binom_test_thres = 0.5
+    pval = binom_test(correct, n=correct+wrong, p=binom_test_thres)
+    printed_results = 'correct = '+str(correct)+', wrong = '+str(wrong) + \
+        '\n'+'pvalue = '+str(pval)
+    logger.info(printed_results)
+    logger.info("Finished classification!")
+
+    return model, all_coefs, printed_results
 
 
 def classification(**set_up_kwargs):
@@ -93,74 +119,33 @@ def classification(**set_up_kwargs):
     )
     reportName = set_up_kwargs.get('reportName', script_fname)
     txt_label = set_up_kwargs.get('txt_label', 'test_txt_label')
-    sample_class_label = set_up_kwargs.get('sample_class_label', None)
-    if sample_class_label is NOne:
+    sample_class_column = set_up_kwargs.get('sample_class_column', None)
+    if sample_class_column is None:
         logger.error("NO class label was defined!")
         raise
-    random_state = parse_arg_type(
-        set_up_kwargs.get('random_state', 0),
-        int
-    )
+    class_labels = set_up_kwargs.get('class_labels', None)
+    if class_labels is not None:
+        if ',' in class_labels:
+            class_labels = class_labels.rsplit(',')
+    class_values = set_up_kwargs.get('class_values', None)
+    if class_values is not None:
+        if ',' in class_values:
+            class_values = class_values.rsplit(',')
+            class_values = np.array(class_values).astype(int)
 
-    # plotting params
-    plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
-    highRes = parse_arg_type(
-        plot_kwargs.get('highRes', False),
-        bool
-    )
-    if highRes:
-        img_ext = '.pdf'
+    random_state = set_up_kwargs.get('random_state', '0')
+    if isinstance(random_state, str) and ',' in random_state:
+        _random_state_or = random_state[:]
+        random_state = os.path.join(*random_state.rsplit(','))
+        try:
+            random_state = np.array(random_state).astype(int)
+        except Exception as ex:
+            logger.warning(
+                "invalid random state values given: "+_random_state_or +
+                "\nrandom_state set to zero\n"+str(ex)
+            )
     else:
-        img_ext = '.png'
-    # cmap_custom = plot_kwargs.get('cmap_custom', None)
-    # vmin = parse_arg_type(
-    #     plot_kwargs.get('vmin', None),
-    #     int
-    # )
-    # vmax = parse_arg_type(
-    #     plot_kwargs.get('vmax', None),
-    #     int
-    # )
-    # if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
-    #     custom_div_cmap_arg = abs(vmin)+abs(vmax)
-    #     if (vmin <= 0) and (vmax >= 0):
-    #         custom_div_cmap_arg = custom_div_cmap_arg + 1
-    #     mincol = plot_kwargs.get('mincol', None)
-    #     midcol = plot_kwargs.get('midcol', None)
-    #     maxcol = plot_kwargs.get('maxcol', None)
-    #     if (
-    #             (mincol is not None) and
-    #             (midcol is not None) and
-    #             (maxcol is not None)
-    #             ):
-    #         cmap_custom = custom_div_cmap(
-    #             numcolors=custom_div_cmap_arg,
-    #             mincol=mincol, midcol=midcol, maxcol=maxcol)
-    #     else:
-    #         cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
-
-    # initialize directories
-    MainDataDir = os.path.join(script_path, '..', 'data')
-
-    # data input
-    data_fpath = set_up_kwargs.get('data_fpath')
-    if ',' in sample_info_fpath:
-        data_fpath = os.path.join(*data_fpath.rsplit(','))
-
-    # sample info input
-    sample_info_fpath = set_up_kwargs.get('sample_info_fpath')
-    if ',' in sample_info_fpath:
-        sample_info_fpath = os.path.join(*sample_info_fpath.rsplit(','))
-    sample_info_read_csv_kwargs = set_up_kwargs.get(
-        'sample_info_read_csv_kwargs', {})
-
-    # data output
-    output_directory = set_up_kwargs.get('output_directory')
-    if ',' in output_directory:
-        output_directory = os.path.join(*output_directory.rsplit(','))
-    output_directory = set_directory(
-        os.path.join(MainDataDir, output_directory, reportName)
-    )
+        random_state = parse_arg_type(random_state, int)
 
     # plotting params
     plot_kwargs = set_up_kwargs.get('plot_kwargs', {})
@@ -199,6 +184,31 @@ def classification(**set_up_kwargs):
         else:
             cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
 
+    # initialize directories
+    MainDataDir = os.path.join(script_path, '..', 'data')
+
+    # data input
+    data_fpath = set_up_kwargs.get('data_fpath')
+    if ',' in data_fpath:
+        data_fpath = os.path.join(*data_fpath.rsplit(','))
+        data_fpath = os.path.join(MainDataDir, data_fpath)
+
+    # sample info input
+    sample_info_fpath = set_up_kwargs.get('sample_info_fpath')
+    if ',' in sample_info_fpath:
+        sample_info_fpath = os.path.join(*sample_info_fpath.rsplit(','))
+    sample_info_fpath = os.path.join(MainDataDir, sample_info_fpath)
+    sample_info_read_csv_kwargs = set_up_kwargs.get(
+        'sample_info_read_csv_kwargs', {})
+
+    # data output
+    output_directory = set_up_kwargs.get('output_directory')
+    if ',' in output_directory:
+        output_directory = os.path.join(*output_directory.rsplit(','))
+    output_directory = set_directory(
+        os.path.join(MainDataDir, output_directory, reportName)
+    )
+
     # save the set_up_kwargs in the output dir for reproducibility
     fname = 'set_up_kwargs.json'
     f = os.path.join(output_directory, fname)
@@ -211,9 +221,9 @@ def classification(**set_up_kwargs):
     # load data
     try:
         data = pd.read_csv(data_fpath, sep='\t', header=0, index_col=0)
-        logger.error('loaded data file with shape: '+str(df.shape))
+        logger.error('loaded data file with shape: '+str(data.shape))
     except:
-        logger.error('failed to read data file from: '+str(fpath))
+        logger.error('failed to read data file from: '+str(data_fpath))
         raise
 
     # load info table of samples
@@ -225,18 +235,17 @@ def classification(**set_up_kwargs):
         raise
 
     # set the ground truth
-    ground_truth = info_table.loc[data.index, sample_class_label]
+    ground_truth = info_table.loc[data.index, sample_class_column]
 
     # Classification
-    binom_test_thres = 0.5
-    logger.info("Running classification...")
-    all_coefs, (correct, wrong) =\
-        _run_classification(data, ground_truth, random_state)
-    pval = binom_test(correct, n=correct+wrong, p=binom_test_thres)
-    printed_results = 'correct = '+str(correct)+', wrong = '+str(wrong) + \
-        '\n'+'pvalue = '+str(pval)
-    logger.info(printed_results)
-    logger.info("Finished classification!")
+    model, all_coefs, printed_results = _run_classification(
+        data, ground_truth, random_state)
+
+    # Save to model in the output_directory
+    fname = 'joblib_model.pkl'
+    fpath = os.path.join(output_directory, fname)
+    logger.info('-save model with joblib')
+    joblib.dump(model, fpath)
 
     # get the genes with the nnz coefficients in classification
     clasification_results = pd.DataFrame(index=data.columns.values)
@@ -309,22 +318,23 @@ def classification(**set_up_kwargs):
     _, xlabels = which_x_toPrint(
         all_coefs, data.columns.values, n_names=n_names)
 
-    ds_y, ds_x = data.shape
-    fs_x = 25 if ds_x > 45 else 15 if ds_x > 30 else 10 if ds_x > 3 else 5
-    fs_y = 20 if ds_y > 40 else 15 if ds_y > 30 else 10
-
+    fs_x, fs_y, _show_gene_names, _ = set_heatmap_size(data)
     plt.figure(figsize=(fs_x, fs_y))
     ax = sns.heatmap(data.loc[:, xlabels], vmin=vmin, vmax=vmax,
                      yticklabels=yticklabels,
-                     xticklabels=True,
+                     xticklabels=_show_gene_names,
                      cmap=cmap_custom, cbar=True)
     plt.xticks(rotation=90)
-    plt.title(str(n_names)+' selected genes from classification coefficients')
+    plt.title(
+        str(n_names)+' selected genes from classification coefficients:' +
+        class_labels[0]+'['+str(class_values[0])+'] vs. ' +
+        class_labels[1]+'['+str(class_values[1])+']'
+    )
 
     if saveReport:
         logger.info('Save heatmap')
         fpath = os.path.join(
-            output_directory, 'Fig_heatmap_with_'+sample_final_id+'_id'+img_ext
+            output_directory, 'Fig_heatmap_with_nnz_coefs'+img_ext
         )
         plt.savefig(fpath,
                     transparent=True, bbox_inches='tight',
