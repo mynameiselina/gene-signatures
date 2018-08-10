@@ -104,6 +104,11 @@ def _run_classification(dat, dat_target, random_state):
     logger.info(printed_results)
     logger.info("Finished classification!")
 
+    # at the end return the model from all samples
+    X = dat
+    y = dat_target
+    model.fit(X, y)
+
     return model, all_coefs, printed_results
 
 
@@ -312,8 +317,12 @@ def classification(**set_up_kwargs):
         plt.show()
 
     # heatmap of genes with nnz coefs in classification
-    yticklabels = ground_truth.index.values+',' + \
-        ground_truth.values.flatten().astype(str)
+    try:
+        yticklabels = ground_truth.index.values+',' + \
+            ground_truth.values.astype(int).flatten().astype(str)
+    except:
+        yticklabels = ground_truth.index.values+',' + \
+            ground_truth.values.flatten().astype(str)
 
     _, xlabels = which_x_toPrint(
         all_coefs, data.columns.values, n_names=n_names)
