@@ -1,0 +1,37 @@
+{
+    "reportName": "c2_ExcvNxEx",
+    "saveReport": true,
+    "txt_label": "Feature selection of samples with features from c2 NxEx selected ExCavator2",
+    "toPrint": true,
+
+    "feature_selection_args": {
+        "random_state": 100,
+        "up_thres": 0.55,
+        "low_thres": 0.45
+    },
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -2,
+        "vmax": 2,
+        "highRes": false
+    },
+
+    "data_fpath": "output,headneck,setup_c2_excavator2_byNexus,process,rmdpl,nexus_express,data_features_class.csv",
+    
+    "sample_info_fpath": "input,headneck,cohort2,20180208_Oliver,clinical_data.csv",
+    "sample_info_read_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0,
+        "col_as_index":"Patient"
+    },
+    "sample_class_column": "Local_Control",
+    "class_labels": "relapse,NOrelapse",
+    "class_values": "1,0",
+    
+    "dupl_genes_dict_fpath": "output,headneck,setup_c2_excavator2_byNexus,process,rmdpl,data_processed__select_all__uniq.json",
+
+    "output_directory": "output,headneck,feature_selection",
+    "DEBUG": true
+}

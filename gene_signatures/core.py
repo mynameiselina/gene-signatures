@@ -494,6 +494,7 @@ def plot_heatmap_special(X, sel, X_sel):
 def boxplot(all_coefs, n, labels, title='', txtbox='',
             sidespace=3, swarm=True, n_names=15):
 
+    all_coefs = all_coefs.values.copy()
     sidespace = all_coefs.max() * sidespace
     xpos, xlabels = which_x_toPrint(all_coefs, labels, n_names=n_names)
 
@@ -510,21 +511,21 @@ def boxplot(all_coefs, n, labels, title='', txtbox='',
 
     plt.figure(figsize=(figsize_x, 5))
     ax = sns.boxplot(data=all_coefs, color='white', saturation=1, width=0.5,
-                     fliersize=0, linewidth=2, whis=1.5, notch=False)
-    # iterate over boxes
-    for i, box in enumerate(ax.artists):
-        if i in xpos:
-            box.set_edgecolor('red')
-            box.set_facecolor('white')
-            # iterate over whiskers and median lines
-            for j in range(6*i, 6*(i+1)):
-                ax.lines[j].set_color('red')
-        else:
-            box.set_edgecolor('black')
-            box.set_facecolor('white')
-            # iterate over whiskers and median lines
-            for j in range(6*i, 6*(i+1)):
-                ax.lines[j].set_color('black')
+                     fliersize=2, linewidth=2, whis=1.5, notch=False)
+    # # iterate over boxes
+    # for i, box in enumerate(ax.artists):
+    #     if i in xpos:
+    #         box.set_edgecolor('red')
+    #         # box.set_facecolor('white')
+    #         # iterate over whiskers and median lines
+    #         for j in range(6*i, 6*(i+1)):
+    #             ax.lines[j].set_color('red')
+    #     else:
+    #         box.set_edgecolor('black')
+    #         # box.set_facecolor('white')
+    #         # iterate over whiskers and median lines
+    #         for j in range(6*i, 6*(i+1)):
+    #             ax.lines[j].set_color('black')
 
     # plt.setp(ax.artists, edgecolor = 'k', facecolor='w')
     # plt.setp(ax.lines, color='k')

@@ -140,31 +140,69 @@ rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_prmr_mapped_c2_filt.json 
 nexus_express -config ./examples/configs/nxex_hnscc_c1_prmr_mapped_c2_filt.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_filt/rmdpl/nexus_express.log
 
 
-###### CLASSIFICATION ######
+###### FEATURE SELECTION ######
 
 ## C1 primary
-classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl.json > ./data/output/headneck/c1_prmr_GnPnl.log
-classification -config ./examples/configs/class_hnscc_c1_prmr_OncNxEx.json > ./data/output/headneck/c1_prmr_OncNxEx.log
-classification -config ./examples/configs/class_hnscc_c1_prmr_OncFltNxEx.json > ./data/output/headneck/c1_prmr_OncFltNxEx.log
-classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl_OncNxEx.json > ./data/output/headneck/c1_prmr_GnPnl_OncNxEx.log
-classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl_OncFltNxEx.json > ./data/output/headneck/c1_prmr_GnPnl_OncFltNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_GnPnl.json > ./data/output/headneck/featsel_c1_prmr_GnPnl.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_Onc.json > ./data/output/headneck/featsel_c1_prmr_Onc.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_OncFlt.json > ./data/output/headneck/featsel_c1_prmr_OncFlt.log
 
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_OncNxEx.json > ./data/output/headneck/featsel_c1_prmr_OncNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_OncFltNxEx.json > ./data/output/headneck/featsel_c1_prmr_OncFltNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_GnPnl_OncNxEx.json > ./data/output/headneck/featsel_c1_prmr_GnPnl_OncNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_GnPnl_OncFltNxEx.json > ./data/output/headneck/featsel_c1_prmr_GnPnl_OncFltNxEx.log
 
 ## C2 nonresp
-classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl.json > ./data/output/headneck/c1_nnrsp_GnPnl.log
-classification -config ./examples/configs/class_hnscc_c1_nnrsp_OncNxEx.json > ./data/output/headneck/c1_nnrsp_OncNxEx.log
-classification -config ./examples/configs/class_hnscc_c1_nnrsp_OncFltNxEx.json > ./data/output/headneck/c1_nnrsp_OncFltNxEx.log
-classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl_OncNxEx.json > ./data/output/headneck/c1_nnrsp_GnPnl_OncNxEx.log
-classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl_OncFltNxEx.json > ./data/output/headneck/c1_nnrsp_GnPnl_OncFltNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_nnrsp_GnPnl.json > ./data/output/headneck/featsel_c1_nnrsp_GnPnl.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_nnrsp_OncNxEx.json > ./data/output/headneck/featsel_c1_nnrsp_OncNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_nnrsp_OncFltNxEx.json > ./data/output/headneck/featsel_c1_nnrsp_OncFltNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_nnrsp_GnPnl_OncNxEx.json > ./data/output/headneck/featsel_c1_nnrsp_GnPnl_OncNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_nnrsp_GnPnl_OncFltNxEx.json > ./data/output/headneck/featsel_c1_nnrsp_GnPnl_OncFltNxEx.log
 
 
 ## C2
-classification -config ./examples/configs/class_hnscc_c2_ExcvNxEx.json > ./data/output/headneck/c2_ExcvNxEx.log
-classification -config ./examples/configs/class_hnscc_c2_ExcvFltNxEx.json > ./data/output/headneck/c2_ExcvFltNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c2_vcf.json > ./data/output/headneck/featsel_c2_vcf.log
+feature_selection -config ./examples/configs/featsel_hnscc_c2_Excv.json > ./data/output/headneck/featsel_c2_Excv.log
+feature_selection -config ./examples/configs/featsel_hnscc_c2_ExcvFlt.json > ./data/output/headneck/featsel_c2_ExcvFlt.log
+
+feature_selection -config ./examples/configs/featsel_hnscc_c2_ExcvNxEx.json > ./data/output/headneck/featsel_c2_ExcvNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c2_ExcvFltNxEx.json > ./data/output/headneck/featsel_c2_ExcvFltNxEx.log
 
 
 ## C1+C2 integrated
-classification -config ./examples/configs/class_hnscc_c1_prmr_mapped_c2.json > ./data/output/headneck/class_hnscc_c1_prmr_mapped_c2.log
-classification -config ./examples/configs/class_hnscc_c1_prmr_mapped_c2_filt.json > ./data/output/headneck/class_hnscc_c1_prmr_mapped_c2_filt.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_filt.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_filt.log
+
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_NxEx.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_NxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_filt_NxEx.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_filt_NxEx.log
+
+
+
+###### CLASSIFICATION ######
+
+## C1 primary
+classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl.json > ./data/output/headneck/class_c1_prmr_GnPnl.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_OncNxEx.json > ./data/output/headneck/class_c1_prmr_OncNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_OncFltNxEx.json > ./data/output/headneck/class_c1_prmr_OncFltNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl_OncNxEx.json > ./data/output/headneck/class_c1_prmr_GnPnl_OncNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_GnPnl_OncFltNxEx.json > ./data/output/headneck/class_c1_prmr_GnPnl_OncFltNxEx.log
+
+
+## C2 nonresp
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl.json > ./data/output/headneck/class_c1_nnrsp_GnPnl.log
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_OncNxEx.json > ./data/output/headneck/class_c1_nnrsp_OncNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_OncFltNxEx.json > ./data/output/headneck/class_c1_nnrsp_OncFltNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl_OncNxEx.json > ./data/output/headneck/class_c1_nnrsp_GnPnl_OncNxEx.log
+classification -config ./examples/configs/class_hnscc_c1_nnrsp_GnPnl_OncFltNxEx.json > ./data/output/headneck/class_c1_nnrsp_GnPnl_OncFltNxEx.log
+
+
+## C2
+classification -config ./examples/configs/class_hnscc_c2_ExcvNxEx.json > ./data/output/headneck/class_c2_ExcvNxEx.log
+classification -config ./examples/configs/class_hnscc_c2_ExcvFltNxEx.json > ./data/output/headneck/class_c2_ExcvFltNxEx.log
+
+
+## C1+C2 integrated
+classification -config ./examples/configs/class_hnscc_c1_prmr_mapped_c2.json > ./data/output/headneck/class_c1_prmr_mapped_c2.log
+classification -config ./examples/configs/class_hnscc_c1_prmr_mapped_c2_filt.json > ./data/output/headneck/class_c1_prmr_mapped_c2_filt.log
 
 

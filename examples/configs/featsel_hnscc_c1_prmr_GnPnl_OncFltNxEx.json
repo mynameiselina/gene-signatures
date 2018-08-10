@@ -1,0 +1,40 @@
+{
+    "reportName": "c1_prmr_GnPnl_OncFltNxEx",
+    "saveReport": true,
+    "txt_label": "Feature selection of primary samples with features from c1 genepanel and NxEx selected filt oncoscan",
+    "toPrint": true,
+
+    "feature_selection_args": {
+        "random_state": 100,
+        "up_thres": 0.55,
+        "low_thres": 0.45
+    },
+    
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": -4,
+        "vmax": 4,
+        "highRes": false,
+        "mincol": "red",
+        "midcol": "white",
+        "maxcol": "purple"
+    },
+
+    "data_fpath": "output,headneck,combine_features,c1_prmr_GnPnl_OncFltNxEx,data_with_cnvID_id.csv",
+   
+    "sample_info_fpath": "input,headneck,cohort1,sample_info.txt",
+    "sample_info_read_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0,
+        "col_as_index":"cnvID"
+    },
+    "sample_class_column": "Ccode",
+    "class_labels": "responders,NONresponders",
+    "class_values": "1,0",
+
+    "dupl_genes_dict_fpath": "output,headneck,setup_c1_oncoscan_byNexus,process,rmdpl_primary,data_processed__select_primary__uniq.json",
+
+    "output_directory": "output,headneck,feature_selection",
+    "DEBUG": true
+}

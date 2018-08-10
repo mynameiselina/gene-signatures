@@ -1,0 +1,51 @@
+{
+    "reportName": "c2_vcf",
+    "saveReport": true,
+    "txt_label": "Feature selection of samples with features from c2 VCF",
+    "toPrint": true,
+
+    "feature_selection_args": {
+        "random_state": 100,
+        "up_thres": 0.60,
+        "low_thres": 0.40
+    },
+    
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": 0,
+        "vmax": 4,
+        "highRes": false,
+        "mincol": "white",
+        "midcol": "orange",
+        "maxcol": "red",
+        "function_dict": {
+            "no mutation": 0,
+            "missense": 1,
+            "nonframeshiftInsertion": 2,
+            "nonframeshiftDeletion": 2,
+            "nonframeshiftIndel": 2,
+            "nonsense": 3,
+            "frameshiftDeletion": 4,
+            "frameshiftInsertion": 4,
+            "frameshiftIndel": 4
+        }
+    },
+
+    "data_fpath": "output,headneck,setup_c2_vcf,process,rmdpl,data_processed__select_all__uniq.txt",
+    
+    "sample_info_fpath": "input,headneck,cohort2,20180208_Oliver,clinical_data.csv",
+    "sample_info_read_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0,
+        "col_as_index":"Patient"
+    },
+    "sample_class_column": "Local_Control",
+    "class_labels": "relapse,NOrelapse",
+    "class_values": "1,0",
+    
+    "dupl_genes_dict_fpath": "output,headneck,setup_c2_vcf,process,rmdpl,data_processed__select_all__uniq.json",
+
+    "output_directory": "output,headneck,feature_selection",
+    "DEBUG": true
+}

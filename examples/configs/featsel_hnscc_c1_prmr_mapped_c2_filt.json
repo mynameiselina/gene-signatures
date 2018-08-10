@@ -1,11 +1,11 @@
 {
-    "reportName": "DEBUG__c1_prmr_mapped_c2_filt",
+    "reportName": "c1_prmr_mapped_c2_filt",
     "saveReport": true,
     "txt_label": "Feature selection of primary oncoscan and c2 Excavator2 filt",
     "toPrint": true,
 
     "feature_selection_args": {
-        "random_state": 5,
+        "random_state": 100,
         "up_thres": 0.55,
         "low_thres": 0.45
     },

@@ -3,22 +3,26 @@
 load data
 select the samples for the chosen comparison (e.g. all, only TP53wt, etc)
 
-load selected genes for classification (e.g. from nexus express)
+load selected genes for feature_selection (e.g. from nexus express)
 
-Run Classification:
-linear_model.LogisticRegression
-run n times: n = number of samples
-each time run on n-1 samples and predict on 1 sample
-do a binom_test on the predictions
+Run feature_selection:
+We fit the model n times, where n = number of samples,
+to predict each sample once.
+We repeat this r times, each time with a different random state
+and we average each sample's prediction.
+At the end, we return the feature coefficients
+from all n x r models and a count of
+how many correct vs. wrong predictions we had.
+A prediction is set to 1 if > up_thres,
+0 if < low_thres and NA otherwise.
+These counts will be evaluated with a bionomial test
+and show how likely it is to get them by chance.
 
-figures: highlight the names from the first genes with the
-highest absolute coefficients across all classification runs
-
-plot:
+figures:
 -boxplot
--swarmplot
--heatmap of all selected genes
--heatmap of highlighted selected genes
+-swarmplot (optional)
+-heatmap of genes with nnz coeffs
+-heatmap of topN selected genes
 
 """
 from omics_processing.io import (
@@ -27,8 +31,8 @@ from omics_processing.io import (
 from gene_signatures.core import (
     custom_div_cmap
 )
-from gene_signatures.classification import (
-    classification
+from gene_signatures.feature_selection import (
+    feature_selection
 )
 import os
 import sys
@@ -92,7 +96,7 @@ def main(json_config, DEBUG=True, **set_up_kwargs):
         #  update default params with command line params
         params.update(set_up_kwargs)
 
-    classification(**params)
+    feature_selection(**params)
 
 
 if __name__ == '__main__':
