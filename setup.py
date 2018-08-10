@@ -127,6 +127,7 @@ scripts = [
     'bin/nexus_express',
     'bin/combine_features',
     'bin/combine_cohorts',
+    'bin/feature_selection',
     'bin/classification',
 ]
 
