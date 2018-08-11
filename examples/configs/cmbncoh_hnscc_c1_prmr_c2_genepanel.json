@@ -1,0 +1,30 @@
+{
+    "reportName": "genepanel",
+    "saveReport": true,
+    "txt_label": "Combine samples from c1 primary genepanel and c2 VCF",
+    "toPrint": true,
+
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": 0,
+        "vmax": 4,
+        "highRes": false,
+        "mincol": "white",
+        "midcol": "orange",
+        "maxcol": "red",
+        "function_dict": {
+            "no mutation": 0,
+            "missense": 1,
+            "nonframeshiftIndel": 2,
+            "nonsense": 3,
+            "frameshiftIndel": 4
+        }
+    },
+
+    "files_to_combine_samples": "output,headneck,setup_c1_genepanel,process_select_primary,data_processed.csv;output,headneck,setup_c2_vcf,process_keepPanel,data_processed.csv",
+
+    "gene_info_fpath": null,
+
+    "output_directory": "output,headneck,integrate_cohorts,c1c2",
+    "DEBUG": true
+}

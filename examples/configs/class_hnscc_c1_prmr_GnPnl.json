@@ -4,6 +4,13 @@
     "txt_label": "Classification of primary samples with features from c1 genepanel",
     "toPrint": true,
 
+    "classification_args": {
+        "random_state": 0,
+        "n_splits": 10,
+        "split_train_size": 0.8,
+        "split_random_state": 0
+    },
+
     "plot_kwargs": {
         "cmap_custom": null,
         "vmin": 0,
@@ -37,7 +44,7 @@
     "sample_class_column": "Ccode",
     "class_labels": "responders,NONresponders",
     "class_values": "1,0",
-    
+
     "output_directory": "output,headneck,classification",
     "DEBUG": true
 }

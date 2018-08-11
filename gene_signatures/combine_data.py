@@ -231,7 +231,7 @@ def combine_features(**set_up_kwargs):
     for i, fpath in enumerate(data_fpaths):
         try:
             df = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
-            logger.error('loaded data file with shape: '+str(df.shape))
+            logger.info('loaded data file with shape: '+str(df.shape))
         except Exception as ex:
             logger.error('failed to read data file from: '+str(fpath))
             logger.error(ex)
@@ -434,6 +434,8 @@ def combine_cohorts(**set_up_kwargs):
                     ~info_table[
                         _sample_info_swap_class_label_list[j]].astype(bool)
                     ).astype(int)
+
+            info_table['dataset'] = i
 
         # load data
         fpath = data_fpaths[i]

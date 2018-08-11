@@ -276,6 +276,7 @@ def process_data(**set_up_kwargs):
                              choose_what=select_samples_which,
                              sortby=select_samples_sort_by,
                              ascending=False)
+    data = data.loc[ids_tmp, :]
     pat_labels = info_table.loc[ids_tmp][select_samples_sort_by].copy()
     try:
         pat_labels_txt = pat_labels.astype(int).reset_index().values

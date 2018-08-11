@@ -1720,21 +1720,21 @@ def edit_genepanel(variants, **kwargs):
     # --which genes are mutated accross all patients
     logger.info(
         str(variants[gene_col].unique().shape[0]) +
-        "genes are mutated accross all patients:" +
+        " genes are mutated accross all patients: " +
         str(variants[gene_col].unique()))
 
     # --type of mutations accross all patients
     logger.info(
-        "counts of" +
+        "counts of " +
         str(variants[func_col_txt].unique().shape[0]) +
-        "mutation types accross all patients:\n" +
+        " mutation types accross all patients:\n" +
         str(variants[func_col_txt].value_counts()))
 
     # --ONLY genes with missense mutations
     logger.info(
         str(variants[variants[func_col_txt] == 'missense'
                      ][gene_col].unique().shape[0]) +
-        "genes with a missense mutation:" +
+        " genes with a missense mutation: " +
         str(variants[variants[func_col_txt] == 'missense'][gene_col].unique()))
 
     # --define a dict of FUNCTION values
@@ -2019,3 +2019,42 @@ def set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg):
         if custom_div_cmap_arg is not None:
             cbar.set_ticks(
                 np.arange(-custom_div_cmap_arg, custom_div_cmap_arg))
+
+
+def edit_names_with_duplicates(df, dupl_genes_dict):
+    _agg_names = df.reset_index()['gene'].values.sum()
+    if ('__' in _agg_names):
+        # clean the gene names if editted before
+        df['cleanName'] = \
+            df.reset_index()['gene']\
+            .str.split('__', expand=True)[0].values
+
+        # get the dupl genes names using the clean name
+        df['dupl_genes'] = \
+            df['cleanName'].map(dupl_genes_dict).values
+
+        #  create a new name
+        df['newGeneName'] = \
+            df['cleanName'].values
+        genes_with_dupl = set(dupl_genes_dict.keys()).intersection(
+            set(df['cleanName'].values))
+        df.reset_index(inplace=True, drop=False)
+        df.set_index('cleanName', inplace=True)
+        df.loc[genes_with_dupl, 'newGeneName'] += '__wDupl'
+        df.reset_index(inplace=True, drop=False)
+        df.set_index('gene', inplace=True)
+
+    else:
+        # get the dupl genes names
+        df['dupl_genes'] = \
+            df.reset_index()['gene']\
+            .map(dupl_genes_dict).values
+
+        #  create a new name
+        genes_with_dupl = set(dupl_genes_dict.keys()).intersection(
+            set(df.index.values))
+        df['newGeneName'] = df.index.values
+        df.loc[genes_with_dupl, 'newGeneName'] += \
+            '__wDupl'
+
+    return df

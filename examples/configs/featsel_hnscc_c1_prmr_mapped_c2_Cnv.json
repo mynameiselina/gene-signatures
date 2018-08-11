@@ -1,14 +1,13 @@
 {
-    "reportName": "c1_prmr_mapped_c2",
+    "reportName": "c1_prmr_mapped_c2_Cnv",
     "saveReport": true,
-    "txt_label": "Classification of c1 primary oncoscan and c2 Excavator2",
+    "txt_label": "Feature selection of c1 primary oncoscan and c2 Excavator2",
     "toPrint": true,
 
-    "classification_args": {
-        "random_state": 0,
-        "n_splits": 10,
-        "split_train_size": 0.8,
-        "split_random_state": 0
+    "feature_selection_args": {
+        "random_state": 100,
+        "up_thres": 0.55,
+        "low_thres": 0.45
     },
 
     "plot_kwargs": {
@@ -33,6 +32,6 @@
     
     "dupl_genes_dict_fpath": "output,headneck,integrate_cohorts,c1c2,CNV_mapped,rmdpl,integrated_data__select_all__uniq.json",
 
-    "output_directory": "output,headneck,classification",
+    "output_directory": "output,headneck,feature_selection",
     "DEBUG": true
 }

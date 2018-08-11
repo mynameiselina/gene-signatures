@@ -1,25 +1,27 @@
 {
-    "reportName": "c2_ExcvFltNxEx",
+    "reportName": "c2_GnPnl_ExcvFltNxEx",
     "saveReport": true,
-    "txt_label": "Classification of samples with features from c2 NxEx selected filt ExCavator2",
+    "txt_label": "Feature selection of samples with features from c2 genepanel and NxEx selected filt ExCavator2",
     "toPrint": true,
 
-    "classification_args": {
-        "random_state": 0,
-        "n_splits": 10,
-        "split_train_size": 0.8,
-        "split_random_state": 0
+    "feature_selection_args": {
+        "random_state": 100,
+        "up_thres": 0.55,
+        "low_thres": 0.45
     },
-
+    
     "plot_kwargs": {
         "cmap_custom": null,
         "vmin": -2,
         "vmax": 2,
-        "highRes": false
+        "highRes": false,
+        "mincol": "red",
+        "midcol": "white",
+        "maxcol": "purple"
     },
 
-    "data_fpath": "output,headneck,setup_c2_excavator2_byNexus_filt,process,rmdpl,nexus_express,data_features_class.csv",
-    
+    "data_fpath": "output,headneck,combine_features,c2_GnPnl_ExcvFltNxEx,data_with_Patient_id.csv",
+   
     "sample_info_fpath": "input,headneck,cohort2,20180208_Oliver,clinical_data.csv",
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
@@ -30,9 +32,9 @@
     "sample_class_column": "Local_Control",
     "class_labels": "relapse,NOrelapse",
     "class_values": "1,0",
-    
+
     "dupl_genes_dict_fpath": "output,headneck,setup_c2_excavator2_byNexus_filt,process,rmdpl,data_processed__select_all__uniq.json",
 
-    "output_directory": "output,headneck,classification",
+    "output_directory": "output,headneck,feature_selection",
     "DEBUG": true
 }

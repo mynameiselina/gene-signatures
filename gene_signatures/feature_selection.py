@@ -12,8 +12,8 @@ from gene_signatures.core import (
     parse_arg_type,
     boxplot,
     set_heatmap_size,
-    which_x_toPrint,
-    set_cbar_ticks
+    set_cbar_ticks,
+    edit_names_with_duplicates
 )
 
 # basic imports
@@ -75,7 +75,8 @@ def _feature_selection_by_classification(
     total_runs = n_samples*r_times
 
     logger.info(
-        "model: svm.LinearSVC with l1 penalty and squared_hinge loss"
+        "model: svm.LinearSVC with l1 penalty, squared_hinge loss" +
+        "and 'balanced' class_weight"
     )
 
     logger.info(
@@ -100,7 +101,8 @@ def _feature_selection_by_classification(
     for i, _rs in enumerate(random_state):
         model = svm.LinearSVC(
             penalty='l1', C=1, random_state=_rs,
-            loss='squared_hinge', dual=False
+            loss='squared_hinge', dual=False,
+            class_weight='balanced'
         )
         for j in range(dat.shape[0]):
             X = dat.drop(dat.index[j:j+1])
@@ -150,7 +152,8 @@ def _feature_selection_by_classification(
     model.fit(X, y)
 
     all_coefs = pd.DataFrame(all_coefs, columns=dat.columns.values)
-
+    _save_diffs = pd.Series(_save_diffs, index=y.index)
+    _save_diffs.name = "pred_diffs"
     return model, all_coefs, printed_results, \
         (pval, correct, wrong), _save_diffs
 
@@ -280,7 +283,7 @@ def feature_selection(**set_up_kwargs):
     # load data
     try:
         data = pd.read_csv(data_fpath, sep='\t', header=0, index_col=0)
-        logger.error('loaded data file with shape: '+str(data.shape))
+        logger.info('loaded data file with shape: '+str(data.shape))
     except:
         logger.error('failed to read data file from: '+str(data_fpath))
         raise
@@ -295,6 +298,8 @@ def feature_selection(**set_up_kwargs):
 
     # set the ground truth
     ground_truth = info_table.loc[data.index, sample_class_column]
+    ground_truth.sort_values(inplace=True)
+    data = data.reindex(ground_truth.index, axis=0)
     try:
         yticklabels = ground_truth.index.values+',' + \
             ground_truth.values.astype(int).flatten().astype(str)
@@ -317,13 +322,10 @@ def feature_selection(**set_up_kwargs):
             data, ground_truth, **feature_selection_args)
 
     #  save sample prediction scores
-    _sample_pred_diffs = pd.Series(
-        _sample_pred_diffs, index=ground_truth.index)
-    _sample_pred_diffs.name = "pred_diffs"
     fname = 'sample_prediciton_scores.csv'
     fpath = os.path.join(output_directory, fname)
     logger.info("-save sample prediction scores in :\n"+fpath)
-    _sample_pred_diffs.to_csv(
+    pd.concat([ground_truth, _sample_pred_diffs], axis=1).to_csv(
         fpath, sep='\t', header=True, index=True)
 
     # Save to model in the output_directory
@@ -345,40 +347,8 @@ def feature_selection(**set_up_kwargs):
     n_names = nnz_coef_gene_names.shape[0]
 
     if dupl_genes_dict is not None:
-        _agg_names = featsel_results.reset_index()['gene'].values.sum()
-        if ('__' in _agg_names):
-            # clean the gene names if editted before
-            featsel_results['cleanName'] = \
-                featsel_results.reset_index()['gene']\
-                .str.split('__', expand=True)[0].values
-
-            # get the dupl genes names using the clean name
-            featsel_results['dupl_genes'] = \
-                featsel_results['cleanName'].map(dupl_genes_dict).values
-
-            #  create a new name
-            featsel_results['newGeneName'] = \
-                featsel_results['cleanName'].values
-            genes_with_dupl = set(dupl_genes_dict.keys()).intersection(
-                set(featsel_results['cleanName'].values))
-            featsel_results.reset_index(inplace=True, drop=False)
-            featsel_results.set_index('cleanName', inplace=True)
-            featsel_results.loc[genes_with_dupl, 'newGeneName'] += '__wDupl'
-            featsel_results.reset_index(inplace=True, drop=False)
-            featsel_results.set_index('gene', inplace=True)
-
-        else:
-            # get the dupl genes names
-            featsel_results['dupl_genes'] = \
-                featsel_results.reset_index()['gene']\
-                .map(dupl_genes_dict).values
-
-            #  create a new name
-            genes_with_dupl = set(dupl_genes_dict.keys()).intersection(
-                set(featsel_results.index.values))
-            featsel_results['newGeneName'] = featsel_results.index.values
-            featsel_results.loc[genes_with_dupl, 'newGeneName'] += \
-                '__wDupl'
+        featsel_results = edit_names_with_duplicates(
+            featsel_results, dupl_genes_dict)
 
         # change the name of the genes to indicate if they have duplicates
         newgeneNames_data = featsel_results.loc[
@@ -416,12 +386,9 @@ def feature_selection(**set_up_kwargs):
         plt.show()
 
     # heatmap of genes with nnz coefs in classification
-    _, xlabels = which_x_toPrint(
-        all_coefs, nnz_coef_gene_names, n_names=nnz_coef_gene_names.shape[0])
-
     fs_x, fs_y, _show_gene_names, _ = set_heatmap_size(data)
     plt.figure(figsize=(fs_x, fs_y))
-    ax = sns.heatmap(data.loc[:, xlabels], vmin=vmin, vmax=vmax,
+    ax = sns.heatmap(data.loc[:, nnz_coef_gene_names], vmin=vmin, vmax=vmax,
                      yticklabels=yticklabels,
                      xticklabels=_show_gene_names,
                      cmap=cmap_custom, cbar=False)
@@ -539,7 +506,7 @@ def feature_selection(**set_up_kwargs):
         selected_gene_names = None
 
     if with_swarm:
-        # swarmplots  (THEY ARE VEEERY SLOW FOR MANY RUNS)
+        # swarmplots
         coefs_to_plot = all_coefs.loc[:, nnz_coef_gene_names]
         boxplot(
             coefs_to_plot, coefs_to_plot.shape[1],
@@ -551,7 +518,7 @@ def feature_selection(**set_up_kwargs):
         if saveReport:
             logger.info('Save swarmplot')
             fpath = os.path.join(
-                output_directory, 'Fig_swarmplot'+img_ext
+                output_directory, 'Fig_swarmplot_with_nnz_coefs'+img_ext
             )
             plt.savefig(
                 fpath, transparent=True, bbox_inches='tight',
@@ -572,7 +539,8 @@ def feature_selection(**set_up_kwargs):
             if saveReport:
                 logger.info('Save swarmplot')
                 fpath = os.path.join(
-                    output_directory, 'Fig_swarmplot'+img_ext
+                    output_directory,
+                    'Fig_swarmplot_with_selected_genes'+img_ext
                 )
                 plt.savefig(
                     fpath, transparent=True, bbox_inches='tight',

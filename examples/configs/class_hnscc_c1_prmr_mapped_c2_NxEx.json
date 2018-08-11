@@ -1,7 +1,7 @@
 {
-    "reportName": "c1_prmr_mapped_c2",
+    "reportName": "c1_prmr_mapped_c2_NxEx",
     "saveReport": true,
-    "txt_label": "Classification of c1 primary oncoscan and c2 Excavator2",
+    "txt_label": "Classification of NxEx c1 primary oncoscan and c2 Excavator2",
     "toPrint": true,
 
     "classification_args": {
@@ -18,7 +18,7 @@
         "highRes": false
     },
 
-    "data_fpath": "output,headneck,integrate_cohorts,c1c2,CNV_mapped,rmdpl,integrated_data__select_all__uniq.txt",
+    "data_fpath": "output,headneck,integrate_cohorts,c1c2,CNV_mapped,rmdpl,nexus_express,data_features_class.csv",
    
     "sample_info_fpath": "output,headneck,integrate_cohorts,c1c2,integrated_sample_info.csv",
     "sample_info_read_csv_kwargs":{

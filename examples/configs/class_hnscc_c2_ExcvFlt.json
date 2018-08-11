@@ -1,7 +1,7 @@
 {
-    "reportName": "c1_prmr_mapped_c2",
+    "reportName": "c2_ExcvFlt",
     "saveReport": true,
-    "txt_label": "Classification of c1 primary oncoscan and c2 Excavator2",
+    "txt_label": "Classification of samples with features from c2 filt ExCavator2",
     "toPrint": true,
 
     "classification_args": {
@@ -18,20 +18,20 @@
         "highRes": false
     },
 
-    "data_fpath": "output,headneck,integrate_cohorts,c1c2,CNV_mapped,rmdpl,integrated_data__select_all__uniq.txt",
-   
-    "sample_info_fpath": "output,headneck,integrate_cohorts,c1c2,integrated_sample_info.csv",
+    "data_fpath": "output,headneck,setup_c2_excavator2_byNexus_filt,process,rmdpl,data_processed__select_all__uniq.txt",
+    
+    "sample_info_fpath": "input,headneck,cohort2,20180208_Oliver,clinical_data.csv",
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0,
-        "col_as_index":"patientID"
+        "col_as_index":"Patient"
     },
-    "sample_class_column": "Relapsed",
+    "sample_class_column": "Local_Control",
     "class_labels": "relapse,NOrelapse",
     "class_values": "1,0",
     
-    "dupl_genes_dict_fpath": "output,headneck,integrate_cohorts,c1c2,CNV_mapped,rmdpl,integrated_data__select_all__uniq.json",
+    "dupl_genes_dict_fpath": "output,headneck,setup_c2_excavator2_byNexus_filt,process,rmdpl,data_processed__select_all__uniq.json",
 
     "output_directory": "output,headneck,classification",
     "DEBUG": true

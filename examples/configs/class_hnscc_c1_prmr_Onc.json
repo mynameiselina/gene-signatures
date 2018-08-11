@@ -1,7 +1,7 @@
 {
-    "reportName": "c1_prmr_OncNxEx",
+    "reportName": "c1_prmr_Onc",
     "saveReport": true,
-    "txt_label": "Classification of primary samples with features from c1 NxEx selected oncoscan",
+    "txt_label": "Classification of primary samples with features from c1 oncoscan",
     "toPrint": true,
 
     "classification_args": {
@@ -18,7 +18,7 @@
         "highRes": false
     },
 
-    "data_fpath": "output,headneck,setup_c1_oncoscan_raw,process,rmdpl_primary,nexus_express,data_features_class.csv",
+    "data_fpath": "output,headneck,setup_c1_oncoscan_raw,process,rmdpl_primary,data_processed__select_primary__uniq.txt",
    
     "sample_info_fpath": "input,headneck,cohort1,sample_info.txt",
     "sample_info_read_csv_kwargs":{
