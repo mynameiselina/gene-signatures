@@ -23,7 +23,6 @@
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
         "col_as_index":"patientID"
     },
     "sample_class_column": "Relapsed",

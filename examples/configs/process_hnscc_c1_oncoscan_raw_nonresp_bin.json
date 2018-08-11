@@ -32,16 +32,17 @@
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
-        "col_as_index":"cnvID"
+        "col_as_index":"myID"
     },
     "sample_info_directory": "input,headneck,cohort1",
     "sample_info_fname": "sample_info.txt",
     "select_samples_sort_by": "Ccode,Tcode,patient",
 
-    "select_samples_from": "Ccode",
+    "select_samples_from": "Ccode,cnvID",
     "select_samples_which": 0,
     "select_samples_title": "select_nonresp",
     
+    "old_data_sample_id":"cnvID",
+
     "DEBUG": true
 }

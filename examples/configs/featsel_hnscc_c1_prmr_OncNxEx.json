@@ -23,8 +23,7 @@
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "index_col": 0,
-        "col_as_index":"cnvID"
+        "col_as_index":"myID"
     },
     "sample_class_column": "Ccode",
     "class_labels": "responders,NONresponders",

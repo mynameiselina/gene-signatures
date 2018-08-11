@@ -1,23 +1,25 @@
 {
-    "reportName": "DEBUG__setup_c1_genepanel",
+    "reportName": "DEBUG__process_select_primary_cnvID",
+    "txt_label": "process genepanel data from cohort 1 and change patient ID",
+    "input_fname": "data.csv",
+    "input_directory": "output,headneck,setup_c1_genepanel",
+    "output_directory": null,
+    
     "saveReport": true,
-    "txt_label": "set up genepanel data from cohort 1",
     "toPrint": true,
 
-    "load_data_csv_kwargs":{
-        "sep": "\t",
-        "header": 0,
-        "index_col": 0
-    },
+    "chr_col": "chr_int",
+    "remove_patients": null,
+    "select_genes":null,
 
-    "editWith": "VCF_genepanel",
-
-    "edit_kwargs": {
-        "gene_col": "gene",
-        "func_col_txt": "function",
-        "func_col_code": "functionImpact",
-        "cols2drop":"# locus,type,protein",
-
+    "plot_kwargs": {
+        "cmap_custom": null,
+        "vmin": 0,
+        "vmax": 4,
+        "highRes": false,
+        "mincol": "white",
+        "midcol": "orange",
+        "maxcol": "red",
         "function_dict": {
             "no mutation": 0,
             "missense": 1,
@@ -28,27 +30,24 @@
             "frameshiftDeletion": 4,
             "frameshiftInsertion": 4,
             "frameshiftIndel": 4
-        },
-        "mergeHow":"maxAll"
-    },
-
-    "plot_kwargs": {
-        "highRes": false
+        }
     },
     
-    "input_directory": "input,headneck,cohort1",
-    "data_directory": "genepanel",
-    "data_files": "variants.txt",
-
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
         "index_col": 0,
-        "col_as_index":"varID"
+        "col_as_index":"cnvID"
     },
+    "sample_info_directory": "input,headneck,cohort1",
     "sample_info_fname": "sample_info.txt",
-    "sample_info_table_sortLabels": "Tcode,Ccode,patient",
+    "select_samples_sort_by": "Tcode,Ccode,varID",
+
+    "select_samples_from": "Tcode",
+    "select_samples_which": 0,
+    "select_samples_title": "select_primary",
+
+    "old_data_sample_id":"varID",
     
-    "output_directory": "output,headneck",
     "DEBUG": true
 }

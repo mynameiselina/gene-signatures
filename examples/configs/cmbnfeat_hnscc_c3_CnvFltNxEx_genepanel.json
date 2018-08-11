@@ -1,7 +1,7 @@
 {
-    "reportName": "c2_GnPnl_ExcvFltNxEx",
+    "reportName": "c3_CnvFltNxEx_genepanel",
     "saveReport": true,
-    "txt_label": "Combine features of primary samples from c2 genepanel and filt NxEx selected ExCavator2",
+    "txt_label": "Combine features from genepanel and filt NxEx selected CNV from c1 and c2",
     "toPrint": true,
 
     "plot_kwargs": {
@@ -14,11 +14,11 @@
         "maxcol": "purple"
     },
 
-    "files_to_combine_features": "output,headneck,setup_c2_excavator2_byNexus_filt,process,rmdpl,nexus_express,data_features_class.csv;output,headneck,setup_c2_vcf,process_keepPanel,data_processed.csv",
+    "files_to_combine_features": "output,headneck,integrate_cohorts,c1c2,CNV_mapped_filt,rmdpl,nexus_express,data_features_class.csv;output,headneck,integrate_cohorts,c1c2,genepanel,integrated_data.csv",
     "file_short_ids": "CNV,VAR",
-    "sample_data_ids": "Patient,Patient",
+    "sample_data_ids": "patientID,patientID",
     
-    "sample_final_id": "Patient",
+    "sample_final_id": "patientID",
     "sample_info_fname": "clinical_data.csv",
     "sample_info_directory": "input,headneck,cohort2,20180208_Oliver",
     "sample_info_read_csv_kwargs":{

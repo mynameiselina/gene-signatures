@@ -13,7 +13,8 @@ from gene_signatures.core import (
     boxplot,
     set_heatmap_size,
     set_cbar_ticks,
-    edit_names_with_duplicates
+    edit_names_with_duplicates,
+    plot_confusion_matrix
 )
 
 # basic imports
@@ -30,6 +31,7 @@ from sklearn import svm
 from distutils.util import strtobool
 from scipy.stats import binom_test
 from sklearn.externals import joblib
+from sklearn.metrics import confusion_matrix
 
 # plotting imports
 import matplotlib
@@ -178,6 +180,7 @@ def feature_selection(**set_up_kwargs):
     if class_labels is not None:
         if ',' in class_labels:
             class_labels = class_labels.rsplit(',')
+            class_labels = np.array(class_labels)
     class_values = set_up_kwargs.get('class_values', None)
     if class_values is not None:
         if ',' in class_values:
@@ -322,11 +325,88 @@ def feature_selection(**set_up_kwargs):
             data, ground_truth, **feature_selection_args)
 
     #  save sample prediction scores
+    compare_predictions = pd.concat(
+        [ground_truth, _sample_pred_diffs], axis=1)
+    compare_predictions.loc[:, 'pred_diffs'].fillna(1, inplace=True)
+    compare_predictions = compare_predictions.astype(int)
     fname = 'sample_prediciton_scores.csv'
     fpath = os.path.join(output_directory, fname)
     logger.info("-save sample prediction scores in :\n"+fpath)
-    pd.concat([ground_truth, _sample_pred_diffs], axis=1).to_csv(
+    compare_predictions.to_csv(
         fpath, sep='\t', header=True, index=True)
+
+    # plot count of correct/wrong predictions per class
+    y_maxlim = np.histogram(
+        compare_predictions[sample_class_column], bins=2)[0].max()
+    axes = compare_predictions.hist(
+        by=sample_class_column, column='pred_diffs',
+        bins=2, rwidth=0.4, figsize=(10, 6))
+    for ax in axes:
+        ax.set_ylim(0, y_maxlim+1)
+        ax.set_xlim(0, 1)
+        ax.set_xticks([0.25, 0.75])
+        ax.set_xticklabels(['correct', 'wrong'], rotation=0, fontsize=18)
+        ax_title = class_labels[np.where(
+            class_values == float(ax.get_title()))[0][0]]+':'+str(ax.get_title())
+        ax.set_title(ax_title, fontsize=18)
+        plt.suptitle(sample_class_column+' predictions', fontsize=20)
+    if saveReport:
+        logger.info('Save count plot')
+        fpath = os.path.join(
+            output_directory, 'Fig_count_plot'+img_ext
+        )
+        plt.savefig(
+            fpath, transparent=True, bbox_inches='tight',
+            pad_inches=0.1, frameon=False)
+        plt.close("all")
+    else:
+        plt.show()
+
+    # plot confusion matrix
+    # Compute confusion matrix
+    cnf_matrix = confusion_matrix(
+        compare_predictions[sample_class_column],
+        np.abs(
+            compare_predictions[sample_class_column] -
+            compare_predictions['pred_diffs']))
+    np.set_printoptions(precision=2)
+    _classes = [
+        class_labels[class_values == 0][0],
+        class_labels[class_values == 1][0]]
+
+    # Plot non-normalized confusion matrix
+    plt.figure()
+    plot_confusion_matrix(
+        cnf_matrix, classes=_classes,
+        title='Confusion matrix, without normalization')
+    if saveReport:
+        logger.info('Save count plot')
+        fpath = os.path.join(
+            output_directory, 'Fig_confusion_matrix'+img_ext
+        )
+        plt.savefig(
+            fpath, transparent=True, bbox_inches='tight',
+            pad_inches=0.1, frameon=False)
+        plt.close("all")
+    else:
+        plt.show()
+
+    # Plot normalized confusion matrix
+    plt.figure()
+    plot_confusion_matrix(
+        cnf_matrix, classes=_classes, normalize=True,
+        title='Normalized confusion matrix')
+    if saveReport:
+        logger.info('Save count plot')
+        fpath = os.path.join(
+            output_directory, 'Fig_confusion_matrix_normalized'+img_ext
+        )
+        plt.savefig(
+            fpath, transparent=True, bbox_inches='tight',
+            pad_inches=0.1, frameon=False)
+        plt.close("all")
+    else:
+        plt.show()
 
     # Save to model in the output_directory
     fname = 'joblib_model.pkl'

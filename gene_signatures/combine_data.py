@@ -396,9 +396,15 @@ def combine_cohorts(**set_up_kwargs):
         #         [sample_info_swap_class_label]
 
         # new sample_info output dir
-        new_sample_info_fpath = set_up_kwargs.get('new_sample_info_fpath')
+        new_sample_info_fpath = sample_info_kwargs.get('new_sample_info_fpath')
         if new_sample_info_fpath is None:
             new_sample_info_fpath = _output_directory
+        else:
+            if ',' in new_sample_info_fpath:
+                new_sample_info_fpath = os.path.join(
+                    *new_sample_info_fpath.rsplit(','))
+                new_sample_info_fpath = os.path.join(
+                    MainDataDir, new_sample_info_fpath)
 
     data_dfs = []
     if save_new_sample_info:
@@ -441,7 +447,7 @@ def combine_cohorts(**set_up_kwargs):
         fpath = data_fpaths[i]
         try:
             df = pd.read_csv(fpath, sep='\t', header=0, index_col=0)
-            logger.error('loaded data file with shape: '+str(df.shape))
+            logger.info('loaded data file with shape: '+str(df.shape))
         except Exception as ex:
             logger.error('failed to read data file from: '+str(fpath))
             logger.error(ex)

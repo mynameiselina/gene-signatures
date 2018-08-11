@@ -1,7 +1,7 @@
 {
-    "reportName": "c1_prmr_mapped_c2_CnvFlt",
+    "reportName": "c1_prmr_c2_genepanel",
     "saveReport": true,
-    "txt_label": "Feature selection of primary oncoscan and c2 Excavator2 filt",
+    "txt_label": "Feature selection of c1 and c2 genepanel genes",
     "toPrint": true,
 
     "feature_selection_args": {
@@ -17,9 +17,9 @@
         "highRes": false
     },
 
-    "data_fpath": "output,headneck,integrate_cohorts,c1c2,CNV_mapped_filt,rmdpl,integrated_data__select_all__uniq.txt",
+    "data_fpath": "output,headneck,integrate_cohorts,c1c2,genepanel,integrated_data.csv",
    
-    "sample_info_fpath": "output,headneck,integrate_cohorts,c1c2,integrated_sample_info.csv",
+    "sample_info_fpath": "output,headneck,integrate_cohorts,c1c2,genepanel,integrated_sample_info.csv",
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
@@ -29,8 +29,6 @@
     "class_labels": "relapse,NOrelapse",
     "class_values": "1,0",
     
-    "dupl_genes_dict_fpath": "output,headneck,integrate_cohorts,c1c2,CNV_mapped_filt,rmdpl,integrated_data__select_all__uniq.json",
-
     "output_directory": "output,headneck,feature_selection",
     "DEBUG": true
 }

@@ -75,6 +75,12 @@ def process_data(**set_up_kwargs):
     sample_info_read_csv_kwargs = set_up_kwargs.get(
         'sample_info_read_csv_kwargs', {})
 
+    old_data_sample_id = set_up_kwargs.get('old_data_sample_id', None)
+    if old_data_sample_id is not None:
+        change_id = True
+    else:
+        change_id = False
+
     # chose sample set from data
     # function: choose_samples()
     select_samples_from = set_up_kwargs.get('select_samples_from', None)
@@ -191,11 +197,6 @@ def process_data(**set_up_kwargs):
     fpath = os.path.join(sample_info_directory, sample_info_fname)
     info_table = load_clinical(fpath, **sample_info_read_csv_kwargs)
 
-    # keep only info_table with data
-    ids_tmp = set(info_table.index.values
-                  ).intersection(set(data.index.values))
-    info_table = info_table.loc[ids_tmp].copy()
-
     # load gene info
     fpath = os.path.join(gene_info_directory, gene_info_fname)
     try:
@@ -276,8 +277,18 @@ def process_data(**set_up_kwargs):
                              choose_what=select_samples_which,
                              sortby=select_samples_sort_by,
                              ascending=False)
-    data = data.loc[ids_tmp, :]
-    pat_labels = info_table.loc[ids_tmp][select_samples_sort_by].copy()
+    info_table = info_table.loc[ids_tmp, :].copy()
+    if change_id:
+        info_table = info_table.dropna(subset=[old_data_sample_id]).copy()
+        old_index_sorted = info_table[old_data_sample_id].values.copy()
+        data = data.loc[old_index_sorted, :].copy()
+        new_ids = info_table.index.values
+        # data = data.reindex(new_ids, axis=0) # gives me nan values!
+        data.index = new_ids
+    else:
+        data = data.loc[ids_tmp, :].copy()
+
+    pat_labels = info_table[select_samples_sort_by].copy()
     try:
         pat_labels_txt = pat_labels.astype(int).reset_index().values
     except:
@@ -290,7 +301,7 @@ def process_data(**set_up_kwargs):
     _figure_x_size, _figure_y_size, _show_gene_names, _ = \
         set_heatmap_size(data)
     plt.figure(figsize=(_figure_x_size, _figure_y_size))
-    ax = sns.heatmap(data.loc[pat_labels.index],
+    ax = sns.heatmap(data,
                      vmin=vmin, vmax=vmax, xticklabels=_show_gene_names,
                      yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
     ax.set_ylabel(pat_labels_title)
@@ -335,7 +346,7 @@ def process_data(**set_up_kwargs):
             set_heatmap_size(data)
         plt.figure(figsize=(_figure_x_size, _figure_y_size))
         ax = sns.heatmap(
-            data.loc[pat_labels.index],
+            data,
             vmin=vmin, vmax=vmax, xticklabels=_show_gene_names,
             yticklabels=pat_labels_txt, cmap=cmap_custom, cbar=False)
         ax.set_xticks(xpos)

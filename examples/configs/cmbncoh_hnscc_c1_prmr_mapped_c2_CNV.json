@@ -18,17 +18,14 @@
         "sample_info_read_csv_kwargs":{
             "0":{
                 "sep": "\t",
-                "header": 0,
-                "index_col": 0
+                "header": 0
             },
             "1":{
                 "sep": "\t",
-                "header": 0,
-                "index_col": 0
+                "header": 0
             }
         },
-        "sample_data_ids": "cnvID;Patient",
-        "sample_final_id": "cnvID;Patient",
+        "sample_final_id": "myID;Patient",
         "sample_info_swap_class_label": "Ccode;",
         "sample_info_new_label": "Relapsed",
         "sample_info_combine_labels": "Ccode,Local_Control",
