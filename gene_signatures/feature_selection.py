@@ -347,7 +347,8 @@ def feature_selection(**set_up_kwargs):
         ax.set_xticks([0.25, 0.75])
         ax.set_xticklabels(['correct', 'wrong'], rotation=0, fontsize=18)
         ax_title = class_labels[np.where(
-            class_values == float(ax.get_title()))[0][0]]+':'+str(ax.get_title())
+            class_values == float(
+                ax.get_title()))[0][0]]+':'+str(ax.get_title())
         ax.set_title(ax_title, fontsize=18)
         plt.suptitle(sample_class_column+' predictions', fontsize=20)
     if saveReport:

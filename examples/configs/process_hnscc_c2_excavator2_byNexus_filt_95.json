@@ -1,8 +1,8 @@
 {
-    "reportName": "DEBUG__process",
+    "reportName": "process",
     "txt_label": "process ExCavator2 CNVs filtered",
     "input_fname": "data.csv",
-    "input_directory": "output,headneck,setup_c2_excavator2_byNexus_filt_90",
+    "input_directory": "output,headneck,setup_c2_excavator2_byNexus_filt_95",
     "output_directory": null,
 
     "saveReport": true,

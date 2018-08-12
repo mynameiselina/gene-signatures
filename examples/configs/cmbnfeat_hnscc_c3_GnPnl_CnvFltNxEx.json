@@ -1,5 +1,5 @@
 {
-    "reportName": "c3_CnvFltNxEx_genepanel",
+    "reportName": "c3_GnPnl_CnvFltNxEx",
     "saveReport": true,
     "txt_label": "Combine features from genepanel and filt NxEx selected CNV from c1 and c2",
     "toPrint": true,
@@ -19,8 +19,8 @@
     "sample_data_ids": "patientID,patientID",
     
     "sample_final_id": "patientID",
-    "sample_info_fname": "clinical_data.csv",
-    "sample_info_directory": "input,headneck,cohort2,20180208_Oliver",
+    "sample_info_fname": "integrated_sample_info.csv",
+    "sample_info_directory": "output,headneck,integrate_cohorts,c1c2",
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0

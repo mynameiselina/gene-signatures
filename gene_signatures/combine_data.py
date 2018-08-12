@@ -218,9 +218,8 @@ def combine_features(**set_up_kwargs):
     # load info table of samples
     try:
         fpath = os.path.join(sample_info_directory, sample_info_fname)
-        info_table = load_clinical(
-            fpath, col_as_index=sample_final_id,
-            **sample_info_read_csv_kwargs)
+        sample_info_read_csv_kwargs['col_as_index'] = sample_final_id
+        info_table = load_clinical(fpath, **sample_info_read_csv_kwargs)
     except Exception as ex:
         logger.error('Load info table of samples FAILED!')
         logger.error(ex)
@@ -413,8 +412,10 @@ def combine_cohorts(**set_up_kwargs):
     for i, fpath in enumerate(data_fpaths):
         if save_new_sample_info:
             try:
+                sample_info_read_csv_kwargs[str(i)]['col_as_index'] = \
+                    sample_final_id[i]
                 info_table = load_clinical(
-                    sample_info_fpaths[i], col_as_index=sample_final_id[i],
+                    sample_info_fpaths[i],
                     **sample_info_read_csv_kwargs[str(i)])
             except Exception as ex:
                 logger.error('Load info table of samples FAILED!')
@@ -518,8 +519,6 @@ def combine_cohorts(**set_up_kwargs):
     # sort the samples by name
     all_samples = natsorted(data.index.values)
     data = data.loc[all_samples, :]
-    if save_new_sample_info:
-        sample_info = sample_info.loc[all_samples, :]
 
     # heatmap of combined data (on samples)
 

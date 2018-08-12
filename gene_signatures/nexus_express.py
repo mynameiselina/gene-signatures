@@ -256,12 +256,6 @@ def nexus_express(**set_up_kwargs):
                     str(data.index[empty_pat]))
     data = data.fillna(0)
 
-    # keep only info_table with data
-    ids_tmp = set(info_table.index.values
-                  ).intersection(set(data.index.values))
-    info_table = info_table.loc[ids_tmp].copy()
-    # info_table = info_table.reset_index()
-
     # load gene info
     if gene_info_fname is not None:
         fpath = os.path.join(gene_info_directory, gene_info_fname)
@@ -279,23 +273,25 @@ def nexus_express(**set_up_kwargs):
                 ', select_samples_sort_by: '+str(select_samples_sort_by) +
                 ', select_samples_title: '+str(select_samples_title))
 
+    # keep only info_table with data
+    temp = info_table.index.name
+    info_table = info_table.loc[data.index].copy()
+    info_table.index.name = temp
     ids_tmp = choose_samples(info_table.reset_index(),
                              info_table.index.name,
                              choose_from=select_samples_from,
                              choose_what=select_samples_which,
                              sortby=select_samples_sort_by,
                              ascending=False)
-
     # keep a subpart of the info_table (rows and columns)
-    info_table = info_table.loc[ids_tmp][
-            select_samples_sort_by].copy()
-    info_table = info_table.dropna()
-    # create the row labels for the plots
-    pat_labels_txt = info_table.astype(int).reset_index().values
-    pat_labels_title = str(info_table.reset_index().columns.values)
-
+    info_table = info_table.loc[ids_tmp, select_samples_sort_by].copy()
     # keep only these samples from the data
-    data = data.loc[info_table.index, :].copy()
+    data = data.loc[ids_tmp, :].copy()
+    try:
+        pat_labels_txt = info_table.astype(int).reset_index().values
+    except:
+        pat_labels_txt = info_table.reset_index().values
+    pat_labels_title = str(info_table.reset_index().columns.values)
 
     # plot CNV frequencies of all samples
     data_ampl, data_del = _get_ampl_del_from_data(data)
@@ -309,7 +305,6 @@ def nexus_express(**set_up_kwargs):
     if toRemoveDupl:
         # keep a copy of the data with duplicate genes
         data_wDupl = data.copy()
-        data_wDupl = data_wDupl.fillna(0)
         xlabels_wDupl = xlabels.copy()
         xpos_wDupl = xpos.copy()
         data_ampl_wDupl, data_del_wDupl = data_ampl.copy(), data_del.copy()
@@ -329,7 +324,7 @@ def nexus_express(**set_up_kwargs):
             data = data.fillna(0)
 
             # keep the same samples as before
-            data = data.loc[info_table.index, :].copy()
+            data = data.loc[data_wDupl.index, :].copy()
 
             # get gene chrom position
             if gene_info_fname is not None:
@@ -629,7 +624,7 @@ def nexus_express(**set_up_kwargs):
             ax = sns.heatmap(
                 data2plot, vmin=vmin, vmax=vmax,
                 xticklabels=True, yticklabels=patientNames2plot,
-                cmap=cmap_custom)
+                cmap=cmap_custom, cbar=False)
             ax.set_ylabel(pat_labels_title)
             plt.xticks(rotation=90)
             cbar = ax.figure.colorbar(ax.collections[0])

@@ -1,7 +1,7 @@
 #### cohort 1
 
 ## genepanel
-#set_up_data -config ./examples/configs/setup_hnscc_c1_genepanel.json > ./data/output/headneck/setup_hnscc_c1_genepanel.log
+#set_up_data -config ./examples/configs/setup_hnscc_c1_genepanel.json > ./data/output/headneck/setup_c1_genepanel.log
 process_data -config ./examples/configs/process_hnscc_c1_genepanel.json > ./data/output/headneck/setup_c1_genepanel/process.log
 
 # primary
@@ -22,7 +22,7 @@ feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_GnPnl.json > 
 
 
 ## oncoscan raw
-#set_up_data -config ./examples/configs/setup_hnscc_c1_oncoscan_raw.json > ./data/output/headneck/setup_hnscc_c1_oncoscan_raw.log
+#set_up_data -config ./examples/configs/setup_hnscc_c1_oncoscan_raw.json > ./data/output/headneck/setup_c1_oncoscan_raw.log
 process_data -config ./examples/configs/process_hnscc_c1_oncoscan_raw.json > ./data/output/headneck/setup_c1_oncoscan_raw/process.log
 
 # primary
@@ -52,8 +52,13 @@ process_data -config ./examples/configs/process_hnscc_c1_oncoscan_raw_map_values
 ######### EXTRA #########
 
 
+## oncoscan MY filtered !!!!!
+#set_up_data -config ./examples/configs/setup_hnscc_c1_oncoscan_filt_by_me.json > ./data/output/headneck/setup_c1_oncoscan_filt_by_me.log
+#process_data -config ./examples/configs/process_hnscc_c1_oncoscan_filt_by_me.json > ./data/output/headneck/setup_c1_oncoscan_filt_by_me/process.log
+
+
 ## oncoscan filtered
-#set_up_data -config ./examples/configs/setup_hnscc_c1_oncoscan_byNexus.json > ./data/output/headneck/setup_hnscc_c1_oncoscan_byNexus.log
+#set_up_data -config ./examples/configs/setup_hnscc_c1_oncoscan_byNexus.json > ./data/output/headneck/setup_c1_oncoscan_byNexus.log
 process_data -config ./examples/configs/process_hnscc_c1_oncoscan_byNexus.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process.log
 
 # primary
@@ -73,13 +78,13 @@ process_data -config ./examples/configs/process_hnscc_c1_oncoscan_byNexus_map_va
 
 ######### EXTRA #########
 # nonresponders
-rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_filt_nonresp.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process/rmdpl_nonresp.log
-nexus_express -config ./examples/configs/nxex_hnscc_c1_filt_nonresp.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process/rmdpl_nonresp/nexus_express.log
+#rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_filt_nonresp.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process/rmdpl_nonresp.log
+#nexus_express -config ./examples/configs/nxex_hnscc_c1_filt_nonresp.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process/rmdpl_nonresp/nexus_express.log
 
 # binarize nonresp
-process_data -config ./examples/configs/process_hnscc_c1_oncoscan_byNexus_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin.log
-rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_filt_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin/rmdpl_nonresp.log
-nexus_express -config ./examples/configs/nxex_hnscc_c1_filt_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin/rmdpl_nonresp/nexus_express.log
+#process_data -config ./examples/configs/process_hnscc_c1_oncoscan_byNexus_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin.log
+#rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_filt_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin/rmdpl_nonresp.log
+#nexus_express -config ./examples/configs/nxex_hnscc_c1_filt_nonresp_bin.json > ./data/output/headneck/setup_c1_oncoscan_byNexus/process_nonresp_bin/rmdpl_nonresp/nexus_express.log
 ######### EXTRA #########
 
 
@@ -110,7 +115,7 @@ combine_features -config ./examples/configs/cmbnfeat_hnscc_c1_nnrsp_GnPnl_OncFlt
 # cohort 2
 
 # VCF
-#set_up_data -config ./examples/configs/setup_hnscc_c2_vcf.json > ./data/output/headneck/setup_hnscc_c2_vcf.log
+#set_up_data -config ./examples/configs/setup_hnscc_c2_vcf.json > ./data/output/headneck/setup_c2_vcf.log
 process_data -config ./examples/configs/process_hnscc_c2_vcf.json > ./data/output/headneck/setup_c2_vcf/process.log
 rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c2_vcf.json > ./data/output/headneck/setup_c2_vcf/process/rmdpl.log
 nexus_express -config ./examples/configs/nxex_hnscc_c2_vcf.json > ./data/output/headneck/setup_c2_vcf/process/rmdpl/nexus_express.log
@@ -132,11 +137,24 @@ feature_selection -config ./examples/configs/featsel_hnscc_c2_ExcvNxEx.json > ./
 
 # ExCavator2 filtered
 #set_up_data -config ./examples/configs/setup_hnscc_c2_excavator2_byNexus_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt.log
-process_data -config ./examples/configs/process_hnscc_c2_excavator2_byNexus_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt/process.log
+#process_data -config ./examples/configs/process_hnscc_c2_excavator2_byNexus_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt/process.log
+
+## **
+#set_up_data -config ./examples/configs/setup_hnscc_c2_excavator2_byNexus_filt_95.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt_95.log
+#process_data -config ./examples/configs/process_hnscc_c2_excavator2_byNexus_filt_95.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt_95/process.log
+
+#set_up_data -config ./examples/configs/setup_hnscc_c2_excavator2_byNexus_filt_90.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt_90.log
+#process_data -config ./examples/configs/process_hnscc_c2_excavator2_byNexus_filt_90.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt_90/process.log
+
+#set_up_data -config ./examples/configs/setup_hnscc_c2_excavator2_byNexus_filt_80.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt_80.log
+#process_data -config ./examples/configs/process_hnscc_c2_excavator2_byNexus_filt_80.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt_80/process.log
+
 rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c2_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt/process/rmdpl.log
 feature_selection -config ./examples/configs/featsel_hnscc_c2_ExcvFlt.json > ./data/output/headneck/featsel_c2_ExcvFlt.log
 nexus_express -config ./examples/configs/nxex_hnscc_c2_filt.json > ./data/output/headneck/setup_c2_excavator2_byNexus_filt/process/rmdpl/nexus_express.log
 feature_selection -config ./examples/configs/featsel_hnscc_c2_ExcvFltNxEx.json > ./data/output/headneck/featsel_c2_ExcvFltNxEx.log
+
+
 
 # combine features, cohort 2 
 
@@ -150,22 +168,38 @@ feature_selection -config ./examples/configs/featsel_hnscc_c2_GnPnl_ExcvFltNxEx.
 # cohort integration
 
 # MAPPED values of c1 to c2 range
-combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_mapped_c2_CNV.json > ./data/output/headneck/integrate_cohorts_c1c2_CNV_mapped.log
-rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_prmr_mapped_c2_CNV.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped/rmdpl.log
+combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_mapped_c2_Cnv.json > ./data/output/headneck/integrate_cohorts_c1c2_CNV_mapped.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_prmr_mapped_c2_Cnv.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped/rmdpl.log
 feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_Cnv.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_Cnv.log
-nexus_express -config ./examples/configs/nxex_hnscc_c1_prmr_mapped_c2_CNV.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped/rmdpl/nexus_express.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_prmr_mapped_c2_Cnv.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped/rmdpl/nexus_express.log
 feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_CnvNxEx.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_CnvNxEx.log
 
 
 # MAPPED values of FILT c1 to c2 range
-combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_mapped_c2_CNVflt.json > ./data/output/headneck/integrate_cohorts_c1c2_CNV_mapped_filt.log
-rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_prmr_mapped_c2_CNVflt.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_filt/rmdpl.log
+combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_mapped_c2_CnvFlt.json > ./data/output/headneck/integrate_cohorts_c1c2_CNV_mapped_filt.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_prmr_mapped_c2_CnvFlt.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_filt/rmdpl.log
 feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_CnvFlt.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_CnvFlt.log
-nexus_express -config ./examples/configs/nxex_hnscc_c1_prmr_mapped_c2_CNVflt.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_filt/rmdpl/nexus_express.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_prmr_mapped_c2_CnvFlt.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_filt/rmdpl/nexus_express.log
 feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_CnvFltNxEx.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_CnvFltNxEx.log
 
+
+# MAPPED values of FILT c1 to UN-FILT c2 range (MIXED)
+combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_mapped_c2_CnvMixed.json > ./data/output/headneck/integrate_cohorts_c1c2_CNV_mapped_Mixed.log
+rm_dpl_genes -config ./examples/configs/rmdpl_hnscc_c1_prmr_mapped_c2_CnvMixed.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_Mixed/rmdpl.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_CnvMixed.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_CnvMixed.log
+nexus_express -config ./examples/configs/nxex_hnscc_c1_prmr_mapped_c2_CnvMixed.json > ./data/output/headneck/integrate_cohorts/c1c2/CNV_mapped_Mixed/rmdpl/nexus_express.log
+feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_mapped_c2_CnvMixedNxEx.json > ./data/output/headneck/featsel_c1_prmr_mapped_c2_CnvMixedNxEx.log
+
+
 # genepanel
-combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_c2_genepanel.json > ./data/output/headneck/integrate_cohorts_c1_prmr_c2_genepanel.log
+combine_cohorts -config ./examples/configs/cmbncoh_hnscc_c1_prmr_c2_genepanel.json > ./data/output/headneck/integrate_cohorts_c1c2_genepanel.log
 feature_selection -config ./examples/configs/featsel_hnscc_c1_prmr_c2_genepanel.json > ./data/output/headneck/featsel_c1_prmr_c2_genepanel.log
+
+
+# combine features, cohort 3 
+
+# genepanel and CNV filtered
+combine_features -config ./examples/configs/cmbnfeat_hnscc_c3_GnPnl_CnvFltNxEx.json > ./data/output/headneck/combine_features_c3_GnPnl_CnvFltNxEx.log
+feature_selection -config ./examples/configs/featsel_hnscc_c3_GnPnl_CnvFltNxEx.json > ./data/output/headneck/featsel_c3_GnPnl_CnvFltNxEx.log
 
 

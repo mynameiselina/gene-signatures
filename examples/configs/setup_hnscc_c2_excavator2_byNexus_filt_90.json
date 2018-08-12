@@ -1,0 +1,58 @@
+{
+    "reportName": "setup_c2_excavator2_byNexus_filt_90",
+    "saveReport": true,
+    "txt_label": "set up ExCavator2 CNVs filtered",
+    "toPrint": true,
+
+    "load_files": true,
+    "fext": ".excavatorCNV.CNVannotated.txt",
+
+    "load_data_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": null,
+        "comment": "#",
+        "names": null
+    },
+
+    "editWith": "ExCavator2",
+    "withFilter": true,
+    "withProcess": false,
+
+    "filt_kwargs": {
+        "choose_col": "ProbCall",
+        "choose_thres": 0.90
+    },
+    "edit_kwargs": {
+        "keep_columns": "Chromosome,Start,End,Call,ProbCall,Gene_Symbol",
+        "new_columns": "chr,start,end,function,probcall,id",
+        "function_dict": null,
+        "mergeHow":"maxAll",
+        "removeLOH":false,
+        "LOH_value": null
+    },
+
+    "plot_kwargs": {
+        "highRes": false
+    },
+
+    "split_patID": "_",
+    "chr_col": "chr_int",
+    "gene_id_col": "gene",
+ 
+    "input_directory": "input,headneck,cohort2",
+    "data_directory": "excavator2_byNexus",
+    "data_files": "",
+
+    "sample_info_read_csv_kwargs":{
+        "sep": "\t",
+        "header": 0,
+        "index_col": 0,
+        "col_as_index":"Patient"
+    },
+    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
+    "sample_info_table_sortLabels": "Local_Control",
+    
+    "output_directory": "output,headneck",
+    "DEBUG": true
+}

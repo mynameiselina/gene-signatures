@@ -271,6 +271,25 @@ def process_data(**set_up_kwargs):
             )
 
     # SELECT sample groups (optional)
+    if change_id:
+        temp = info_table.index.name
+        info_table = (
+            info_table
+            # delete NaNs in the data id
+            .dropna(subset=[old_data_sample_id])
+            # do not lose original index
+            .reset_index()
+            # same index as data
+            .set_index(old_data_sample_id, drop=False)
+            # keep same as data ids
+            .loc[data.index]
+            # return back to original index
+            .set_index(temp)
+        )
+    else:
+        temp = info_table.index.name
+        info_table = info_table.loc[data.index].copy()
+        info_table.index.name = temp
     ids_tmp = choose_samples(info_table.reset_index(),
                              info_table.index.name,
                              choose_from=select_samples_from,
@@ -279,12 +298,14 @@ def process_data(**set_up_kwargs):
                              ascending=False)
     info_table = info_table.loc[ids_tmp, :].copy()
     if change_id:
-        info_table = info_table.dropna(subset=[old_data_sample_id]).copy()
         old_index_sorted = info_table[old_data_sample_id].values.copy()
         data = data.loc[old_index_sorted, :].copy()
         new_ids = info_table.index.values
         # data = data.reindex(new_ids, axis=0) # gives me nan values!
         data.index = new_ids
+        # in case there are patients with no data
+        data.dropna(axis=0, inplace=True)
+        info_table = info_table.loc[data.index, :].copy()
     else:
         data = data.loc[ids_tmp, :].copy()
 

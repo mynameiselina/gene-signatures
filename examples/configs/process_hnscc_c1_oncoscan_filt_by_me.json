@@ -1,8 +1,8 @@
 {
-    "reportName": "DEBUG__process",
-    "txt_label": "process ExCavator2 CNVs filtered",
+    "reportName": "process",
+    "txt_label": "process processed Oncoscan data filtered by me",
     "input_fname": "data.csv",
-    "input_directory": "output,headneck,setup_c2_excavator2_byNexus_filt_90",
+    "input_directory": "output,headneck,setup_c1_oncoscan_filt_by_me",
     "output_directory": null,
 
     "saveReport": true,
@@ -15,8 +15,8 @@
 
     "plot_kwargs": {
         "cmap_custom": null,
-        "vmin": -2,
-        "vmax": 2,
+        "vmin": -4,
+        "vmax": 4,
         "highRes": false
     },
     
@@ -27,11 +27,13 @@
     "sample_info_read_csv_kwargs":{
         "sep": "\t",
         "header": 0,
-        "col_as_index":"Patient"
+        "col_as_index":"myID"
     },
-    "sample_info_directory": "input,headneck,cohort2",
-    "sample_info_fname": "20180208_Oliver,clinical_data.csv",
-    "select_samples_sort_by": "Local_Control",
+    "sample_info_directory": "input,headneck,cohort1",
+    "sample_info_fname": "sample_info.txt",
+    "select_samples_sort_by": "Tcode,Ccode,cnvID",
     
+    "old_data_sample_id":"cnvID",
+
     "DEBUG": true
 }

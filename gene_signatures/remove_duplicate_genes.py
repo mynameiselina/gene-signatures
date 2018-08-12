@@ -210,21 +210,25 @@ def remove_duplicate_genes(**set_up_kwargs):
                 'select_samples_sort_by: '+str(select_samples_sort_by) +
                 'select_samples_title: '+str(select_samples_title))
 
-    # choose samples to plot heatmap and pairwise correlation
+    # keep only info_table with data
+    temp = info_table.index.name
+    info_table = info_table.loc[input_data.index].copy()
+    info_table.index.name = temp
     ids_tmp = choose_samples(info_table.reset_index(),
                              info_table.index.name,
                              choose_from=select_samples_from,
                              choose_what=select_samples_which,
                              sortby=select_samples_sort_by,
                              ascending=False)
-
-    pat_labels = info_table.loc[ids_tmp][
-            select_samples_sort_by].copy()
-    pat_labels = pat_labels.dropna()
-    pat_labels_txt = pat_labels.astype(int).reset_index().values
-    pat_labels_title = str(pat_labels.reset_index().columns.values)
-
-    data = input_data.loc[pat_labels.index, :].copy()
+    # keep a subpart of the info_table (rows and columns)
+    info_table = info_table.loc[ids_tmp, select_samples_sort_by].copy()
+    # keep only these samples from the data
+    data = input_data.loc[ids_tmp, :].copy()
+    try:
+        pat_labels_txt = info_table.astype(int).reset_index().values
+    except:
+        pat_labels_txt = info_table.reset_index().values
+    pat_labels_title = str(info_table.reset_index().columns.values)
 
     # REMOVE DUPLICATES!!!!
     uniqdata, dupldict, _, _ = remove_andSave_duplicates(

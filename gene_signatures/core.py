@@ -773,14 +773,14 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
             onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # keep the rows we will drop
-    r2drop = onesample.index[onesample[col_pValue] >
+    r2drop = onesample.index[onesample[col_pValue].astype(float) >
                              pValue_thres]
     reason2drop = 'filter_'+col_pValue+'_'+str(pValue_thres)
     onesample, dropped_rows = _drop_rows(
         onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # keep the rows we will drop
-    r2drop = onesample.index[abs(onesample[col_probeMedian]) <
+    r2drop = onesample.index[abs(onesample[col_probeMedian].astype(float)) <
                              probeMedian_thres]
     reason2drop = 'filter_'+col_probeMedian+'_' + \
         str(probeMedian_thres)
@@ -788,7 +788,7 @@ def filter_oncoscan(onesample, toPrint=False, **kwargs):
         onesample, dropped_rows, r2drop, reason2drop, toPrint)
 
     # keep the rows we will drop
-    r2drop = onesample.index[onesample[col_probeCount] <
+    r2drop = onesample.index[onesample[col_probeCount].astype(float) <=
                              probeCount_thres]
     reason2drop = 'filter_'+col_probeCount + \
         '_'+str(probeCount_thres)
@@ -814,7 +814,7 @@ def filter_excavator(onesample, toPrint=False, **kwargs):
                                 'reason2drop'))
 
     # keep the rows we will drop
-    r2drop = onesample.index[onesample[choose_col] > choose_thres]
+    r2drop = onesample.index[onesample[choose_col] < choose_thres]
     reason2drop = 'filter_'+choose_col+'_'+str(choose_thres)
     onesample, dropped_rows = _drop_rows(
         onesample, dropped_rows, r2drop, reason2drop, toPrint)
@@ -1789,8 +1789,9 @@ def edit_genepanel(variants, **kwargs):
 # choose patient IDs and their order
 def choose_samples(ids, dataID, choose_from=None, choose_what=None,
                    sortby=None, **sort_kwargs):
-    # first order ids according to index
-    ids = ids.sort_values(by=dataID, **sort_kwargs)
+    # include index to columns to sortby
+    sortby_list = list(sortby)
+    sortby_list.append(dataID)
     # choose patients ID
     bool1 = ids[dataID].notnull()
     # choose a condition to filter patients
@@ -1802,7 +1803,7 @@ def choose_samples(ids, dataID, choose_from=None, choose_what=None,
     if sortby is not None:
         # if type(patient_ids[sortby][0]) is type(''):
         # 	logger.info('str')
-        ids = ids[bool2].sort_values(by=sortby, **sort_kwargs)
+        ids = ids[bool2].sort_values(by=sortby_list, **sort_kwargs)
     else:
         ids = ids[bool2]
 

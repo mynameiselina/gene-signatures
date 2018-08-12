@@ -20,7 +20,7 @@
         "maxcol": "purple"
     },
 
-    "data_fpath": "output,headneck,combine_features,c1_prmr_GnPnl_OncNxEx,data_with_cnvID_id.csv",
+    "data_fpath": "output,headneck,combine_features,c1_prmr_GnPnl_OncNxEx,data_with_myID_id.csv",
    
     "sample_info_fpath": "input,headneck,cohort1,sample_info.txt",
     "sample_info_read_csv_kwargs":{
