@@ -230,12 +230,20 @@ def remove_duplicate_genes(**set_up_kwargs):
         pat_labels_txt = info_table.reset_index().values
     pat_labels_title = str(info_table.reset_index().columns.values)
 
+    # remove all zero columns!
+    orphancols = np.where(abs(data).sum(axis=0) == 0)[0]
+    if len(orphancols) > 0:
+        logger.warning('removing genes from data with zero columns!')
+        cols2drop = data.columns.values[orphancols]
+        data.drop(cols2drop, axis=1, inplace=True)
+
     # REMOVE DUPLICATES!!!!
     uniqdata, dupldict, _, _ = remove_andSave_duplicates(
         data, to_compute_euclidean_distances=compute_pdist,
         to_save_euclidean_distances=saveReport, to_save_output=saveReport,
         output_filename=input_fname.rsplit('.')[0]+'__'+select_samples_title,
         output_directory=output_directory)
+
     # get gene chrom position
     xlabels_uniq, xpos_uniq = get_chr_ticks(genes_positions_table, uniqdata,
                                             id_col='gene', chr_col=chr_col)
