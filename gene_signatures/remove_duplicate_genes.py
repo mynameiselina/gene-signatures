@@ -247,8 +247,9 @@ def remove_duplicate_genes(**set_up_kwargs):
         output_directory=output_directory)
 
     # get gene chrom position
-    xlabels_uniq, xpos_uniq = get_chr_ticks(genes_positions_table, uniqdata,
-                                            id_col=gene_id_col, chr_col=chr_col)
+    xlabels_uniq, xpos_uniq = get_chr_ticks(
+        genes_positions_table, uniqdata,
+        id_col=gene_id_col, chr_col=chr_col)
 
     fext = ['', '_uniq']
     xlabels_choose = [xlabels, xlabels_uniq]
