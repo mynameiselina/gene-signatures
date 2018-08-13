@@ -203,7 +203,7 @@ def remove_duplicate_genes(**set_up_kwargs):
                                         index_col=0)
     # get gene chrom position
     xlabels, xpos = get_chr_ticks(genes_positions_table, input_data,
-                                  id_col='gene', chr_col=chr_col)
+                                  id_col=gene_id_col, chr_col=chr_col)
 
     logger.info('select_samples_from: '+str(select_samples_from) +
                 'select_samples_which: '+str(select_samples_which) +
@@ -233,9 +233,11 @@ def remove_duplicate_genes(**set_up_kwargs):
     # remove all zero columns!
     orphancols = np.where(abs(data).sum(axis=0) == 0)[0]
     if len(orphancols) > 0:
-        logger.warning('removing genes from data with zero columns!')
+        logger.warning(
+            'removing '+str(len(orphancols)) +
+            ' genes from data with zero columns!')
         cols2drop = data.columns.values[orphancols]
-        data.drop(cols2drop, axis=1, inplace=True)
+        data = data.drop(cols2drop, axis=1).copy()
 
     # REMOVE DUPLICATES!!!!
     uniqdata, dupldict, _, _ = remove_andSave_duplicates(
@@ -246,7 +248,7 @@ def remove_duplicate_genes(**set_up_kwargs):
 
     # get gene chrom position
     xlabels_uniq, xpos_uniq = get_chr_ticks(genes_positions_table, uniqdata,
-                                            id_col='gene', chr_col=chr_col)
+                                            id_col=gene_id_col, chr_col=chr_col)
 
     fext = ['', '_uniq']
     xlabels_choose = [xlabels, xlabels_uniq]
