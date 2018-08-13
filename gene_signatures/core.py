@@ -1238,7 +1238,6 @@ def _map_cnvs_to_genes(
     # save a dict with only the genes to remove
     # and an array of the diff chroms these gene exist in
     # (SLOW!!!)
-    print()
     genes_to_remove_dict = \
         {
             chrSum.index[idx]:
@@ -2074,9 +2073,6 @@ def plot_confusion_matrix(cm, classes,
     """
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
 
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
@@ -2094,3 +2090,265 @@ def plot_confusion_matrix(cm, classes,
 
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+
+
+def check_path_integrity(f, rootDir=None, name="", force=False):
+    from omics_processing.io import (
+        set_directory, load_clinical
+    )
+    if not os.path.exists(f):
+        f = os.path.join(*f.rsplit('/'))
+        f = os.path.join(rootDir, f)
+        if force:
+            f = set_directory(f)
+        logger.debug("set "+name+" fpath:\n"+f)
+    return f
+
+
+def save_image(
+        saveReport=False, output_directory="", img_name="figure",
+        img_ext=".png", plt_obj=None):
+    if plt_obj is None:
+        plt_obj = plt.gcf()
+    if saveReport:
+        fpath = os.path.join(output_directory, 'Fig_'+img_name+img_ext)
+        logger.info('Save figure in: '+fpath)
+        plt_obj.savefig(
+            fpath, transparent=True, bbox_inches='tight',
+            pad_inches=0.1, frameon=False)
+        plt.close("all")
+    else:
+        plt_obj.show()
+
+
+def extract_gene_set(df):
+    gene_set = set()
+    if 'dupl_genes' in df.columns:
+        dupl_col = df['dupl_genes']
+        dupl_set = set([
+            item for sublist in dupl_col
+            if isinstance(sublist, str)
+            for item in eval(sublist)
+        ])
+        gene_set = gene_set.union(set(dupl_set))
+
+        if 'cleanName' in df.columns:
+            gene_set = gene_set.union(set(df['cleanName'].values))
+    else:
+        gene_set = gene_set.union(set(df.index.values))
+
+    return gene_set
+
+
+def plot_data_heatmap(
+    data, ground_truth, xlabel=None, xpos=None,
+    vmin=None, vmax=None, cmap_custom=None, custom_div_cmap_arg=None,
+    function_dict=None, **kwargs
+):
+    ground_truth_sorted = ground_truth.sort_values()
+    data_sorted = data.loc[
+        ground_truth_sorted.index, :].copy()
+    try:
+        pat_labels_txt = ground_truth_sorted.astype(int).reset_index().values
+    except:
+        pat_labels_txt = ground_truth_sorted.reset_index().values
+
+    _figure_x_size, _figure_y_size, _show_gene_names, _ = \
+        set_heatmap_size(data_sorted)
+    plt.figure(figsize=(_figure_x_size, _figure_y_size))
+    ax = sns.heatmap(data_sorted, vmin=vmin, vmax=vmax,
+                     yticklabels=pat_labels_txt, xticklabels=False,
+                     cmap=cmap_custom, cbar=False)
+    if (_show_gene_names and (
+            (xpos is None) or
+            (xlabel is None))):
+        plt.xticks(rotation=90)
+    elif (
+            (xpos is not None) and
+            (xlabel is not None)):
+        plt.xticks(xpos, xlabel, rotation=0)
+        plt.xlabel('chromosomes (the number is aligned at the end ' +
+                   'of the chr region)')
+    plt.ylabel('samples')
+    cbar = ax.figure.colorbar(ax.collections[0])
+    set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
+
+
+# plot count of correct/wrong predictions per class
+def plot_prediction_counts_per_class(
+        y_real, y_pred, class_labels=None, class_values=None):
+    compare_predictions = pd.concat(
+        [y_real, np.abs(y_pred-y_real)], axis=1)
+    compare_predictions.columns = ['real', 'pred_diffs']
+    y_maxlim = max([
+            np.histogram(compare_predictions.iloc[:, i], bins=2)[0].max()
+            for i in range(2)
+        ])
+
+    axes = compare_predictions.hist(
+        by='real', column='pred_diffs',
+        bins=2, rwidth=0.4, figsize=(10, 6))
+    for ax in axes:
+        ax.set_ylim(0, y_maxlim+1)
+        ax.set_xlim(0, 1)
+        ax.set_xticks([0.25, 0.75])
+        ax.set_xticklabels(['correct', 'wrong'], rotation=0, fontsize=14)
+        if class_labels is not None and class_values is not None:
+            ax_title = class_labels[
+                class_values == float(ax.get_title())
+                ][0]+':'+str(ax.get_title())
+            ax.set_title(ax_title, fontsize=14)
+        plt.suptitle('real predictions', fontsize=16)
+
+
+# plot confusion matrix
+def compute_and_plot_confusion_matrices(
+        y_real, y_pred, class_labels=None, class_values=None):
+    from sklearn.metrics import confusion_matrix
+
+    # Compute confusion matrix
+    cnf_matrix = confusion_matrix(
+        y_real,
+        y_pred.loc[y_real.index])
+    np.set_printoptions(precision=2)
+    if class_labels is not None and class_values is not None:
+        _classes = [
+            class_labels[class_values == 0][0],
+            class_labels[class_values == 1][0]]
+    else:
+        _classes = ['class_0', 'class_1']
+
+    # Plot non-normalized confusion matrix
+    plt.figure()
+    plot_confusion_matrix(
+        cnf_matrix, classes=_classes,
+        title='Confusion matrix, without normalization')
+    plt1 = plt.gcf()
+
+    # Plot normalized confusion matrix
+    plt.figure()
+    plot_confusion_matrix(
+        cnf_matrix, classes=_classes, normalize=True,
+        title='Normalized confusion matrix')
+    plt2 = plt.gcf()
+
+    return plt1, plt2
+
+
+def plot_roc_for_many_models(
+        model_names, fprs, tprs, aucs, figsize=(10, 10), n_fs=None):
+    n_models = len(model_names)
+    if n_models > 10:
+        sns.set_palette('tab20', n_colors=n_models)
+    else:
+        sns.set_palette('colorblind', n_colors=n_models)
+
+    plt.figure(figsize=figsize)
+    for i, key in enumerate(model_names):
+        if n_fs is not None:
+            plt.plot(
+                fprs[key], tprs[key],
+                label='%s (AUC=%0.2f) %d'
+                % (model_names[i], aucs[key], n_fs[key]))
+        else:
+            plt.plot(
+                fprs[key], tprs[key],
+                label='%s (AUC=%0.2f)' % (model_names[i], aucs[key]))
+    plt.plot(
+        [0, 1], [0, 1], linestyle='--', lw=2, color='r',
+        label='Luck', alpha=.8)
+
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC curves')
+    plt.legend(loc="best")
+
+
+def plot_roc_with_std_for_one_model(
+        n_splits, fprs, tprs, interps, aucs,
+        figsize=(10, 10), model_name=None):
+    from sklearn.metrics import auc
+
+    mean_fpr = np.linspace(0, 1, 100)
+
+    plt.figure(figsize=figsize)
+    for i in range(n_splits):
+        plt.plot(
+            fprs[i], tprs[i], lw=1, alpha=0.3,
+            label='ROC fold %d (AUC = %0.2f)' % (i, aucs[i]))
+    plt.plot(
+        [0, 1], [0, 1], linestyle='--', lw=2, color='r',
+        label='Luck', alpha=.8)
+
+    mean_tpr = np.mean(interps, axis=0)
+    mean_tpr[-1] = 1.0
+    mean_auc = auc(mean_fpr, mean_tpr)
+    std_auc = np.std(aucs)
+    plt.plot(mean_fpr, mean_tpr, color='b',
+             label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
+             lw=2, alpha=.8)
+
+    std_tpr = np.std(interps, axis=0)
+    tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
+    tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
+    plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=.2,
+                     label=r'$\pm$ 1 std. dev.')
+
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    if model_name is None:
+        plt.title(
+            'Cross-validation training ROC curves\nwith std for one model')
+    else:
+        plt.title(
+            'Cross-validation training ROC curves\nwith std for model: ' +
+            model_name)
+    plt.legend(loc="best")
+
+
+def plot_scatter_scores(y_train_scores, y_test_score=None):
+    # plot accuracy scores of the train and test data
+    plt.figure(figsize=(10, 6))
+    plt.scatter(
+        np.arange(len(y_train_scores))+1, sorted(y_train_scores), color='black'
+        )
+    if y_test_score is not None:
+        plt.scatter(0, y_test_score, color='red')
+    plt.axhline(0, color='k')
+    plt.xlim(-1, len(y_train_scores)+1)
+    plt.ylim(-0.5, 1.5)
+    plt.xlabel("test and train kfolds")
+    plt.ylabel("accuracy scores")
+
+
+def define_plot_args(
+        cmap_custom=None, vmin=None, vmax=None,
+        mincol=None, midcol=None, maxcol=None,
+        **kwargs):
+    if (cmap_custom is None) and (vmin is not None) and (vmax is not None):
+        custom_div_cmap_arg = abs(vmin)+abs(vmax)
+        if (vmin <= 0) and (vmax >= 0):
+            custom_div_cmap_arg = custom_div_cmap_arg + 1
+        if (
+                (mincol is not None) and
+                (midcol is not None) and
+                (maxcol is not None)
+                ):
+            cmap_custom = custom_div_cmap(
+                numcolors=custom_div_cmap_arg,
+                mincol=mincol, midcol=midcol, maxcol=maxcol)
+        else:
+            cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
+    else:
+        custom_div_cmap_arg = None
+        cmap_custom = custom_div_cmap()
+
+    args_dict = {
+        "cmap_custom": cmap_custom,
+        "custom_div_cmap_arg": custom_div_cmap_arg
+    }
+    return args_dict
