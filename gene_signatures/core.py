@@ -1991,17 +1991,17 @@ def PCA_biplots(dat, ground_truth, n_components, random_state=0, title=''):
     return pca
 
 
-def set_heatmap_size(data):
+def set_heatmap_size(data, x_ut=50, y_ut=100):
     ds_y, ds_x = data.shape
-    fs_x = 25 if ds_x > 50 else 20 if ds_x > 15 else 15 if ds_x > 10 else 10
-    fs_y = 20 if ds_y > 100 else 16 if ds_y > 50 else 12 if ds_y > 25 else 8
+    fs_x = 25 if ds_x > x_ut else 20 if ds_x > 15 else 15 if ds_x > 10 else 10
+    fs_y = 20 if ds_y > y_ut else 16 if ds_y > 50 else 12 if ds_y > 25 else 8
 
     print_samples = True
-    if ds_y > 100:
+    if ds_y > y_ut:
         print_samples = False
 
     print_genes = True
-    if ds_x > 50:
+    if ds_x > x_ut:
         print_genes = False
 
     return fs_x, fs_y, print_genes, print_samples
@@ -2153,22 +2153,36 @@ def plot_data_heatmap(
     except:
         pat_labels_txt = ground_truth_sorted.reset_index().values
 
+    x_ut = kwargs.pop('x_ut', 50)
+    y_ut = kwargs.pop('y_ut', 100)
     _figure_x_size, _figure_y_size, _show_gene_names, _ = \
-        set_heatmap_size(data_sorted)
+        set_heatmap_size(data_sorted, x_ut=x_ut, y_ut=y_ut)
     plt.figure(figsize=(_figure_x_size, _figure_y_size))
-    ax = sns.heatmap(data_sorted, vmin=vmin, vmax=vmax,
-                     yticklabels=pat_labels_txt, xticklabels=False,
-                     cmap=cmap_custom, cbar=False)
+
     if (_show_gene_names and (
             (xpos is None) or
             (xlabel is None))):
+        ax = sns.heatmap(
+            data_sorted, vmin=vmin, vmax=vmax,
+            yticklabels=pat_labels_txt, xticklabels=True,
+            cmap=cmap_custom, cbar=False)
         plt.xticks(rotation=90)
     elif (
             (xpos is not None) and
             (xlabel is not None)):
+        ax = sns.heatmap(
+            data_sorted, vmin=vmin, vmax=vmax,
+            yticklabels=pat_labels_txt, xticklabels=False,
+            cmap=cmap_custom, cbar=False)
         plt.xticks(xpos, xlabel, rotation=0)
         plt.xlabel('chromosomes (the number is aligned at the end ' +
                    'of the chr region)')
+    else:
+        ax = sns.heatmap(
+            data_sorted, vmin=vmin, vmax=vmax,
+            yticklabels=pat_labels_txt, xticklabels=False,
+            cmap=cmap_custom, cbar=False)
+
     plt.ylabel('samples')
     cbar = ax.figure.colorbar(ax.collections[0])
     set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg)
