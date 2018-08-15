@@ -2022,41 +2022,52 @@ def set_cbar_ticks(cbar, function_dict, custom_div_cmap_arg):
                 np.arange(-custom_div_cmap_arg, custom_div_cmap_arg))
 
 
-def edit_names_with_duplicates(df, dupl_genes_dict):
-    _agg_names = df.reset_index()['gene'].values.sum()
+def edit_names_with_duplicates(
+        df, dupl_genes_dict, dupl_col_name='dupl_genes', withNewName=True):
+
+    index_name = df.index.name
+    if index_name is None:
+        index_name = 'index'
+
+    _agg_names = df.reset_index()[index_name].values.sum()
     if ('__' in _agg_names):
         # clean the gene names if editted before
         df['cleanName'] = \
-            df.reset_index()['gene']\
+            df.reset_index()[index_name]\
             .str.split('__', expand=True)[0].values
 
         # get the dupl genes names using the clean name
-        df['dupl_genes'] = \
-            df['cleanName'].map(dupl_genes_dict).values
+        # if they are not in df yet
+        if dupl_col_name not in df.columns:
+            df[dupl_col_name] = \
+                df['cleanName'].map(dupl_genes_dict).values
 
         #  create a new name
-        df['newGeneName'] = \
-            df['cleanName'].values
-        genes_with_dupl = set(dupl_genes_dict.keys()).intersection(
-            set(df['cleanName'].values))
-        df.reset_index(inplace=True, drop=False)
-        df.set_index('cleanName', inplace=True)
-        df.loc[genes_with_dupl, 'newGeneName'] += '__wDupl'
-        df.reset_index(inplace=True, drop=False)
-        df.set_index('gene', inplace=True)
+        if withNewName:
+            df['newGeneName'] = \
+                df['cleanName'].values
+            genes_with_dupl = set(dupl_genes_dict.keys()).intersection(
+                set(df['cleanName'].values))
+            df.reset_index(inplace=True, drop=False)
+            df.set_index('cleanName', inplace=True)
+            df.loc[genes_with_dupl, 'newGeneName'] += '__wDupl'
+            df.reset_index(inplace=True, drop=False)
+            df.set_index(index_name, inplace=True)
 
     else:
-        # get the dupl genes names
-        df['dupl_genes'] = \
-            df.reset_index()['gene']\
-            .map(dupl_genes_dict).values
+        # get the dupl genes names if they are not in df yet
+        if dupl_col_name not in df.columns:
+            df[dupl_col_name] = \
+                df.reset_index()[index_name]\
+                .map(dupl_genes_dict).values
 
         #  create a new name
-        genes_with_dupl = set(dupl_genes_dict.keys()).intersection(
-            set(df.index.values))
-        df['newGeneName'] = df.index.values
-        df.loc[genes_with_dupl, 'newGeneName'] += \
-            '__wDupl'
+        if withNewName:
+            genes_with_dupl = set(dupl_genes_dict.keys()).intersection(
+                set(df.index.values))
+            df['newGeneName'] = df.index.values
+            df.loc[genes_with_dupl, 'newGeneName'] += \
+                '__wDupl'
 
     return df
 
@@ -2121,10 +2132,10 @@ def save_image(
         plt_obj.show()
 
 
-def extract_gene_set(df):
+def extract_gene_set(df, dupl_col_name='dupl_genes'):
     gene_set = set()
-    if 'dupl_genes' in df.columns:
-        dupl_col = df['dupl_genes']
+    if dupl_col_name in df.columns:
+        dupl_col = df[dupl_col_name]
         dupl_set = set([
             item for sublist in dupl_col
             if isinstance(sublist, str)
