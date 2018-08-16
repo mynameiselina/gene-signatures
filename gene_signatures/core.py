@@ -2226,6 +2226,109 @@ def plot_prediction_counts_per_class(
         plt.suptitle('real predictions', fontsize=16)
 
 
+# plot hist per column (support only 0/1 classes per column)
+def plot_df_hist(
+        df, annot_dict,
+        **hist_kwargs):
+    # hist_kwargs:
+    #   by: the hist bins
+    #   column: the subplots (share y axis)
+    try:
+        annot_dict = annot_dict.copy()
+        default_hist_kwargs = {
+            "by": None,
+            "column": None,
+            "bins": 2,
+            "rwidth": 0.4,
+            "figsize": (10, 6),
+            "grid": True
+        }
+        default_hist_kwargs.update(hist_kwargs)
+        by_name = default_hist_kwargs.get('by', None)
+        column_name = default_hist_kwargs.get('column', None)
+
+        if by_name is None and column_name is None:
+            plot_default = True
+        elif (by_name is None) ^ (column_name is None):
+            logger.error(
+                "unsupported functionallity, both or none of the 'by' " +
+                "and 'column' arguments need to be defined")
+            raise
+        else:
+            plot_default = False
+
+        for key, item in annot_dict.items():
+            for k, l in item.items():
+                if not isinstance(l, np.ndarray):
+                    annot_dict[key][k] = np.array(l)
+
+        if plot_default:
+            columns = df.columns.values
+
+        else:
+            bin_labels = annot_dict[by_name]['labels']
+            bin_values = annot_dict[by_name]['values']
+            bin_labels = bin_labels[bin_values]
+            xticklabels_same = [
+                bin_labels[i]+':'+bin_values.astype(str)[i]
+                for i in range(bin_labels.shape[0])
+            ]
+
+            subplot_labels = annot_dict[column_name]['labels']
+            subplot_values = annot_dict[column_name]['values']
+
+        show_grid = default_hist_kwargs.pop("grid", True)
+
+    except Exception as ex:
+        logger.error(
+            "error in parsing arguments cannot continue plotting!\n"+str(ex))
+        return
+
+    y_maxlim = max([
+            np.histogram(df.iloc[:, i], bins=2)[0].max()
+            for i in range(2)
+        ])
+
+    axes = df.hist(**default_hist_kwargs)
+    if axes.ndim > 1:
+        if axes.shape[1] > axes.shape[0]:
+            axes = axes.T
+            if axes.shape[1] == 1:
+                axes = axes.reshape(axes.shape[0])
+    for ax in axes:
+        if show_grid:
+            ax.grid(b=True)
+        ax.set_ylim(0, y_maxlim+3)
+        ax.set_xlim(0, 1)
+        ax.set_xticks([0.25, 0.75])
+
+        if plot_default:
+            df_col = str(ax.get_title())
+            bin_labels = annot_dict[df_col]['labels']
+            bin_values = annot_dict[df_col]['values']
+            xticklabels = [
+                bin_labels[i]+':'+bin_values.astype(str)[i]
+                for i in range(bin_labels.shape[0])
+            ]
+            ax.set_xticklabels(xticklabels, rotation=0, fontsize=14)
+
+        else:
+            if subplot_labels is not None and subplot_values is not None:
+                ax.set_xticklabels(xticklabels_same, rotation=0, fontsize=14)
+                mask = (subplot_values == float(ax.get_title()))
+                ax_title = subplot_labels[mask][0]+':' +\
+                    str(subplot_values[mask][0])
+                ax.set_title(ax_title, fontsize=14)
+
+        # set individual bar lables using above list
+        for i in ax.patches:
+            # get_x pulls left or right; get_height pushes up or down
+            ax.text(
+                i.get_x()+0.05, i.get_height()+.5,
+                str(int(i.get_height())), fontsize=14,
+                color='dimgrey')
+
+
 # plot confusion matrix
 def compute_and_plot_confusion_matrices(
         y_real, y_pred, class_labels=None, class_values=None):
@@ -2377,3 +2480,33 @@ def define_plot_args(
         "custom_div_cmap_arg": custom_div_cmap_arg
     }
     return args_dict
+
+
+def balanced_train_test_split(X, y, train_size=10, random_state=0):
+    X = X.copy()
+    y = y.copy()
+    if not train_size % 2 == 0:
+        logger.error(
+            "you need an even number for train size " +
+            "in order to have a balanced split on the class label")
+        raise
+
+    if not (np.unique(y) == [0, 1]).all():
+        logger.error(
+            "the function supports only 0/1 class labels")
+        raise
+
+    np.random.seed(random_state)
+    y_train_class1 = np.random.choice(
+        y.index[y == 0], size=int(train_size/2), replace=False)
+    y_train_class2 = np.random.choice(
+        y.index[y == 1], size=int(train_size/2), replace=False)
+    y_train_ind = set.union(set(y_train_class1), set(y_train_class2))
+
+    y_train = y.loc[y_train_ind]
+    y_test = y.drop(y_train_ind)
+
+    X_train = X.loc[y_train_ind, :]
+    X_test = X.drop(y_train_ind, axis=0)
+
+    return X_train, X_test, y_train, y_test
