@@ -2438,6 +2438,39 @@ def plot_roc_with_std_for_one_model(
     plt.legend(loc="best")
 
 
+def plot_precision_recall_for_many_models(
+        model_names, precisions, recalls,
+        f1_scores, figsize=(10, 10), n_fs=None):
+    n_models = len(model_names)
+    if n_models > 10:
+        sns.set_palette('tab20', n_colors=n_models)
+    else:
+        sns.set_palette('colorblind', n_colors=n_models)
+
+    plt.figure(figsize=figsize)
+    for i, key in enumerate(model_names):
+        if n_fs is not None:
+            plt.step(
+                recalls[key], precisions[key], where='post',
+                label='%s (F1=%0.2f) %d'
+                % (model_names[i], f1_scores[key], n_fs[key]))
+        else:
+            plt.step(
+                recalls[key], precisions[key], where='post',
+                label='%s (F1=%0.2f)'
+                % (model_names[i], f1_scores[key]))
+    plt.plot(
+        [0, 1], [0, 1], linestyle='--', lw=2, color='r',
+        label='Luck', alpha=.8)
+
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall curves')
+    plt.legend(loc="best")
+
+
 def plot_scatter_scores(y_train_scores, y_test_score=None):
     # plot accuracy scores of the train and test data
     plt.figure(figsize=(10, 6))
