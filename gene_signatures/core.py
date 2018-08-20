@@ -2093,7 +2093,7 @@ def plot_confusion_matrix(cm, classes,
     plt.yticks(tick_marks, classes)
 
     fmt = '.2f' if normalize else 'd'
-    thresh = cm.max() / 2.
+    thresh = cm.min() + ((cm.max() - cm.min())/2.)
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, format(cm[i, j], fmt),
                  horizontalalignment="center",
@@ -2266,16 +2266,16 @@ def plot_df_hist(
             columns = df.columns.values
 
         else:
-            bin_labels = annot_dict[by_name]['labels']
-            bin_values = annot_dict[by_name]['values']
+            bin_labels = annot_dict[column_name]['labels']
+            bin_values = annot_dict[column_name]['values']
             bin_labels = bin_labels[bin_values]
             xticklabels_same = [
                 bin_labels[i]+':'+bin_values.astype(str)[i]
                 for i in range(bin_labels.shape[0])
             ]
 
-            subplot_labels = annot_dict[column_name]['labels']
-            subplot_values = annot_dict[column_name]['values']
+            subplot_labels = annot_dict[by_name]['labels']
+            subplot_values = annot_dict[by_name]['values']
 
         show_grid = default_hist_kwargs.pop("grid", True)
 
@@ -2543,3 +2543,44 @@ def balanced_train_test_split(X, y, train_size=10, random_state=0):
     X_test = X.drop(y_train_ind, axis=0)
 
     return X_train, X_test, y_train, y_test
+
+
+def data_frame_classification_report(y_true, y_pred, classes_mapping=None):
+    from sklearn.metrics import precision_recall_fscore_support
+    """
+    Get classification report in `pd.DataFrame` format.
+    From: https://stackoverflow.com/a/50091428.
+    """
+    binary = len(set(y_true)) == 2
+    metrics_summary = precision_recall_fscore_support(
+        y_true=y_true,
+        y_pred=y_pred)
+
+    average = list(precision_recall_fscore_support(
+        y_true=y_true,
+        y_pred=y_pred,
+        average='weighted'))
+
+    metrics_sum_index = ['precision', 'recall', 'f1-score', 'support']
+    class_report_df = pd.DataFrame(
+        list(metrics_summary),
+        index=metrics_sum_index)
+
+    if not binary:
+        average = list(precision_recall_fscore_support(
+            y_true=y_true,
+            y_pred=y_pred,
+            average='weighted'))
+        support = class_report_df.loc['support']
+        total = support.sum()
+        average[-1] = total
+        class_report_df['average'] = average
+
+    class_report_df = class_report_df.T
+
+    if classes_mapping is not None:
+        class_report_df = class_report_df.rename(classes_mapping)
+
+    class_report_df['class'] = class_report_df.index
+    class_report_df = class_report_df.reindex()
+    return class_report_df
