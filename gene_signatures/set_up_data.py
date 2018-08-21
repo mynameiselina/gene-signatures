@@ -370,7 +370,7 @@ def set_up_data(**set_up_kwargs):
         if toPrint:
             logger.info('Order genes according to genomic position')
         gene_order = index_natsorted(gene_pos['toNatSort'])
-        gene_pos = gene_pos.iloc[gene_order, :]
+        gene_pos = gene_pos.iloc[gene_order, :].copy()
         gene_pos.reset_index(drop=True, inplace=True)
         gene_pos.index.name = 'order'
         gene_pos.reset_index(inplace=True)

@@ -2154,9 +2154,12 @@ def extract_gene_set(df, dupl_col_name='dupl_genes'):
 def plot_data_heatmap(
     data, ground_truth, xlabel=None, xpos=None,
     vmin=None, vmax=None, cmap_custom=None, custom_div_cmap_arg=None,
-    function_dict=None, **kwargs
+    function_dict=None, sort_values=False, **kwargs
 ):
-    ground_truth_sorted = ground_truth.sort_values()
+    if sort_values:
+        ground_truth_sorted = ground_truth.sort_values()
+    else:
+        ground_truth_sorted = ground_truth.copy()
     data_sorted = data.loc[
         ground_truth_sorted.index, :].copy()
     try:
@@ -2584,3 +2587,24 @@ def data_frame_classification_report(y_true, y_pred, classes_mapping=None):
     class_report_df['class'] = class_report_df.index
     class_report_df = class_report_df.reindex()
     return class_report_df
+
+
+def order_data_genes(
+        data, genes_positions_table,
+        order_col='order', gene_id_col='gene'):
+    data = data.copy()
+    genes_positions_table = genes_positions_table.copy()
+    # extract the gene relative order
+    if genes_positions_table.index.name != gene_id_col:
+        genes_positions_table = genes_positions_table.set_index(gene_id_col)
+    gene_order = genes_positions_table.loc[:, order_col].copy()
+    # keep only gene_order with data
+    ids_tmp = set(
+        gene_order.index.values).intersection(set(data.columns.values))
+    # keep only the order of these genes
+    gene_order = gene_order.loc[ids_tmp].copy()
+    gene_order = gene_order.sort_values()
+    # then keep only these genes from the data
+    data = data.loc[:, gene_order.index].copy()
+
+    return data

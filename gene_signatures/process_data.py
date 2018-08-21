@@ -230,8 +230,8 @@ def process_data(**set_up_kwargs):
     # SELECT specific genes (optional)
     if len(select_genes_list) > 0:
         # first take intersection of with data
-        select_genes_list = set(
-            data.columns.values).intersection(set(select_genes_list))
+        select_genes_list = list(set(
+            data.columns.values).intersection(set(select_genes_list)))
         # then keep only these genes from in the data
         data = data.loc[:, select_genes_list].copy()
         if genes_positions_table is not None:
