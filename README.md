@@ -2,13 +2,13 @@
 
 ## Tasks supported:
 * feature selection
-* feature extraction
+* feature extraction (not supported yet)
 * classification
-* regression
-* clustering
+* regression (not supported yet)
+* clustering (not supported yet)
 
 
 ## Applied in case studies of:
-* Malignant Melanoma
+* Malignant Melanoma (not supported yet)
 * Head and Neck squamous cell carcinoma
-* Endometrial Carcinoma
+* Endometrial Carcinoma (not supported yet)
