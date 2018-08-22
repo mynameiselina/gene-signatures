@@ -4,15 +4,7 @@ scipy
 scikit-learn
 matplotlib
 seaborn
-os
-sys
 plac
 statsmodels
 natsort
-logging
-distutils
-itertools
-json
-math
-functools
 git+https://5ef714e5539ba649bcfd0f58d83b3746ecc6dcfc@github.ibm.com/LLE/omics_processing@0.0
