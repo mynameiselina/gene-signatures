@@ -1,13 +1,13 @@
 # custom imports
 from omics_processing.io import (
-    set_directory, load_clinical
+    set_directory, load_clinical,
+    parse_arg_type
 )
 from gene_signatures.core import (
     load_and_process_summary_file,
     load_and_process_files,
     custom_div_cmap,
     get_chr_ticks,
-    parse_arg_type,
     choose_samples,
     edit_genepanel
 )

@@ -1,11 +1,11 @@
 # custom imports
 from omics_processing.io import (
-    set_directory, load_clinical
+    set_directory, load_clinical,
+    parse_arg_type
 )
 from gene_signatures.core import (
     custom_div_cmap,
     get_chr_ticks,
-    parse_arg_type,
     choose_samples,
     set_heatmap_size,
     set_cbar_ticks

@@ -1,6 +1,7 @@
 # custom imports
 from omics_processing.io import (
-    set_directory, load_clinical
+    set_directory, load_clinical,
+    parse_arg_type
 )
 from omics_processing.remove_duplicates import (
     remove_andSave_duplicates
@@ -9,7 +10,6 @@ from gene_signatures.core import (
     custom_div_cmap,
     get_chr_ticks,
     choose_samples,
-    parse_arg_type,
     boxplot,
     set_heatmap_size,
     set_cbar_ticks,

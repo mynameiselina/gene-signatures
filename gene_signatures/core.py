@@ -19,15 +19,15 @@ import itertools
 
 logger = logging.getLogger(__name__)
 
-
-def parse_arg_type(arg, type):
-    if arg is not None:
-        if not isinstance(arg, type):
-            if type == bool:
-                arg = bool(strtobool(arg))
-            else:
-                arg = type(arg)
-    return arg
+# -----MOVED in omics_processing.io module----- #
+# def parse_arg_type(arg, type):
+#     if arg is not None:
+#         if not isinstance(arg, type):
+#             if type == bool:
+#                 arg = bool(strtobool(arg))
+#             else:
+#                 arg = type(arg)
+#     return arg
 
 
 def custom_div_cmap(numcolors=11, name='custom_div_cmap',

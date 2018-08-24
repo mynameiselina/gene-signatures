@@ -1,6 +1,7 @@
 # custom imports
 from omics_processing.io import (
-    set_directory, load_clinical
+    set_directory, load_clinical,
+    parse_arg_type
 )
 from omics_processing.remove_duplicates import (
     remove_andSave_duplicates
@@ -11,7 +12,6 @@ from gene_signatures.core import (
     choose_samples,
     plot_aggr_mut,
     get_NexusExpress_diff_analysis,
-    parse_arg_type,
     set_cbar_ticks
 )
 
