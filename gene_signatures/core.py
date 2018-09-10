@@ -2103,19 +2103,6 @@ def plot_confusion_matrix(cm, classes,
     plt.xlabel('Predicted label')
 
 
-def check_path_integrity(f, rootDir=None, name="", force=False):
-    from omics_processing.io import (
-        set_directory, load_clinical
-    )
-    if not os.path.exists(f):
-        f = os.path.join(*f.rsplit('/'))
-        f = os.path.join(rootDir, f)
-        if force:
-            f = set_directory(f)
-        logger.debug("set "+name+" fpath:\n"+f)
-    return f
-
-
 def save_image(
         saveReport=False, output_directory="", img_name="figure",
         img_ext=".png", plt_obj=None):
