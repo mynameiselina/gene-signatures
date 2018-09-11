@@ -1,7 +1,7 @@
 # custom imports
 from omics_processing.io import (
     set_directory, load_clinical,
-    parse_arg_type
+    parse_arg_type, set_path
 )
 from omics_processing.remove_duplicates import (
     remove_andSave_duplicates
@@ -189,7 +189,7 @@ def nexus_express(**set_up_kwargs):
         img_ext = '.png'
 
     # initialize directories
-    MainDataDir = os.path.join(script_path, '..', 'data')
+    MainDataDir = set_path(os.path.join(script_path, '..', 'data'))
 
     # data input
     input_directory = set_up_kwargs.get('input_directory')

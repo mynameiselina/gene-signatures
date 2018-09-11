@@ -1,7 +1,7 @@
 # custom imports
 from omics_processing.io import (
     set_directory, load_clinical,
-    parse_arg_type
+    parse_arg_type, set_path
 )
 from gene_signatures.core import (
     load_and_process_summary_file,
@@ -98,7 +98,8 @@ def set_up_data(**set_up_kwargs):
         img_ext = '.png'
 
     # initialize directories
-    MainDataDir = os.path.join(script_path, '..', 'data')
+    MainDataDir = set_path(os.path.join(script_path, '..', 'data'))
+
     input_directory = set_up_kwargs.get('input_directory')
     if ',' in input_directory:
         input_directory = os.path.join(*input_directory.rsplit(','))

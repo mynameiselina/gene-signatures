@@ -1,7 +1,7 @@
 # custom imports
 from omics_processing.io import (
     set_directory, load_clinical, 
-    parse_arg_type
+    parse_arg_type, set_path
 )
 from omics_processing.remove_duplicates import (
     remove_andSave_duplicates
@@ -171,7 +171,7 @@ def combine_features(**set_up_kwargs):
             cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
 
     # initialize directories
-    MainDataDir = os.path.join(script_path, '..', 'data')
+    MainDataDir = set_path(os.path.join(script_path, '..', 'data'))
 
     # data input
     file_short_ids = set_up_kwargs.get('file_short_ids', None)
@@ -345,7 +345,7 @@ def combine_cohorts(**set_up_kwargs):
             cmap_custom = custom_div_cmap(numcolors=custom_div_cmap_arg)
 
     # initialize directories
-    MainDataDir = os.path.join(script_path, '..', 'data')
+    MainDataDir = set_path(os.path.join(script_path, '..', 'data'))
 
     # data input
     data_fpaths = _split_argument_to_list(
