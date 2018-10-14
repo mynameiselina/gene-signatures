@@ -503,7 +503,7 @@ def nexus_express(**set_up_kwargs):
             # save this data for future classification
             fname = 'data_features_class.csv'
             fpath = os.path.join(output_directory, fname)
-            logger.info("-save data with selected diff genes for " +
+            logger.info("-save data with selected diff features for " +
                         mytitle+" and samples class labels in :\n"+fpath)
             data.to_csv(fpath, sep='\t', header=True, index=True)
 
@@ -564,6 +564,15 @@ def nexus_express(**set_up_kwargs):
                 genes2edit] = group0_del_new.loc[theGene]
             group1_del_new_wDupl.loc[
                 genes2edit] = group1_del_new.loc[theGene]
+
+        if len(list__diff_genes_selected_wDupl) > 0:
+            # save this data for future classification
+            fname = 'data_all_genes_class.csv'
+            fpath = os.path.join(output_directory, fname)
+            logger.info("-save data with selected diff genes for " +
+                        mytitle+" and samples class labels in :\n"+fpath)
+            data_wDupl[list__diff_genes_selected_wDupl].to_csv(
+                fpath, sep='\t', header=True, index=True)
 
         if toPlotFreq:
             # plot with the duplicate genes too

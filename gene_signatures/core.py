@@ -369,7 +369,7 @@ def plot_aggr_mut(aggr_ampl, aggr_del, xlabels, xpos, mytitle='',
     len_s = len(s)
     ax.set_xlim(-1, len_s)
     ar = np.arange(0, len_s)
-    plt.bar(x=np.arange(0, len_s), height=s, width=1, color='b')
+    plt.bar(x=np.arange(0, len_s), height=s, width=1, color='b', edgecolor='b')
     if printNames:
         for i, x in enumerate(xs):
             geneName = aggr_ampl.iloc[x:x+1].index.values[0]
@@ -401,7 +401,9 @@ def plot_aggr_mut(aggr_ampl, aggr_del, xlabels, xpos, mytitle='',
                 new_xs[i] = xs[i]+count*step
                 count = count + 1
         ####
-        plt.bar(x=np.arange(0, len_s), height=-s, width=1, color='r')
+        plt.bar(
+            x=np.arange(0, len_s), height=-s, width=1,
+            color='r', edgecolor='r')
         if printNames:
             for i, x in enumerate(xs):
                 geneName = aggr_del.iloc[x:x+1].index.values[0]
@@ -2101,22 +2103,6 @@ def plot_confusion_matrix(cm, classes,
 
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
-
-
-def save_image(
-        saveReport=False, output_directory="", img_name="figure",
-        img_ext=".png", plt_obj=None):
-    if plt_obj is None:
-        plt_obj = plt.gcf()
-    if saveReport:
-        fpath = os.path.join(output_directory, 'Fig_'+img_name+img_ext)
-        logger.info('Save figure in: '+fpath)
-        plt_obj.savefig(
-            fpath, transparent=True, bbox_inches='tight',
-            pad_inches=0.1, frameon=False)
-        plt.close("all")
-    else:
-        plt_obj.show()
 
 
 def extract_gene_set(df, dupl_col_name='dupl_genes'):
