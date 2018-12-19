@@ -133,7 +133,7 @@ scripts = [
 
 setup(
     name='gene_signatures',
-    version='0.1',
+    version='1.0',
     description=(
         'finding gene signatures in molecular data'
     ),
