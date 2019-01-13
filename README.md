@@ -2,20 +2,12 @@
 
 ## Tasks supported:
 * feature selection
-* feature extraction (not supported yet)
 * classification
-* regression (not supported yet)
-* clustering (not supported yet)
-
 
 ## Applied in case studies of:
-* Malignant Melanoma (not supported yet)
 * Head and Neck squamous cell carcinoma
-* Endometrial Carcinoma (not supported yet)
-
 
 ## Dependencies
-
 - Python 3.6.3
 - Numpy (>= 1.15)
 - Pandas (>= 0.23)
@@ -26,8 +18,8 @@
 - Matplotlib (>=2.2.3)
 - Seaborn (>=0.9.0)
 - Statsmodels (>=0.8.0)
-- https://github.ibm.com/SysBio/plotting_utils (==1.0)
-- https://github.ibm.com/SysBio/omics_processing (==1.0)
+- https://github.ibm.com/mynameiselina/plotting-utils (==1.0)
+- https://github.ibm.com/mynameiselina/omics-processing (==1.0)
 
 ## Installation
 Install `gene-signatures` after cloning:
@@ -67,3 +59,6 @@ The -D option is to set the debug mode on and have a more verbose printout.
 A combination of all the pipelines is proposed to analyze the HNSCC dataset and the syntax and order of the commands is written in the examples/configs/help_config_file.txt.
 
 Moreover, for the final classification of the samples and the selection of the best model/signature follow the analysis from the  jupyter notebook in the examples/notebooks/Classification.ipynb
+
+# License
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
