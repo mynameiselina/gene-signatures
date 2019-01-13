@@ -7,5 +7,5 @@ seaborn
 plac
 statsmodels
 natsort
-git+https://github.ibm.com/SysBio/TCGA-processing@1.0
-git+https://github.ibm.com/SysBio/plotting-utils@1.0
+git+https://github.com/mynameiselina/omics-processing@1.0
+git+https://github.com/mynameiselina/plotting-utils@1.0
